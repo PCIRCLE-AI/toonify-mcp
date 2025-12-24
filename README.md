@@ -1,5 +1,7 @@
 # 🎯 Claude Code Toonify
 
+**[English](README.md) | [繁體中文](README.zh-TW.md)**
+
 **Reduce Claude API token usage by 60%+ using TOON format optimization**
 
 An MCP (Model Context Protocol) server that transparently optimizes token usage in [Claude Code CLI](https://github.com/anthropics/claude-code) by converting structured data to TOON (Token-Oriented Object Notation) format.
@@ -141,55 +143,70 @@ Total Savings: 889,555 (61.1%)
    $2.67 saved
 ```
 
-## 🌍 Universal Compatibility
+## 🌍 Compatibility
 
-### ✅ **Works with ANY LLM:**
-- OpenAI (GPT-4, GPT-3.5)
-- Anthropic (Claude 3.5, Claude Opus)
-- Google (Gemini)
-- Mistral, Llama, etc.
-
-The TOON optimization reduces tokens for **all** LLM APIs.
-
-### ✅ **Works with ANY MCP Client:**
-- **Claude Code CLI** (what we designed for)
+### ✅ **This MCP Server Works With:**
+- **Claude Code CLI** (primary target)
 - **Claude Desktop App**
 - **Custom MCP clients**
-- **VSCode with MCP support**
 - **Any tool implementing MCP protocol**
 
-### 🔧 **How It Works:**
+**Important**: MCP (Model Context Protocol) is an Anthropic protocol. This MCP server only works with MCP-compatible clients in the Claude ecosystem.
 
-**For Claude Code (automatic):**
-```bash
-# Configure once in settings.json
-claude mcp call toonify optimize_content '{"content": "..."}'
-```
+### 🔧 **Using TOON Format with Other LLMs**
 
-**For Other MCP Clients:**
-```javascript
-// Any MCP client can call the same tools
-await mcpClient.callTool("toonify", "optimize_content", {
-  content: largeJsonData,
-  toolName: "Read"
+While this **MCP server** is Claude-specific, the **TOON format itself** reduces tokens for ANY LLM (GPT, Gemini, Llama, etc.). To use TOON optimization with non-MCP LLMs:
+
+**TypeScript/JavaScript:**
+```typescript
+import { encode, decode } from '@toon-format/toon';
+
+// Optimize data before sending to any LLM API
+const data = {
+  products: [
+    { id: 101, name: 'Laptop Pro', price: 1299 },
+    { id: 102, name: 'Magic Mouse', price: 79 }
+  ]
+};
+
+const optimizedContent = encode(data); // 60% token reduction
+
+// Use with OpenAI
+await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: `Analyze: ${optimizedContent}` }]
+});
+
+// Use with Gemini
+await gemini.generateContent({
+  contents: [{ text: `Analyze: ${optimizedContent}` }]
 });
 ```
 
-**For Direct LLM Usage (no MCP):**
+**Python:**
 ```python
-# Use Toonify directly in your code
+# Install: pip install toonify
 from toonify import encode
 import openai
 
 data = {"products": [...]}
-optimized_data = encode(data)  # 60% token reduction
+optimized = encode(data)
 
-# Works with any LLM
+# Works with any LLM API
 openai.chat.completions.create(
     model="gpt-4",
-    messages=[{"role": "user", "content": f"Analyze: {optimized_data}"}]
+    messages=[{"role": "user", "content": f"Analyze: {optimized}"}]
 )
 ```
+
+### 📊 **MCP Server vs TOON Library**
+
+| Feature | This MCP Server | TOON Library Direct |
+|---------|----------------|---------------------|
+| **Target** | Claude Code/Desktop | Any LLM |
+| **Integration** | Automatic (via MCP) | Manual (code integration) |
+| **Setup** | Configure once | Import in each project |
+| **Compatibility** | MCP clients only | Universal |
 
 ## 🏗️ Architecture
 

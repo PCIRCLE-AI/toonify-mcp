@@ -1,5 +1,7 @@
 # 🎯 Claude Code Toonify
 
+**[English](README.md) | [繁體中文](README.zh-TW.md)**
+
 **使用 TOON 格式優化，降低 Claude API Token 使用量達 60% 以上**
 
 一個 MCP (Model Context Protocol) 伺服器，透過將結構化資料轉換為 TOON (Token-Oriented Object Notation) 格式，自動優化 [Claude Code CLI](https://github.com/anthropics/claude-code) 的 Token 使用量。
@@ -169,55 +171,70 @@ Total Savings: 889,555 (61.1%)
 └──────────────────┘
 ```
 
-## 🌍 通用相容性
+## 🌍 相容性
 
-### ✅ 支援任何 LLM：
-- OpenAI (GPT-4, GPT-3.5)
-- Anthropic (Claude 3.5, Claude Opus)
-- Google (Gemini)
-- Mistral, Llama 等
-
-TOON 優化對**所有** LLM API 都能減少 Token 使用量。
-
-### ✅ 支援任何 MCP 客戶端：
-- **Claude Code CLI**（主要設計對象）
+### ✅ **此 MCP 伺服器支援：**
+- **Claude Code CLI**（主要目標）
 - **Claude Desktop App**
 - **自訂 MCP 客戶端**
-- **VSCode with MCP 支援**
 - **任何實作 MCP 協定的工具**
 
-### 🔧 使用方式：
+**重要**：MCP（Model Context Protocol）是 Anthropic 的協定。此 MCP 伺服器僅適用於 Claude 生態系統中的 MCP 相容客戶端。
 
-**Claude Code（自動）：**
-```bash
-# 在 settings.json 中設定一次即可
-claude mcp call toonify optimize_content '{"content": "..."}'
-```
+### 🔧 **在其他 LLM 使用 TOON 格式**
 
-**其他 MCP 客戶端：**
-```javascript
-// 任何 MCP 客戶端都可以呼叫相同的工具
-await mcpClient.callTool("toonify", "optimize_content", {
-  content: largeJsonData,
-  toolName: "Read"
+雖然此 **MCP 伺服器**僅限 Claude 使用，但 **TOON 格式本身**可為任何 LLM（GPT、Gemini、Llama 等）減少 Token 使用量。若要在非 MCP LLM 使用 TOON 優化：
+
+**TypeScript/JavaScript：**
+```typescript
+import { encode, decode } from '@toon-format/toon';
+
+// 在傳送至任何 LLM API 前優化資料
+const data = {
+  products: [
+    { id: 101, name: 'Laptop Pro', price: 1299 },
+    { id: 102, name: 'Magic Mouse', price: 79 }
+  ]
+};
+
+const optimizedContent = encode(data); // 減少 60% tokens
+
+// 用於 OpenAI
+await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: `分析：${optimizedContent}` }]
+});
+
+// 用於 Gemini
+await gemini.generateContent({
+  contents: [{ text: `分析：${optimizedContent}` }]
 });
 ```
 
-**直接用於 LLM（不需 MCP）：**
+**Python：**
 ```python
-# 在程式碼中直接使用 Toonify
+# 安裝：pip install toonify
 from toonify import encode
 import openai
 
 data = {"products": [...]}
-optimized_data = encode(data)  # 減少 60% tokens
+optimized = encode(data)
 
-# 適用於任何 LLM
+# 適用於任何 LLM API
 openai.chat.completions.create(
     model="gpt-4",
-    messages=[{"role": "user", "content": f"分析：{optimized_data}"}]
+    messages=[{"role": "user", "content": f"分析：{optimized}"}]
 )
 ```
+
+### 📊 **MCP 伺服器 vs TOON 函式庫**
+
+| 功能 | 此 MCP 伺服器 | 直接使用 TOON 函式庫 |
+|------|-------------|-------------------|
+| **目標** | Claude Code/Desktop | 任何 LLM |
+| **整合方式** | 自動（透過 MCP） | 手動（程式碼整合） |
+| **設定** | 配置一次 | 每個專案都要導入 |
+| **相容性** | 僅限 MCP 客戶端 | 通用 |
 
 ## 🧪 開發指南
 
