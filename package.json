@@ -1,0 +1,41 @@
+{
+  "name": "@ktseng/claude-code-toonify",
+  "version": "0.1.0",
+  "description": "MCP server that optimizes token usage in Claude Code CLI by converting structured data to TOON format",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "claude-code-toonify": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "mcp",
+    "token-optimization",
+    "toonify",
+    "llm-optimization"
+  ],
+  "author": "ktseng",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@scrapegraph/toonify": "^1.0.0",
+    "tiktoken": "^1.0.0",
+    "yaml": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
