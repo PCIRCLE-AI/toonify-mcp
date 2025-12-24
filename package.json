@@ -1,6 +1,6 @@
 {
   "name": "toonify-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for TOON format token optimization - works with any MCP client (Claude Code, ChatGPT, etc.)",
   "type": "module",
   "main": "dist/index.js",
