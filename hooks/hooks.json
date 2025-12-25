@@ -1,5 +1,4 @@
 {
-  "description": "Toonify MCP - Automatic token optimization hook for structured data",
   "hooks": {
     "PostToolUse": [
       {

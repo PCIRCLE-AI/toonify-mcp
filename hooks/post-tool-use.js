@@ -11,23 +11,9 @@ import * as os from 'os';
 class ToonifyHook {
     config;
     encoder;
-    logFile;
     constructor() {
-        this.logFile = path.join(os.homedir(), '.claude', 'toonify-hook.log');
-        this.log('=== Hook Started ===');
         this.config = this.loadConfig();
         this.encoder = encoding_for_model('gpt-4');
-    }
-    log(message, data = null) {
-        const timestamp = new Date().toISOString();
-        const logEntry = data
-            ? `[${timestamp}] ${message}\n${JSON.stringify(data, null, 2)}\n`
-            : `[${timestamp}] ${message}\n`;
-        try {
-            fs.appendFileSync(this.logFile, logEntry);
-        } catch (e) {
-            // Silent fail for logging
-        }
     }
     loadConfig() {
         const configPath = path.join(os.homedir(), '.claude', 'toonify-hook-config.json');
@@ -40,16 +26,12 @@ class ToonifyHook {
         try {
             if (fs.existsSync(configPath)) {
                 const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-                const config = { ...defaultConfig, ...userConfig };
-                this.log('Config loaded', config);
-                return config;
+                return { ...defaultConfig, ...userConfig };
             }
         }
         catch (error) {
-            this.log('Config load error', { error: error.message });
             console.error('[Toonify Hook] Config load error:', error);
         }
-        this.log('Using default config', defaultConfig);
         return defaultConfig;
     }
     shouldSkipTool(toolName) {
@@ -132,24 +114,18 @@ class ToonifyHook {
         }
     }
     async process(input) {
-        this.log('Processing tool', { toolName: input.toolName });
         if (this.shouldSkipTool(input.toolName)) {
-            this.log('Tool skipped', { toolName: input.toolName });
             return input;
         }
-        const processedContent = input.toolResult.content.map((block, index) => {
+        const processedContent = input.toolResult.content.map(block => {
             if (block.type === 'text' && block.text) {
-                this.log(`Processing block ${index}`, { textLength: block.text.length });
                 const result = this.optimize(block.text);
                 if (result.optimized && result.stats) {
-                    this.log('Optimization successful', result.stats);
                     const notice = `\n\n[Token Optimization: ${result.stats.originalTokens} → ${result.stats.optimizedTokens} tokens (-${result.stats.savings}%)]`;
                     return {
                         ...block,
                         text: result.content + (process.env.TOONIFY_SHOW_STATS === 'true' ? notice : '')
                     };
-                } else {
-                    this.log('Optimization skipped', { reason: 'Did not meet criteria' });
                 }
                 return block;
             }
@@ -165,36 +141,25 @@ class ToonifyHook {
     }
 }
 async function main() {
-    const logFile = path.join(os.homedir(), '.claude', 'toonify-hook.log');
-    const log = (msg, data = null) => {
-        const timestamp = new Date().toISOString();
-        const entry = data
-            ? `[${timestamp}] ${msg}\n${JSON.stringify(data, null, 2)}\n`
-            : `[${timestamp}] ${msg}\n`;
-        try {
-            fs.appendFileSync(logFile, entry);
-        } catch (e) {}
-    };
-
+    let stdin = '';
     try {
-        log('=== main() Started ===');
-        const stdin = await new Promise((resolve) => {
+        stdin = await new Promise((resolve) => {
             const chunks = [];
             process.stdin.on('data', chunk => chunks.push(chunk));
             process.stdin.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
         });
-        log('Stdin received', { length: stdin.length });
         const input = JSON.parse(stdin);
-        log('Input parsed', { toolName: input.toolName });
         const hook = new ToonifyHook();
         const output = await hook.process(input);
-        log('Processing complete');
         process.stdout.write(JSON.stringify(output, null, 2));
         process.exit(0);
     }
     catch (error) {
-        log('Error in main()', { error: error.message, stack: error.stack });
-        process.stdout.write(process.stdin.read());
+        console.error('[Toonify Hook Error]:', error);
+        // Write back original input if available (hook failed, pass through unchanged)
+        if (stdin) {
+            process.stdout.write(stdin);
+        }
         process.exit(0);
     }
 }

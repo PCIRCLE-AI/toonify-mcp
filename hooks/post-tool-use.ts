@@ -179,8 +179,10 @@ class ToonifyHook {
 }
 
 async function main() {
+  let stdin = '';
+
   try {
-    const stdin = await new Promise<string>((resolve) => {
+    stdin = await new Promise<string>((resolve) => {
       const chunks: Buffer[] = [];
       process.stdin.on('data', chunk => chunks.push(chunk));
       process.stdin.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
@@ -193,7 +195,11 @@ async function main() {
     process.stdout.write(JSON.stringify(output, null, 2));
     process.exit(0);
   } catch (error) {
-    process.stdout.write(process.stdin.read());
+    console.error('[Toonify Hook Error]:', error);
+    // Write back original input if available (hook failed, pass through unchanged)
+    if (stdin) {
+      process.stdout.write(stdin);
+    }
     process.exit(0);
   }
 }
