@@ -38,3 +38,40 @@ export interface CacheStrategy {
   shouldCache: (content: string, tokens: number) => boolean;
   formatCacheStructure: (content: CachedContent) => any;
 }
+
+/**
+ * LRU Cache Configuration
+ */
+export interface LRUCacheConfig {
+  enabled: boolean;
+  maxSize: number;           // Maximum number of cache entries
+  ttl: number;               // Time-to-live in milliseconds
+  persistent: boolean;       // Enable disk persistence
+  persistPath?: string;      // Path to persist cache file
+}
+
+/**
+ * LRU Cache Entry
+ */
+export interface LRUCacheEntry<T> {
+  key: string;
+  value: T;
+  timestamp: number;         // Creation time
+  lastAccessed: number;      // Last access time
+  accessCount: number;       // Number of accesses
+  expiresAt: number;         // Expiration timestamp
+}
+
+/**
+ * LRU Cache Statistics
+ */
+export interface LRUCacheStats {
+  hits: number;
+  misses: number;
+  evictions: number;
+  expirations: number;
+  currentSize: number;
+  maxSize: number;
+  hitRate: number;
+  averageAccessCount: number;
+}

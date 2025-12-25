@@ -10,13 +10,14 @@ import type {
   StructuredData,
   OptimizationConfig
 } from './types.js';
-import { CacheOptimizer } from './caching/index.js';
+import { CacheOptimizer, LRUCache } from './caching/index.js';
 import { MultilingualTokenizer } from './multilingual/index.js';
 
 export class TokenOptimizer {
   private config: OptimizationConfig;
   private tokenEncoder: MultilingualTokenizer;
   private cacheOptimizer: CacheOptimizer;
+  private resultCache: LRUCache<OptimizationResult>;
 
   constructor(config: Partial<OptimizationConfig> = {}) {
     this.config = {
@@ -36,6 +37,13 @@ export class TokenOptimizer {
         enabled: true,
         defaultLanguage: 'en'
       },
+      resultCache: {
+        enabled: true,
+        maxSize: 500,
+        ttl: 3600000, // 1 hour
+        persistent: false,
+        persistPath: '~/.toonify-mcp/cache/optimization-cache.json'
+      },
       ...config
     };
 
@@ -44,6 +52,9 @@ export class TokenOptimizer {
 
     // Initialize cache optimizer
     this.cacheOptimizer = new CacheOptimizer(this.config.caching);
+
+    // v0.4.0: Initialize LRU cache for optimization results
+    this.resultCache = new LRUCache<OptimizationResult>(this.config.resultCache);
   }
 
   /**
@@ -54,6 +65,13 @@ export class TokenOptimizer {
     metadata?: ToolMetadata
   ): Promise<OptimizationResult> {
     const startTime = Date.now();
+
+    // v0.4.0: Check LRU cache first
+    const cacheKey = LRUCache.generateKey(content);
+    const cachedResult = this.resultCache.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
 
     // Quick path: skip if disabled or content too small
     if (!this.config.enabled || content.length < 200) {
@@ -133,7 +151,7 @@ export class TokenOptimizer {
       const cacheSavings = cachedContent.cacheBreakpoint ?
         Math.floor(tokenSavings * 0.9) : 0;
 
-      return {
+      const result: OptimizationResult = {
         optimized: true,
         originalContent: content,
         optimizedContent: cachedContent.cacheBreakpoint ?
@@ -150,6 +168,11 @@ export class TokenOptimizer {
         cachedContent,
         cacheMetrics: this.cacheOptimizer.getMetrics()
       };
+
+      // v0.4.0: Store result in LRU cache
+      this.resultCache.set(cacheKey, result);
+
+      return result;
 
     } catch (error) {
       // Silent fallback on error
@@ -262,5 +285,36 @@ export class TokenOptimizer {
    */
   getCacheOptimizer(): CacheOptimizer {
     return this.cacheOptimizer;
+  }
+
+  /**
+   * v0.4.0: Get LRU cache instance for external access
+   */
+  getResultCache(): LRUCache<OptimizationResult> {
+    return this.resultCache;
+  }
+
+  /**
+   * v0.4.0: Clear optimization result cache
+   */
+  clearResultCache(): void {
+    this.resultCache.clear();
+  }
+
+  /**
+   * v0.4.0: Clean up expired cache entries
+   */
+  cleanupExpiredCache(): number {
+    return this.resultCache.cleanup();
+  }
+
+  /**
+   * v0.4.0: Get combined cache statistics
+   */
+  getCacheStats() {
+    return {
+      resultCache: this.resultCache.getStats(),
+      promptCache: this.cacheOptimizer.getMetrics()
+    };
   }
 }

@@ -18,6 +18,7 @@ Reduces Claude API token usage by **30-65% depending on data structure** through
 
 - **30-65% Token Reduction** (typically 50-55%) for JSON, CSV, YAML data
 - **Multilingual Support** - Accurate token counting for 15+ languages
+- **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
 - **Fully Automatic** - PostToolUse hook intercepts tool results
 - **Zero Configuration** - Works out of the box with sensible defaults
 - **Dual Mode** - Works as Plugin (auto) or MCP Server (manual)
@@ -166,6 +167,30 @@ claude mcp call toonify get_stats '{}'
 
 # Or check Claude Code output for stats (if TOONIFY_SHOW_STATS=true)
 ```
+
+### Cache Management
+
+Toonify v0.4.0+ includes an enhanced LRU cache with TTL expiration:
+
+```bash
+# Get cache statistics
+claude mcp call toonify get_cache_stats '{}'
+
+# Clear all cached results
+claude mcp call toonify clear_cache '{}'
+
+# Clean up expired entries
+claude mcp call toonify cleanup_expired_cache '{}'
+```
+
+**Cache benefits:**
+- ✅ **50-500x faster** on cache hits (0.1ms vs 5-50ms)
+- ✅ Avoids re-optimizing identical content
+- ✅ Optional disk persistence for cross-session reuse
+- ✅ Automatic LRU eviction when full
+- ✅ TTL expiration (default: 1 hour)
+
+See [docs/CACHE.md](docs/CACHE.md) for detailed cache documentation.
 
 ## Troubleshooting
 

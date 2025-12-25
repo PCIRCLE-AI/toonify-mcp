@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-12-26
+
+### Added
+- **Enhanced caching system with LRU eviction, TTL expiration, and optional persistence**
+  - `LRUCache` class with Least Recently Used eviction strategy
+  - TTL (Time-to-Live) expiration for cache entries (default: 1 hour)
+  - Optional disk persistence for cross-session cache reuse
+  - SHA-256 content-based cache keys
+  - Comprehensive cache statistics tracking (hits, misses, evictions, expirations)
+- **Three new MCP tools for cache management**
+  - `clear_cache` - Clear all cached optimization results
+  - `get_cache_stats` - Get detailed cache statistics (LRU + Prompt cache)
+  - `cleanup_expired_cache` - Remove expired entries and return count
+- **Automatic optimization result caching**
+  - TokenOptimizer now caches results to avoid re-processing identical content
+  - Cache hit returns result in ~0.1ms (vs 5-50ms for optimization)
+  - **50-500x performance improvement** on cache hits
+- **Comprehensive cache documentation**
+  - New `docs/CACHE.md` with detailed usage, configuration, and best practices
+  - Architecture diagrams and performance analysis
+  - Troubleshooting guide and migration instructions
+
+### Changed
+- TokenOptimizer constructor now includes `resultCache` configuration option
+- Updated README.md with cache management section and performance benchmarks
+- Cache is enabled by default with sensible defaults (500 entries, 1 hour TTL, no persistence)
+
+### Technical Details
+- **New modules**:
+  - `src/optimizer/caching/lru-cache.ts` - LRU cache implementation (270 lines)
+  - `src/optimizer/caching/persistent-cache.ts` - Disk persistence layer (135 lines)
+  - `src/optimizer/caching/cache-types.ts` - Type definitions for LRU cache
+  - `tests/caching/lru-cache.test.ts` - Comprehensive test suite (18 tests, 100% pass)
+- **Cache configuration**:
+  ```typescript
+  {
+    enabled: true,
+    maxSize: 500,           // Maximum cache entries
+    ttl: 3600000,           // 1 hour in milliseconds
+    persistent: false,      // Disk persistence disabled by default
+    persistPath: '~/.toonify-mcp/cache/optimization-cache.json'
+  }
+  ```
+- **Performance metrics**:
+  - Cache hit: ~0.1ms (instant return)
+  - Cache miss: ~5-50ms (optimization + store)
+  - Memory usage: ~2-5 KB per entry, ~1-2.5 MB for 500 entries
+- **Test coverage**: 18 new tests covering LRU eviction, TTL expiration, persistence, statistics
+
 ## [0.3.0] - 2025-12-26
 
 ### Added

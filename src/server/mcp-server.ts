@@ -65,6 +65,30 @@ export class ToonifyMCPServer {
             properties: {},
           },
         },
+        {
+          name: 'clear_cache',
+          description: 'Clear the optimization result cache',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
+          name: 'get_cache_stats',
+          description: 'Get detailed cache statistics (LRU cache + Prompt cache)',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
+          name: 'cleanup_expired_cache',
+          description: 'Clean up expired cache entries and return the number of entries removed',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
       ],
     }));
 
@@ -114,6 +138,46 @@ export class ToonifyMCPServer {
               {
                 type: 'text',
                 text: JSON.stringify(stats, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'clear_cache': {
+          this.optimizer.clearResultCache();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({ success: true, message: 'Cache cleared successfully' }, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'get_cache_stats': {
+          const cacheStats = this.optimizer.getCacheStats();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(cacheStats, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'cleanup_expired_cache': {
+          const removedCount = this.optimizer.cleanupExpiredCache();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({
+                  success: true,
+                  removedEntries: removedCount,
+                  message: `Cleaned up ${removedCount} expired cache entries`
+                }, null, 2),
               },
             ],
           };

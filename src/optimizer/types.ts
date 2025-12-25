@@ -2,7 +2,7 @@
  * Type definitions for token optimization
  */
 
-import type { CacheConfig, CachedContent, CacheMetrics } from './caching/cache-types.js';
+import type { CacheConfig, CachedContent, CacheMetrics, LRUCacheConfig } from './caching/cache-types.js';
 
 export interface OptimizationResult {
   optimized: boolean;
@@ -47,6 +47,8 @@ export interface OptimizationConfig {
     enabled: boolean;
     defaultLanguage: string;
   };
+  // v0.4.0: LRU cache for optimization results
+  resultCache?: LRUCacheConfig;
 }
 
 export interface TokenStats {
@@ -64,4 +66,4 @@ export interface TokenStats {
 }
 
 // Re-export cache types for convenience
-export type { CacheConfig, CachedContent, CacheMetrics } from './caching/cache-types.js';
+export type { CacheConfig, CachedContent, CacheMetrics, LRUCacheConfig, LRUCacheStats } from './caching/cache-types.js';
