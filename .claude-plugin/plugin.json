@@ -11,5 +11,6 @@
     "type": "git",
     "url": "https://github.com/kevintseng/toonify-mcp.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "hooks": "./hooks/hooks.json"
 }
