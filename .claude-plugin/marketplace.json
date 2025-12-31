@@ -1,0 +1,24 @@
+{
+  "name": "pcircle-ai",
+  "owner": {
+    "name": "PCIRCLE AI",
+    "email": "contact@pcircle.ai"
+  },
+  "metadata": {
+    "description": "PCIRCLE AI Claude Code Plugin Marketplace - High-quality plugins for productivity and AI-powered development",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "toonify-mcp",
+      "source": "./",
+      "metadata": {
+        "description": "Automatic token optimization for structured data using TOON format. Reduces Claude API token usage by 60%+ on JSON, CSV, and YAML data through transparent PostToolUse hook interception.",
+        "version": "0.2.3",
+        "author": "Kevin Tseng",
+        "homepage": "https://github.com/kevintseng/toonify-mcp",
+        "license": "MIT"
+      }
+    }
+  ]
+}
