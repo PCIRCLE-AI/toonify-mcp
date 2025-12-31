@@ -27,7 +27,13 @@ Giảm 30-65% việc sử dụng token của Claude API **tùy thuộc vào cấ
 
 ## Cài đặt
 
-### Tùy chọn A: Plugin Claude Code (Khuyến nghị) ⭐
+### Tùy chọn A: Cài đặt từ marketplace pcircle.ai (Dễ nhất) 🌟
+
+**Cài đặt một cú nhấp:**
+
+Duyệt đến [marketplace pcircle.ai](https://claudemarketplaces.com) trong Claude Code và cài đặt toonify-mcp chỉ với một cú nhấp. Marketplace xử lý mọi thứ tự động!
+
+### Tùy chọn B: Plugin Claude Code (Khuyến nghị) ⭐
 
 **Tối ưu hóa token tự động không cần gọi thủ công:**
 

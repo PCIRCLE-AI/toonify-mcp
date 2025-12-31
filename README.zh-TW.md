@@ -36,6 +36,12 @@
 
 ## 📦 如何安裝？
 
+### 方法零：從 pcircle.ai 市集安裝（最簡單）🌟
+
+**一鍵安裝，完全自動：**
+
+在 Claude Code 中瀏覽 [pcircle.ai 市集](https://claudemarketplaces.com)，點一下就能安裝 toonify-mcp！市集會自動處理所有設定。
+
 ### 方法一：自動模式（推薦給所有人）⭐
 
 **三個步驟，裝好就會自動省錢：**

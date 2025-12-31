@@ -27,7 +27,13 @@
 
 ## 설치 방법
 
-### 옵션 A: Claude Code 플러그인 (권장) ⭐
+### 옵션 A: pcircle.ai 마켓플레이스에서 설치 (가장 쉬움) 🌟
+
+**원클릭 설치:**
+
+Claude Code에서 [pcircle.ai 마켓플레이스](https://claudemarketplaces.com)를 방문하여 toonify-mcp를 클릭 한 번으로 설치하세요. 마켓플레이스가 모든 것을 자동으로 처리합니다!
+
+### 옵션 B: Claude Code 플러그인 (권장) ⭐
 
 **수동 호출 없이 자동 토큰 최적화:**
 

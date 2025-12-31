@@ -28,7 +28,13 @@ Reduces Claude API token usage by **30-65% depending on data structure** through
 
 ## Installation
 
-### Option A: Claude Code Plugin (Recommended) ⭐
+### Option A: Install from pcircle.ai Marketplace (Easiest) 🌟
+
+**One-click installation from the PCIRCLE AI marketplace:**
+
+Browse to the [pcircle.ai marketplace](https://claudemarketplaces.com) in Claude Code and install toonify-mcp with one click. The marketplace handles everything automatically!
+
+### Option B: Claude Code Plugin (Recommended) ⭐
 
 **Automatic token optimization with zero manual calls:**
 
@@ -46,7 +52,7 @@ claude plugin list
 
 **That's it!** The PostToolUse hook will now automatically intercept and optimize structured data from Read, Grep, and other file tools.
 
-### Option B: MCP Server (Manual mode)
+### Option C: MCP Server (Manual mode)
 
 **For explicit control or non-Claude Code MCP clients:**
 

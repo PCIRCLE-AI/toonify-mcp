@@ -27,7 +27,13 @@ Reduce el uso de tokens de la API de Claude en **30-65% según la estructura de 
 
 ## Instalación
 
-### Opción A: Plugin de Claude Code (Recomendado) ⭐
+### Opción A: Instalar desde el marketplace pcircle.ai (Más fácil) 🌟
+
+**Instalación con un clic:**
+
+Navega al [marketplace pcircle.ai](https://claudemarketplaces.com) en Claude Code e instala toonify-mcp con un clic. ¡El marketplace maneja todo automáticamente!
+
+### Opción B: Plugin de Claude Code (Recomendado) ⭐
 
 **Optimización automática de tokens sin llamadas manuales:**
 

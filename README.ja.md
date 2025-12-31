@@ -27,7 +27,13 @@ MCP サーバー + Claude Code プラグインによる構造化データの自�
 
 ## インストール
 
-### オプション A：Claude Code プラグイン（推奨）⭐
+### オプション A：pcircle.ai マーケットプレイスからインストール（最も簡単）🌟
+
+**ワンクリックインストール：**
+
+Claude Code で [pcircle.ai マーケットプレイス](https://claudemarketplaces.com) を開き、toonify-mcp をワンクリックでインストール。マーケットプレイスがすべて自動的に処理します！
+
+### オプション B：Claude Code プラグイン（推奨）⭐
 
 **手動呼び出し不要の自動トークン最適化：**
 
