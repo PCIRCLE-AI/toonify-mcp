@@ -250,9 +250,6 @@ Giấy phép MIT - xem [LICENSE](LICENSE)
 
 ---
 
-🇹🇼 **Crafted in Taiwan** | 台灣製造
-_Where innovation meets tradition_
-
 ## Nhật ký thay đổi
 
 ### v0.4.0 (2025-12-26)

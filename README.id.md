@@ -250,9 +250,6 @@ Lisensi MIT - lihat [LICENSE](LICENSE)
 
 ---
 
-🇹🇼 **Crafted in Taiwan** | 台灣製造
-_Where innovation meets tradition_
-
 ## Catatan Perubahan
 
 ### v0.4.0 (2025-12-26)

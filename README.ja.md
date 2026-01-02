@@ -250,9 +250,6 @@ MIT ライセンス - 詳細は [LICENSE](LICENSE) を参照
 
 ---
 
-🇹🇼 **Crafted in Taiwan** | 台灣製造
-_Where innovation meets tradition_
-
 ## 変更履歴
 
 ### v0.4.0（2025-12-26）

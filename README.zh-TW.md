@@ -293,9 +293,6 @@ MIT License - 請參閱 [LICENSE](LICENSE)
 
 ---
 
-🇹🇼 **Crafted in Taiwan** | 台灣製造
-_Where innovation meets tradition_
-
 ## 版本更新記錄
 
 ### v0.4.0（2025-12-26）- 最新版本
