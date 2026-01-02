@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Details
 - **Marketplace configuration**: `.claude-plugin/marketplace.json`
-  - Owner: PCIRCLE AI (contact@pcircle.ai)
+  - Owner: PCIRCLE AI
   - Plugin version: 0.2.3
   - Marketplace version: 1.0.0
   - Source: Current repository root
