@@ -1,6 +1,6 @@
 {
   "name": "toonify-mcp",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "MCP server + Claude Code Plugin for TOON format token optimization. Reduces token usage by 30-65% (typically 50-55%) on JSON/CSV/YAML data via multilingual-aware optimization.",
   "type": "module",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && cd hooks && npm install && npm run build",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
