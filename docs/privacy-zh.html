@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隱私權政策 - Toonify MCP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'IBM Plex Sans', sans-serif; }
+        .heading-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="bg-white rounded-lg shadow-sm p-8 md:p-12">
+            <div class="mb-8">
+                <a href="index-zh.html" class="text-blue-600 hover:text-blue-700 text-sm font-medium">&larr; 返回首頁</a>
+            </div>
+
+            <h1 class="text-4xl font-bold text-gray-900 mb-4 heading-mono">隱私權政策</h1>
+            <p class="text-gray-600 mb-8">最後更新：2026 年 1 月 3 日</p>
+
+            <div class="prose prose-lg max-w-none">
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">概述</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        Toonify MCP 是一個完全在本機運行的開源 MCP（Model Context Protocol）插件。您的隱私至關重要 - 我們設計 Toonify 讓所有資料處理都保持在您的掌控之下。
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">資料處理</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>100% 本機處理：</strong> Toonify 完全在您的電腦上運行。所有 token 優化都在本機進行：
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2 mb-4">
+                        <li>TOON 格式轉換（本機）</li>
+                        <li>快取（本機 LRU + Claude prompt cache）</li>
+                        <li>統計追蹤（本機）</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>您擁有您的資料：</strong> Toonify 從不將您的資料、提示或統計資訊傳送到外部伺服器。一切都保留在您的電腦上。
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>Claude API：</strong> 當 Toonify 優化工具回應時，優化後的輸出會透過您現有的 Claude Code 訂閱傳遞給 Claude。這受 <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Anthropic 隱私權政策</a> 規範。
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">網站 (toonify.pcircle.ai)</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>無分析工具：</strong> 我們的文件網站不使用追蹤、分析或 Cookie。
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>Google Fonts：</strong> 網站使用 Google Fonts 顯示文字。Google 可能會收集您的 IP 位址作為字型傳送的一部分。請參閱 <a href="https://policies.google.com/privacy" target="_blank" class="text-blue-600 hover:underline">Google 隱私權政策</a>。
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">開源透明</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Toonify 使用 MIT 授權開源。您可以：
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
+                        <li>在 <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">GitHub</a> 檢視所有原始碼</li>
+                        <li>驗證沒有資料被傳送到外部</li>
+                        <li>修改程式碼以符合您的需求</li>
+                        <li>在商業或非商業專案中自由使用</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">您的控制權</h2>
+                    <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
+                        <li>所有處理都在您的電腦上進行</li>
+                        <li>無遙測或使用追蹤</li>
+                        <li>完整的原始碼透明度 - <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">在 GitHub 查看</a></li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">聯絡</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        有疑問？在 <a href="https://github.com/PCIRCLE-AI/toonify-mcp/issues" target="_blank" class="text-blue-600 hover:underline">GitHub</a> 開啟 issue。
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">更新</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        我們可能會更新本政策。變更將在此處發布並更新日期。
+                    </p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

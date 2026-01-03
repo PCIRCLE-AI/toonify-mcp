@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Toonify MCP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'IBM Plex Sans', sans-serif; }
+        .heading-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="bg-white rounded-lg shadow-sm p-8 md:p-12">
+            <div class="mb-8">
+                <a href="index.html" class="text-blue-600 hover:text-blue-700 text-sm font-medium">&larr; Back to Home</a>
+            </div>
+
+            <h1 class="text-4xl font-bold text-gray-900 mb-4 heading-mono">Privacy Policy</h1>
+            <p class="text-gray-600 mb-8">Last updated: January 3, 2026</p>
+
+            <div class="prose prose-lg max-w-none">
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Overview</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        Toonify MCP is a completely local, open-source MCP (Model Context Protocol) plugin. Your privacy is paramount - we designed Toonify to keep all data processing under your control.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Data Processing</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>100% Local Processing:</strong> Toonify operates entirely on your machine. All token optimization happens locally:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2 mb-4">
+                        <li>TOON format conversion (local)</li>
+                        <li>Caching (local LRU + Claude prompt cache)</li>
+                        <li>Statistics tracking (local)</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>You own your data:</strong> Toonify never sends your data, prompts, or statistics to external servers. Everything stays on your computer.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>Claude API:</strong> When Toonify optimizes tool responses, the optimized output is passed to Claude through your existing Claude Code subscription. This is governed by <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Anthropic's Privacy Policy</a>.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Website (toonify.pcircle.ai)</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>No Analytics:</strong> Our documentation website does not use tracking, analytics, or cookies.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>Google Fonts:</strong> The website uses Google Fonts for typography. Google may collect your IP address as part of font delivery. See <a href="https://policies.google.com/privacy" target="_blank" class="text-blue-600 hover:underline">Google Privacy Policy</a>.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Open Source Transparency</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Toonify is MIT-licensed open source. You can:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
+                        <li>Inspect all source code at <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">GitHub</a></li>
+                        <li>Verify that no data is sent externally</li>
+                        <li>Modify the code to suit your needs</li>
+                        <li>Use it freely in commercial or non-commercial projects</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Your Control</h2>
+                    <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
+                        <li>All processing happens on your machine</li>
+                        <li>No telemetry or usage tracking</li>
+                        <li>Complete source code transparency - <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">view on GitHub</a></li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Contact</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        Questions? Open an issue on <a href="https://github.com/PCIRCLE-AI/toonify-mcp/issues" target="_blank" class="text-blue-600 hover:underline">GitHub</a>.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Updates</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        We may update this policy. Changes will be posted here with an updated date.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
