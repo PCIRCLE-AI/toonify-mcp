@@ -25,7 +25,7 @@ interface WriteOperation<T> {
   reject: (error: Error) => void;
 }
 
-export class PersistentCache<T = any> {
+export class PersistentCache<T = unknown> {
   private filePath: string;
   private writeQueue: WriteOperation<T>[] = [];
   private isProcessing = false;

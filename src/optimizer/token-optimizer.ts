@@ -10,7 +10,7 @@ import type {
   StructuredData,
   OptimizationConfig
 } from './types.js';
-import { CacheOptimizer, LRUCache } from './caching/index.js';
+import { CacheOptimizer, LRUCache, type LRUCacheConfig } from './caching/index.js';
 import { MultilingualTokenizer } from './multilingual/index.js';
 
 export class TokenOptimizer {
@@ -126,9 +126,11 @@ export class TokenOptimizer {
       const originalTokens = this.countTokens(content);
       const optimizedTokens = this.countTokens(toonContent);
 
-      // Calculate savings
+      // Calculate savings (guard against division by zero)
       const tokenSavings = originalTokens - optimizedTokens;
-      const savingsPercentage = (tokenSavings / originalTokens) * 100;
+      const savingsPercentage = originalTokens > 0 
+        ? (tokenSavings / originalTokens) * 100 
+        : 0;
 
       // Check if worth using
       if (savingsPercentage < this.config.minSavingsThreshold) {
@@ -278,13 +280,6 @@ export class TokenOptimizer {
   }
 
   /**
-   * Get detailed token estimate with language info
-   */
-  private getTokenEstimate(text: string) {
-    return this.tokenEncoder.encode(text);
-  }
-
-  /**
    * Check if tool should be skipped
    */
   private shouldSkipTool(toolName: string): boolean {
@@ -308,7 +303,7 @@ export class TokenOptimizer {
    * Validate resultCache configuration
    * Throws error if configuration is invalid
    */
-  private validateResultCacheConfig(config: any): void {
+  private validateResultCacheConfig(config: Partial<LRUCacheConfig> | undefined): void {
     if (!config) {
       throw new Error('resultCache configuration is required');
     }
@@ -379,7 +374,7 @@ export class TokenOptimizer {
   /**
    * v0.4.0: Get combined cache statistics
    */
-  getCacheStats() {
+  getCacheStats(): { resultCache: import('./caching/cache-types.js').LRUCacheStats; promptCache: import('./caching/cache-types.js').CacheMetrics } {
     return {
       resultCache: this.resultCache.getStats(),
       promptCache: this.cacheOptimizer.getMetrics()

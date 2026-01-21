@@ -3,7 +3,7 @@
  */
 
 import { encoding_for_model, type Tiktoken } from 'tiktoken';
-import { LanguageDetector, type LanguageDetectionResult } from './language-detector.js';
+import { LanguageDetector } from './language-detector.js';
 import type { LanguageProfile } from './language-profiles.js';
 import { LRUCache } from '../caching/lru-cache.js';
 
@@ -123,7 +123,7 @@ export class MultilingualTokenizer {
   /**
    * Get cache statistics
    */
-  getCacheStats() {
+  getCacheStats(): import('../caching/cache-types.js').LRUCacheStats {
     return this.cache.getStats();
   }
 

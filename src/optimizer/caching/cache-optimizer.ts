@@ -110,7 +110,7 @@ TOON Format Specification:
 - Mixed types supported: strings, numbers, booleans, null
 
 Source Format: ${format.toUpperCase()}
-Optimization: ~60-95% token reduction
+Optimization: ~30-65% token reduction (typically 40-55%)
 
 Instructions:
 1. Parse the TOON-formatted data below
@@ -131,7 +131,7 @@ Instructions:
   /**
    * Format for Anthropic cache_control API
    */
-  formatForAnthropic(cached: CachedContent): any[] {
+  formatForAnthropic(cached: CachedContent): Array<{ type: string; text: string; cache_control?: { type: string } }> {
     if (!cached.cacheBreakpoint) {
       return [{ type: 'text', text: cached.dynamicContent }];
     }

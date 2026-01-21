@@ -10,7 +10,7 @@ import crypto from 'crypto';
 import type { LRUCacheConfig, LRUCacheEntry, LRUCacheStats } from './cache-types.js';
 import { PersistentCache } from './persistent-cache.js';
 
-export class LRUCache<T = any> {
+export class LRUCache<T = unknown> {
   private cache: Map<string, LRUCacheEntry<T>>;
   private config: Required<LRUCacheConfig>;
   private stats: LRUCacheStats;
