@@ -2,7 +2,7 @@
  * TokenOptimizer: Core optimization logic using Toonify
  */
 
-import { encode as toonEncode, decode as toonDecode } from '@toon-format/toon';
+import { encode as toonEncode } from '@toon-format/toon';
 import yaml from 'yaml';
 import type {
   OptimizationResult,
@@ -67,6 +67,16 @@ export class TokenOptimizer {
     content: string,
     metadata?: ToolMetadata
   ): Promise<OptimizationResult> {
+    // Input validation
+    if (typeof content !== 'string') {
+      return {
+        optimized: false,
+        originalContent: String(content),
+        originalTokens: 0,
+        reason: 'Invalid input: content must be a string'
+      };
+    }
+
     const startTime = Date.now();
 
     // v0.4.0: Check LRU cache first
@@ -243,13 +253,13 @@ export class TokenOptimizer {
   /**
    * Parse simple CSV to array of objects
    */
-  private parseSimpleCSV(content: string): any[] {
+  private parseSimpleCSV(content: string): Record<string, string>[] {
     const lines = content.split('\n').filter(l => l.trim());
     const headers = lines[0].split(',').map(h => h.trim());
 
     return lines.slice(1).map(line => {
       const values = line.split(',').map(v => v.trim());
-      const obj: any = {};
+      const obj: Record<string, string> = {};
       headers.forEach((header, i) => {
         obj[header] = values[i] || '';
       });

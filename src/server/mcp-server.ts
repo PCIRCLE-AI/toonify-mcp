@@ -20,7 +20,7 @@ export class ToonifyMCPServer {
     this.server = new Server(
       {
         name: 'claude-code-toonify',
-        version: '0.1.0',
+        version: '0.5.0',
       },
       {
         capabilities: {
@@ -173,7 +173,7 @@ export class ToonifyMCPServer {
   /**
    * Format successful response in standardized format
    */
-  private formatSuccessResponse(data: any, message?: string) {
+  private formatSuccessResponse(data: unknown, message?: string) {
     return {
       content: [
         {
@@ -221,6 +221,7 @@ export class ToonifyMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
-    console.error('Toonify MCP Server running on stdio');
+    // MCP protocol uses stdout for messages, so we log status to stderr
+    console.error('[ToonifyMCPServer] Server running on stdio');
   }
 }

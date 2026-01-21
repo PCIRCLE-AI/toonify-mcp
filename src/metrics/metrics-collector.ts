@@ -72,7 +72,7 @@ export class MetricsCollector {
       await this.saveStats(stats);
     } catch (error) {
       // Silent failure - metrics should never break functionality
-      console.error('Failed to record metrics:', error);
+      console.error('[MetricsCollector] Failed to record metrics:', error);
     }
   }
 
@@ -137,7 +137,7 @@ export class MetricsCollector {
     const costSavings = ((totalSavingsWithCache / 1_000_000) * 3).toFixed(2);
 
     let dashboard = `
-📊 Token Optimization Stats (v0.3.0)
+📊 Token Optimization Stats (v0.5.0)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Requests: ${stats.totalRequests}
 Optimized: ${stats.optimizedRequests} (${optimizationRate}%)

@@ -4,6 +4,9 @@
 
 import { LANGUAGE_PROFILES, type LanguageProfile } from './language-profiles.js';
 
+/** Expected characters per pattern match for density calculation */
+const EXPECTED_CHARS_PER_MATCH = 5;
+
 export interface LanguageDetectionResult {
   language: LanguageProfile;
   confidence: number;
@@ -54,7 +57,7 @@ export class LanguageDetector {
       // Density score: how much of the text matches this language
       const sampleLength = Math.max(sample.length, 1);
       // For character-based languages (CJK, Arabic, etc.), matches can be very high
-      const matchDensity = Math.min(totalMatches / (sampleLength / 5), 1.0); // Expect ~1 match per 5 chars
+      const matchDensity = Math.min(totalMatches / (sampleLength / EXPECTED_CHARS_PER_MATCH), 1.0);
       const densityScore = matchDensity;
 
       // Adaptive weighting: if density is very high, trust it more
@@ -108,7 +111,9 @@ export class LanguageDetector {
 
     for (const profile of LANGUAGE_PROFILES) {
       for (const pattern of profile.detectionPatterns) {
-        if (pattern.test(sample)) {
+        // Create new RegExp to avoid lastIndex issues with global patterns
+        const testPattern = new RegExp(pattern.source, pattern.flags.replace('g', ''));
+        if (testPattern.test(sample)) {
           detected.push(profile);
           break;
         }

@@ -5,6 +5,9 @@
 import type { CacheConfig, CachedContent, CacheMetadata, CacheMetrics } from './cache-types.js';
 import { getStrategy } from './cache-strategies.js';
 
+/** Approximate characters per token for cache size estimation */
+const CHARS_PER_TOKEN_ESTIMATE = 4;
+
 export class CacheOptimizer {
   private config: CacheConfig;
   private metrics: CacheMetrics;
@@ -64,8 +67,8 @@ export class CacheOptimizer {
     // Dynamic content (cache breakpoint here)
     const dynamicContent = `\n[DATA]\n${toonContent}`;
 
-    // Estimate cache size
-    const estimatedCacheSize = staticPrefix.length / 4; // Rough estimate
+    // Estimate cache size (tokens ≈ characters / 4)
+    const estimatedCacheSize = staticPrefix.length / CHARS_PER_TOKEN_ESTIMATE;
 
     const metadata: CacheMetadata = {
       provider: this.config.provider === 'auto' ?

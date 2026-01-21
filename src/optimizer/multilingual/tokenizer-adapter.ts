@@ -5,6 +5,11 @@
 import { encoding_for_model, type Tiktoken } from 'tiktoken';
 import { LanguageDetector, type LanguageDetectionResult } from './language-detector.js';
 import type { LanguageProfile } from './language-profiles.js';
+import { LRUCache } from '../caching/lru-cache.js';
+
+/** Default cache configuration for tokenizer */
+const DEFAULT_TOKENIZER_CACHE_SIZE = 1000;
+const DEFAULT_TOKENIZER_CACHE_TTL = 3600000; // 1 hour
 
 export interface TokenEstimate {
   tokens: number;
@@ -17,26 +22,33 @@ export interface TokenEstimate {
 export class MultilingualTokenizer {
   private baseTokenizer: Tiktoken;
   private languageDetector: LanguageDetector;
-  private cacheEnabled: boolean;
-  private cache: Map<string, TokenEstimate>;
+  private cache: LRUCache<TokenEstimate>;
 
   constructor(
     model: string = 'gpt-4',
     cacheEnabled: boolean = true
   ) {
-    this.baseTokenizer = encoding_for_model(model as any);
+    this.baseTokenizer = encoding_for_model(model as Parameters<typeof encoding_for_model>[0]);
     this.languageDetector = new LanguageDetector();
-    this.cacheEnabled = cacheEnabled;
-    this.cache = new Map();
+    this.cache = new LRUCache<TokenEstimate>({
+      enabled: cacheEnabled,
+      maxSize: DEFAULT_TOKENIZER_CACHE_SIZE,
+      ttl: DEFAULT_TOKENIZER_CACHE_TTL,
+      persistent: false
+    });
   }
 
   /**
    * Count tokens with language awareness
    */
   encode(text: string): TokenEstimate {
+    // Generate cache key from text content
+    const cacheKey = LRUCache.generateKey(text);
+    
     // Check cache first
-    if (this.cacheEnabled && this.cache.has(text)) {
-      return this.cache.get(text)!;
+    const cached = this.cache.get(cacheKey);
+    if (cached) {
+      return cached;
     }
 
     // Get base token count
@@ -57,17 +69,8 @@ export class MultilingualTokenizer {
       multiplier
     };
 
-    // Cache result
-    if (this.cacheEnabled) {
-      // Limit cache size to prevent memory issues
-      if (this.cache.size > 1000) {
-        const firstKey = this.cache.keys().next().value;
-        if (firstKey !== undefined) {
-          this.cache.delete(firstKey);
-        }
-      }
-      this.cache.set(text, estimate);
-    }
+    // Cache result (LRUCache handles size limits and TTL automatically)
+    this.cache.set(cacheKey, estimate);
 
     return estimate;
   }
@@ -115,6 +118,13 @@ export class MultilingualTokenizer {
    */
   clearCache(): void {
     this.cache.clear();
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats() {
+    return this.cache.getStats();
   }
 
   /**

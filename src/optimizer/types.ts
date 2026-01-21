@@ -31,7 +31,7 @@ export interface ToolMetadata {
 
 export interface StructuredData {
   type: 'json' | 'csv' | 'yaml';
-  data: any;
+  data: Record<string, unknown> | unknown[];
   confidence: number;
 }
 
