@@ -294,6 +294,10 @@ const cached = cache.get(cacheKey);
 
 ## Migration Guide
 
+### From v0.4.0 to v0.5.0
+
+**No breaking changes** - SDK and tooling updates, security fixes.
+
 ### From v0.3.0 to v0.4.0
 
 **No breaking changes** - Result cache is enabled by default with sensible defaults.

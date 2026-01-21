@@ -21,7 +21,7 @@ describe('Token Savings Stats', () => {
   });
   const results: Result[] = [];
 
-  async function bench(name: string, cat: string, data: any): Promise<Result> {
+  async function bench(name: string, cat: string, data: Record<string, unknown>): Promise<Result> {
     const json = JSON.stringify(data, null, 2);
     const res = await optimizer.optimize(json, { toolName: 'bench', size: json.length });
     const orig = res.originalTokens;

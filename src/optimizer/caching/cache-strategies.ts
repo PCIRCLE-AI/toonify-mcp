@@ -2,7 +2,7 @@
  * Caching strategies for different providers
  */
 
-import type { CacheStrategy, CachedContent } from './cache-types.js';
+import type { CacheStrategy, CachedContent, AnthropicContentBlock, OpenAIMessageFormat } from './cache-types.js';
 
 /**
  * Anthropic Prompt Caching Strategy
@@ -17,7 +17,7 @@ export const anthropicStrategy: CacheStrategy = {
     return tokens >= 1024;
   },
 
-  formatCacheStructure(cached: CachedContent): any[] {
+  formatCacheStructure(cached: CachedContent): AnthropicContentBlock[] {
     return [
       {
         type: 'text',
@@ -45,7 +45,7 @@ export const openaiStrategy: CacheStrategy = {
     return tokens >= 500;
   },
 
-  formatCacheStructure(cached: CachedContent): any {
+  formatCacheStructure(cached: CachedContent): OpenAIMessageFormat {
     // OpenAI doesn't have explicit cache_control
     // Just return structured content
     return {

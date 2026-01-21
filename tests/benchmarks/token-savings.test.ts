@@ -18,7 +18,7 @@ describe('Token Savings Benchmarks', () => {
   const optimizer = new TokenOptimizer();
   const results: BenchmarkResult[] = [];
 
-  async function runBenchmark(name: string, category: string, data: any): Promise<BenchmarkResult> {
+  async function runBenchmark(name: string, category: string, data: Record<string, unknown>): Promise<BenchmarkResult> {
     const originalJson = JSON.stringify(data, null, 2);
 
     const result = await optimizer.optimize(originalJson, {

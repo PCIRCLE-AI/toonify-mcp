@@ -33,10 +33,32 @@ export interface CacheMetrics {
   averageCacheReuseCount: number;
 }
 
+/**
+ * Anthropic message content block format
+ */
+export interface AnthropicContentBlock {
+  type: 'text';
+  text: string;
+  cache_control?: { type: 'ephemeral' };
+}
+
+/**
+ * OpenAI structured message format
+ */
+export interface OpenAIMessageFormat {
+  system: string;
+  user: string;
+}
+
+/**
+ * Union type for provider-specific cache structures
+ */
+export type CacheStructure = AnthropicContentBlock[] | OpenAIMessageFormat;
+
 export interface CacheStrategy {
   name: string;
   shouldCache: (content: string, tokens: number) => boolean;
-  formatCacheStructure: (content: CachedContent) => any;
+  formatCacheStructure: (content: CachedContent) => CacheStructure;
 }
 
 /**
