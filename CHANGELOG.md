@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-21
+
 ### Added
 - **pcircle.ai marketplace integration** - One-click installation from Claude Code marketplace
   - Created `.claude-plugin/marketplace.json` configuration
@@ -25,6 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   1. **Marketplace** (easiest - one click)
   2. **Plugin mode** (automatic - npm + claude plugin add)
   3. **MCP Server** (manual - for explicit control)
+- Updated dependency versions:
+  - `@modelcontextprotocol/sdk` to ^1.25.3
+  - `tiktoken` to ^1.0.22
+  - `yaml` to ^2.8.2
+  - `@types/node` to ^25.0.9
+  - `typescript` to ^5.9.3
+- Documentation now recommends GitHub download/install instead of npm publish.
+- Applied `npm audit fix` for `qs` (DoS vulnerability; transitive dependency).
+- Migrated test toolchain to Jest 30 using `@swc/jest` for TypeScript ESM support.
 
 ### Technical Details
 - **Marketplace configuration**: `.claude-plugin/marketplace.json`

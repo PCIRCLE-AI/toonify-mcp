@@ -5,15 +5,13 @@
 Servidor MCP + Plugin de Claude Code que proporciona optimización automática de tokens para datos estructurados.
 Reduce el uso de tokens de la API de Claude en **30-65% según la estructura de datos** mediante conversión transparente al formato TOON, con ahorros típicos del **50-55%** para datos estructurados.
 
-## Novedades en v0.4.0
+## Novedades en v0.5.0
 
-✨ **¡Sistema de caché mejorado!**
-- ✅ Caché LRU con expiración TTL y persistencia opcional en disco
-- ✅ Mejora de rendimiento de 50-500x en aciertos de caché (~0.1ms vs 5-50ms)
-- ✅ Tres nuevas herramientas MCP: `clear_cache`, `get_cache_stats`, `cleanup_expired_cache`
-- ✅ Caché automática de resultados de optimización - evita reprocesar contenido idéntico
-- ✅ Correcciones críticas de errores: condiciones de carrera, E/S excesiva de disco, problemas de rendimiento O(n)
-- ✅ Todas las 122 pruebas pasan (eran 105) - corregidos 5 fallos de pruebas de referencia
+✨ **¡Actualizaciones de SDK y tooling!**
+- ✅ SDK MCP actualizado a la línea 1.25.x
+- ✅ Dependencias de tokenizer y YAML actualizadas
+- ✅ Migración a Jest 30 con transform ESM de TypeScript basado en SWC
+- ✅ Correcciones de seguridad aplicadas vía npm audit
 
 ## Características
 
@@ -27,42 +25,57 @@ Reduce el uso de tokens de la API de Claude en **30-65% según la estructura de 
 
 ## Instalación
 
-### Opción A: Instalar desde el marketplace pcircle.ai (Más fácil) 🌟
+### Opción A: Descargar desde GitHub (Recomendado) 🌟
+
+**Instalación directa desde el repositorio de GitHub (no se requiere npm publish):**
+
+```bash
+# 1. Descargar el repositorio
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 2. Instalar dependencias y compilar
+npm install
+npm run build
+
+# 3. Instalar globalmente desde el origen local
+npm install -g .
+```
+
+### Opción B: Instalar desde el marketplace pcircle.ai (Más fácil) 🌟
 
 **Instalación con un clic:**
 
 Navega al [marketplace pcircle.ai](https://claudemarketplaces.com) en Claude Code e instala toonify-mcp con un clic. ¡El marketplace maneja todo automáticamente!
 
-### Opción B: Plugin de Claude Code (Recomendado) ⭐
+### Opción C: Plugin de Claude Code (Recomendado) ⭐
 
 **Optimización automática de tokens sin llamadas manuales:**
 
-```bash
-# 1. Instalación global
-npm install -g toonify-mcp
+Requisito: completa la opción A o B para que el binario `toonify-mcp` esté disponible.
 
-# 2. Agregar como plugin (modo automático)
+```bash
+# 1. Agregar como plugin (modo automático)
 claude plugin add toonify-mcp
 
-# 3. Verificar instalación
+# 2. Verificar instalación
 claude plugin list
 # Debería mostrar: toonify-mcp ✓
 ```
 
 **¡Eso es todo!** El hook PostToolUse ahora interceptará y optimizará automáticamente los datos estructurados de Read, Grep y otras herramientas de archivos.
 
-### Opción B: Servidor MCP (modo manual)
+### Opción D: Servidor MCP (modo manual)
 
 **Para control explícito o clientes MCP que no sean Claude Code:**
 
-```bash
-# 1. Instalación global
-npm install -g toonify-mcp
+Requisito: completa la opción A o B para que el binario `toonify-mcp` esté disponible.
 
-# 2. Registrar como servidor MCP
+```bash
+# 1. Registrar como servidor MCP
 claude mcp add toonify -- toonify-mcp
 
-# 3. Verificar
+# 2. Verificar
 claude mcp list
 # Debería mostrar: toonify: toonify-mcp - ✓ Connected
 ```
@@ -236,7 +249,7 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **NPM**: https://www.npmjs.com/package/toonify-mcp
+- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Documentación MCP**: https://code.claude.com/docs/mcp
 - **Formato TOON**: https://github.com/toon-format/toon
 
@@ -252,13 +265,10 @@ Licencia MIT - ver [LICENSE](LICENSE)
 
 ## Registro de cambios
 
-### v0.4.0 (2025-12-26)
-- ✨ **Sistema de caché mejorado** - Caché LRU con expiración TTL y persistencia opcional
-- ✨ Mejora de rendimiento de 50-500x en aciertos de caché (~0.1ms vs 5-50ms)
-- ✨ Tres nuevas herramientas MCP para gestión de caché
-- 🐛 Correcciones críticas de errores: condiciones de carrera, E/S excesiva de disco, rendimiento O(n)
-- 🐛 Corregidos aciertos de caché falsos, validación faltante, errores no controlados
-- ✅ Todas las 122 pruebas pasan (corregidos 5 fallos de pruebas de referencia)
+### v0.5.0 (2026-01-21)
+- ✨ **Actualizaciones de SDK y tooling** - SDK MCP, tokenizer y YAML actualizados
+- ✨ Migración a Jest 30 con transform ESM de TypeScript basado en SWC
+- 🔒 Correcciones de seguridad vía npm audit
 
 ### v0.3.0 (2025-12-26)
 - ✨ **Optimización de tokens multilingüe** - conteo preciso para más de 15 idiomas

@@ -5,15 +5,13 @@
 구조화된 데이터의 자동 토큰 최적화를 제공하는 MCP 서버 + Claude Code 플러그인입니다.
 투명한 TOON 형식 변환을 통해 Claude API 토큰 사용량을 **데이터 구조에 따라 30-65% 감소**시키며, 구조화된 데이터의 경우 일반적으로 **50-55%의 절감 효과**를 제공합니다.
 
-## v0.4.0의 새로운 기능
+## v0.5.0의 새로운 기능
 
-✨ **향상된 캐싱 시스템!**
-- ✅ TTL 만료 및 선택적 디스크 지속성을 갖춘 LRU 캐시
-- ✅ 캐시 적중 시 50-500배 성능 향상 (~0.1ms vs 5-50ms)
-- ✅ 3개의 새로운 MCP 도구: `clear_cache`, `get_cache_stats`, `cleanup_expired_cache`
-- ✅ 자동 최적화 결과 캐싱 - 동일한 콘텐츠 재처리 방지
-- ✅ 중요한 버그 수정: 경쟁 조건, 과도한 디스크 I/O, O(n) 성능 문제
-- ✅ 모든 122개 테스트 통과 (이전 105개) - 5개 벤치마크 테스트 실패 수정
+✨ **SDK 및 도구 업데이트!**
+- ✅ MCP SDK를 최신 1.25.x 라인으로 업데이트
+- ✅ 토크나이저 및 YAML 의존성 업데이트
+- ✅ SWC 기반 TypeScript ESM 변환으로 Jest 30 마이그레이션
+- ✅ npm audit를 통한 보안 수정 적용
 
 ## 주요 기능
 
@@ -27,42 +25,57 @@
 
 ## 설치 방법
 
-### 옵션 A: pcircle.ai 마켓플레이스에서 설치 (가장 쉬움) 🌟
+### 옵션 A: GitHub에서 다운로드 (권장) 🌟
+
+**GitHub 저장소에서 직접 설치 (npm 공개 불필요):**
+
+```bash
+# 1. 저장소 다운로드
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 2. 의존성 설치 및 빌드
+npm install
+npm run build
+
+# 3. 로컬 소스에서 전역 설치
+npm install -g .
+```
+
+### 옵션 B: pcircle.ai 마켓플레이스에서 설치 (가장 쉬움) 🌟
 
 **원클릭 설치:**
 
 Claude Code에서 [pcircle.ai 마켓플레이스](https://claudemarketplaces.com)를 방문하여 toonify-mcp를 클릭 한 번으로 설치하세요. 마켓플레이스가 모든 것을 자동으로 처리합니다!
 
-### 옵션 B: Claude Code 플러그인 (권장) ⭐
+### 옵션 C: Claude Code 플러그인 (권장) ⭐
 
 **수동 호출 없이 자동 토큰 최적화:**
 
-```bash
-# 1. 전역 설치
-npm install -g toonify-mcp
+전제 조건: 옵션 A 또는 B를 완료하여 `toonify-mcp` 바이너리를 사용할 수 있어야 합니다.
 
-# 2. 플러그인으로 추가 (자동 모드)
+```bash
+# 1. 플러그인으로 추가 (자동 모드)
 claude plugin add toonify-mcp
 
-# 3. 설치 확인
+# 2. 설치 확인
 claude plugin list
 # 다음과 같이 표시되어야 함: toonify-mcp ✓
 ```
 
 **완료!** 이제 PostToolUse 훅이 Read, Grep 및 기타 파일 도구에서 구조화된 데이터를 자동으로 가로채고 최적화합니다.
 
-### 옵션 B: MCP 서버 (수동 모드)
+### 옵션 D: MCP 서버 (수동 모드)
 
 **명시적 제어가 필요하거나 Claude Code가 아닌 MCP 클라이언트용:**
 
-```bash
-# 1. 전역 설치
-npm install -g toonify-mcp
+전제 조건: 옵션 A 또는 B를 완료하여 `toonify-mcp` 바이너리를 사용할 수 있어야 합니다.
 
-# 2. MCP 서버로 등록
+```bash
+# 1. MCP 서버로 등록
 claude mcp add toonify -- toonify-mcp
 
-# 3. 확인
+# 2. 확인
 claude mcp list
 # 다음과 같이 표시되어야 함: toonify: toonify-mcp - ✓ Connected
 ```
@@ -236,7 +249,7 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **NPM**: https://www.npmjs.com/package/toonify-mcp
+- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP Docs**: https://code.claude.com/docs/mcp
 - **TOON Format**: https://github.com/toon-format/toon
 
@@ -252,13 +265,10 @@ MIT License - [LICENSE](LICENSE) 참조
 
 ## 변경 이력
 
-### v0.4.0 (2025-12-26)
-- ✨ **향상된 캐싱 시스템** - TTL 만료 및 선택적 지속성을 갖춘 LRU 캐시
-- ✨ 캐시 적중 시 50-500배 성능 향상 (~0.1ms vs 5-50ms)
-- ✨ 캐시 관리를 위한 3개의 새로운 MCP 도구
-- 🐛 중요한 버그 수정: 경쟁 조건, 과도한 디스크 I/O, O(n) 성능
-- 🐛 잘못된 캐시 적중, 누락된 검증, 처리되지 않은 오류 수정
-- ✅ 모든 122개 테스트 통과 (5개 벤치마크 테스트 실패 수정)
+### v0.5.0 (2026-01-21)
+- ✨ **SDK 및 도구 업데이트** - MCP SDK, 토크나이저, YAML 업데이트
+- ✨ SWC 기반 TypeScript ESM 변환으로 Jest 30 마이그레이션
+- 🔒 npm audit를 통한 보안 수정
 
 ### v0.3.0 (2025-12-26)
 - ✨ **다국어 토큰 최적화** - 15개 이상의 언어에 대한 정확한 계산

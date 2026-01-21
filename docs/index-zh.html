@@ -487,13 +487,21 @@
                         <h3 class="text-2xl font-bold heading-mono">外掛模式（推薦）</h3>
                     </div>
                     <p class="mb-4" style="color: var(--text-secondary);">自動 token 優化，無需手動呼叫</p>
-                    <pre class="text-sm"><code># 1. 全域安裝
-npm install -g toonify-mcp
+                    <pre class="text-sm"><code># 1. 下載專案
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
 
-# 2. 新增為外掛（自動模式）
+# 2. 安裝依賴並建置
+npm install
+npm run build
+
+# 3. 從本機安裝
+npm install -g .
+
+# 4. 新增為外掛（自動模式）
 claude plugin add toonify-mcp
 
-# 3. 驗證安裝
+# 5. 驗證安裝
 claude plugin list
 # 應顯示：toonify-mcp ✓</code></pre>
                 </div>
@@ -505,8 +513,7 @@ claude plugin list
                         <h3 class="text-2xl font-bold heading-mono">MCP 伺服器模式</h3>
                     </div>
                     <p class="mb-4" style="color: var(--text-secondary);">需要手動控制或使用其他 MCP 客戶端</p>
-                    <pre class="text-sm"><code># 1. 全域安裝
-npm install -g toonify-mcp
+                    <pre class="text-sm"><code># 1. 先完成外掛模式安裝，確保 toonify-mcp 可用
 
 # 2. 註冊為 MCP 伺服器
 claude mcp add toonify -- toonify-mcp
@@ -610,7 +617,7 @@ products[2]{id,name,price,category,inStock}:
                     <h4 class="text-lg font-bold mb-4 heading-mono">快速連結</h4>
                     <ul class="space-y-2">
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="hover:text-blue-600">GitHub Repository</a></li>
-                        <li><a href="https://www.npmjs.com/package/toonify-mcp" target="_blank" class="hover:text-blue-600">NPM Package</a></li>
+                        <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="hover:text-blue-600">GitHub Repository</a></li>
                         <li><a href="https://code.claude.com/docs/mcp" target="_blank" class="hover:text-blue-600">MCP 文件</a></li>
                         <li><a href="https://github.com/toon-format/toon" target="_blank" class="hover:text-blue-600">TOON 格式</a></li>
                     </ul>

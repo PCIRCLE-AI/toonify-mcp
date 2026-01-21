@@ -1,6 +1,6 @@
 {
   "name": "toonify-mcp",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "MCP server + Claude Code Plugin for TOON format token optimization. Reduces token usage by 30-65% (typically 50-55%) on JSON/CSV/YAML data via multilingual-aware optimization.",
   "type": "module",
   "main": "dist/index.js",
@@ -35,25 +35,26 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PCIRCLE-AI/toonify-mcp.git"
+    "url": "git+https://github.com/PCIRCLE-AI/toonify-mcp.git"
   },
   "bugs": {
     "url": "https://github.com/PCIRCLE-AI/toonify-mcp/issues"
   },
   "homepage": "https://github.com/PCIRCLE-AI/toonify-mcp#readme",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.25.3",
     "@toon-format/toon": "^2.1.0",
-    "tiktoken": "^1.0.0",
-    "yaml": "^2.3.0"
+    "tiktoken": "^1.0.22",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
-    "@types/jest": "^29.0.0",
-    "@types/node": "^20.0.0",
-    "jest": "^29.0.0",
-    "ts-jest": "^29.4.6",
-    "typescript": "^5.3.0"
+    "@swc/core": "^1.15.10",
+    "@swc/jest": "^0.2.39",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.9",
+    "jest": "^30.2.0",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -1,6 +1,5 @@
 /** @type {import('jest').Config} */
 export default {
-  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
@@ -8,9 +7,20 @@ export default {
   },
   transform: {
     '^.+\\.tsx?$': [
-      'ts-jest',
+      '@swc/jest',
       {
-        useESM: true,
+        sourceMaps: 'inline',
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: false,
+            decorators: false,
+          },
+          target: 'es2022',
+        },
+        module: {
+          type: 'es6',
+        },
       },
     ],
   },

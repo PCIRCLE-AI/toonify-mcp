@@ -5,15 +5,13 @@
 Máy chủ MCP + Plugin Claude Code cung cấp tối ưu hóa token tự động cho dữ liệu có cấu trúc.
 Giảm 30-65% việc sử dụng token của Claude API **tùy thuộc vào cấu trúc dữ liệu** thông qua chuyển đổi định dạng TOON minh bạch, với mức tiết kiệm điển hình **50-55%** cho dữ liệu có cấu trúc.
 
-## Có gì mới trong v0.4.0
+## Có gì mới trong v0.5.0
 
-✨ **Hệ thống bộ nhớ cache cải tiến!**
-- ✅ Bộ nhớ cache LRU với hết hạn TTL và lưu trữ đĩa tùy chọn
-- ✅ Cải thiện hiệu suất 50-500 lần khi trúng cache (~0,1ms so với 5-50ms)
-- ✅ Ba công cụ MCP mới: `clear_cache`, `get_cache_stats`, `cleanup_expired_cache`
-- ✅ Tự động lưu cache kết quả tối ưu hóa - tránh xử lý lại nội dung giống hệt
-- ✅ Sửa lỗi nghiêm trọng: điều kiện tranh chấp, I/O đĩa quá mức, vấn đề hiệu suất O(n)
-- ✅ Tất cả 122 bài kiểm tra đã qua (trước đây là 105) - đã sửa 5 lỗi kiểm tra hiệu suất
+✨ **Cập nhật SDK và tooling!**
+- ✅ MCP SDK cập nhật lên dòng 1.25.x
+- ✅ Cập nhật phụ thuộc tokenizer và YAML
+- ✅ Di chuyển sang Jest 30 với chuyển đổi TypeScript ESM dựa trên SWC
+- ✅ Áp dụng bản vá bảo mật qua npm audit
 
 ## Tính năng
 
@@ -27,42 +25,57 @@ Giảm 30-65% việc sử dụng token của Claude API **tùy thuộc vào cấ
 
 ## Cài đặt
 
-### Tùy chọn A: Cài đặt từ marketplace pcircle.ai (Dễ nhất) 🌟
+### Tùy chọn A: Tải từ GitHub (Khuyến nghị) 🌟
+
+**Cài đặt trực tiếp từ kho GitHub (không cần publish npm):**
+
+```bash
+# 1. Tải kho về
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 2. Cài phụ thuộc và build
+npm install
+npm run build
+
+# 3. Cài đặt toàn cục từ nguồn cục bộ
+npm install -g .
+```
+
+### Tùy chọn B: Cài đặt từ marketplace pcircle.ai (Dễ nhất) 🌟
 
 **Cài đặt một cú nhấp:**
 
 Duyệt đến [marketplace pcircle.ai](https://claudemarketplaces.com) trong Claude Code và cài đặt toonify-mcp chỉ với một cú nhấp. Marketplace xử lý mọi thứ tự động!
 
-### Tùy chọn B: Plugin Claude Code (Khuyến nghị) ⭐
+### Tùy chọn C: Plugin Claude Code (Khuyến nghị) ⭐
 
 **Tối ưu hóa token tự động không cần gọi thủ công:**
 
-```bash
-# 1. Cài đặt toàn cục
-npm install -g toonify-mcp
+Yêu cầu: hoàn tất tùy chọn A hoặc B để có sẵn binary `toonify-mcp`.
 
-# 2. Thêm làm plugin (chế độ tự động)
+```bash
+# 1. Thêm làm plugin (chế độ tự động)
 claude plugin add toonify-mcp
 
-# 3. Xác minh cài đặt
+# 2. Xác minh cài đặt
 claude plugin list
 # Nên hiển thị: toonify-mcp ✓
 ```
 
 **Xong! ** Hook PostToolUse bây giờ sẽ tự động chặn và tối ưu hóa dữ liệu có cấu trúc từ Read, Grep và các công cụ tệp khác.
 
-### Tùy chọn B: Máy chủ MCP (chế độ thủ công)
+### Tùy chọn D: Máy chủ MCP (chế độ thủ công)
 
 **Cho kiểm soát rõ ràng hoặc các máy khách MCP không phải Claude Code:**
 
-```bash
-# 1. Cài đặt toàn cục
-npm install -g toonify-mcp
+Yêu cầu: hoàn tất tùy chọn A hoặc B để có sẵn binary `toonify-mcp`.
 
-# 2. Đăng ký làm máy chủ MCP
+```bash
+# 1. Đăng ký làm máy chủ MCP
 claude mcp add toonify -- toonify-mcp
 
-# 3. Xác minh
+# 2. Xác minh
 claude mcp list
 # Nên hiển thị: toonify: toonify-mcp - ✓ Connected
 ```
@@ -236,7 +249,7 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **NPM**: https://www.npmjs.com/package/toonify-mcp
+- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Tài liệu MCP**: https://code.claude.com/docs/mcp
 - **Định dạng TOON**: https://github.com/toon-format/toon
 
@@ -252,13 +265,10 @@ Giấy phép MIT - xem [LICENSE](LICENSE)
 
 ## Nhật ký thay đổi
 
-### v0.4.0 (2025-12-26)
-- ✨ **Hệ thống cache cải tiến** - Cache LRU với hết hạn TTL và lưu trữ tùy chọn
-- ✨ Cải thiện hiệu suất 50-500 lần khi trúng cache (~0,1ms so với 5-50ms)
-- ✨ Ba công cụ MCP mới cho quản lý cache
-- 🐛 Sửa lỗi nghiêm trọng: điều kiện tranh chấp, I/O đĩa quá mức, hiệu suất O(n)
-- 🐛 Sửa lỗi trúng cache sai, thiếu xác thực, lỗi chưa xử lý
-- ✅ Tất cả 122 bài kiểm tra đã qua (đã sửa 5 lỗi kiểm tra hiệu suất)
+### v0.5.0 (2026-01-21)
+- ✨ **Cập nhật SDK và tooling** - MCP SDK, tokenizer và YAML được cập nhật
+- ✨ Di chuyển sang Jest 30 với chuyển đổi TypeScript ESM dựa trên SWC
+- 🔒 Áp dụng bản vá bảo mật qua npm audit
 
 ### v0.3.0 (2025-12-26)
 - ✨ **Tối ưu hóa token đa ngôn ngữ** - đếm chính xác cho hơn 15 ngôn ngữ

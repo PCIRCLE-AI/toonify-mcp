@@ -521,11 +521,19 @@
                 <!-- Option A -->
                 <div class="feature-card p-8">
                     <h3 class="text-2xl font-bold heading-mono mb-4" style="color: var(--text-primary);">
-                        <span class="gradient-text">Option A:</span> Install from npm
+                        <span class="gradient-text">Option A:</span> Download from GitHub
                     </h3>
                     <div class="code-block">
-                        <code><span class="comment"># Install globally</span>
-npm install -g toonify-mcp
+                        <code><span class="comment"># Download the repository</span>
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+<span class="comment"># Install deps and build</span>
+npm install
+npm run build
+
+<span class="comment"># Install globally from local source</span>
+npm install -g .
 
 <span class="comment"># Add as plugin (automatic mode)</span>
 claude plugin add toonify-mcp
@@ -545,8 +553,7 @@ claude plugin list
                         <span class="gradient-text">Option B:</span> MCP Server Mode
                     </h3>
                     <div class="code-block">
-                        <code><span class="comment"># Install globally</span>
-npm install -g toonify-mcp
+                        <code><span class="comment"># Prerequisite: complete Option A to install toonify-mcp</span>
 
 <span class="comment"># Register as MCP server</span>
 claude mcp add toonify -- toonify-mcp
@@ -614,8 +621,8 @@ claude mcp list
                 <a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="btn-primary" style="background: white; color: #2563EB;">
                     ⭐ Star on GitHub
                 </a>
-                <a href="https://www.npmjs.com/package/toonify-mcp" class="btn-secondary" style="border-color: white; color: white;">
-                    Install from npm →
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="btn-secondary" style="border-color: white; color: white;">
+                    Download from GitHub →
                 </a>
             </div>
         </div>
@@ -637,7 +644,7 @@ claude mcp list
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp#readme" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Documentation</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Contributing Guide</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CHANGELOG.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Changelog</a></li>
-                        <li><a href="https://www.npmjs.com/package/toonify-mcp" class="hover:text-blue-600 dark:hover:text-blue-400 transition">npm Package</a></li>
+                        <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="hover:text-blue-600 dark:hover:text-blue-400 transition">GitHub Repository</a></li>
                     </ul>
                 </div>
                 <div>

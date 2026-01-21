@@ -16,13 +16,13 @@
 
 **完全不用改變使用習慣**，裝好就自動運作！
 
-## ✨ 最新版本亮點（v0.4.0）
+## ✨ 最新版本亮點（v0.5.0）
 
-**更快、更聰明了！**
-- ⚡ 速度提升 50-500 倍（幾乎感覺不到延遲）
-- 🧠 會記住處理過的資料，不重複工作
-- 🔧 修復了多個效能問題，運作更穩定
-- ✅ 通過 122 項嚴格測試，品質有保證
+**SDK 與工具全面更新！**
+- 🧩 MCP SDK 升級至 1.25.x
+- 📦 更新 tokenizer 與 YAML 依賴
+- 🧪 Jest 30 + SWC TypeScript ESM 轉換
+- 🔒 透過 npm audit 修復安全性問題
 
 ## 🌟 為什麼要用？
 
@@ -36,42 +36,57 @@
 
 ## 📦 如何安裝？
 
-### 方法零：從 pcircle.ai 市集安裝（最簡單）🌟
+### 方法零：從 GitHub 下載（推薦）🌟
+
+**直接從 GitHub 安裝（不需要 npm publish）：**
+
+```bash
+# 步驟 1：下載專案
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 步驟 2：安裝依賴並建置
+npm install
+npm run build
+
+# 步驟 3：從本機安裝
+npm install -g .
+```
+
+### 方法一：從 pcircle.ai 市集安裝（最簡單）🌟
 
 **一鍵安裝，完全自動：**
 
 在 Claude Code 中瀏覽 [pcircle.ai 市集](https://claudemarketplaces.com)，點一下就能安裝 toonify-mcp！市集會自動處理所有設定。
 
-### 方法一：自動模式（推薦給所有人）⭐
+### 方法二：自動模式（推薦給所有人）⭐
 
-**三個步驟，裝好就會自動省錢：**
+**兩個步驟，裝好就會自動省錢：**
+
+前置條件：先完成方法零或方法一，確保 `toonify-mcp` 已可使用。
 
 ```bash
-# 步驟 1：安裝工具
-npm install -g toonify-mcp
-
-# 步驟 2：加入 Claude Code
+# 步驟 1：加入 Claude Code
 claude plugin add toonify-mcp
 
-# 步驟 3：確認安裝成功
+# 步驟 2：確認安裝成功
 claude plugin list
 # 看到 toonify-mcp ✓ 就成功了！
 ```
 
 **完成！** 🎉 從現在開始，每次處理資料檔案都會自動幫你省錢，完全不用做任何事。
 
-### 方法二：手動模式（給進階用戶）
+### 方法三：手動模式（給進階用戶）
 
 **想要自己控制何時優化？用這個方法：**
 
-```bash
-# 步驟 1：安裝工具（同上）
-npm install -g toonify-mcp
+前置條件：先完成方法零或方法一，確保 `toonify-mcp` 已可使用。
 
-# 步驟 2：註冊為手動工具
+```bash
+# 步驟 1：註冊為手動工具
 claude mcp add toonify -- toonify-mcp
 
-# 步驟 3：檢查是否安裝成功
+# 步驟 2：檢查是否安裝成功
 claude mcp list
 # 看到：toonify: toonify-mcp - ✓ Connected
 ```
@@ -279,7 +294,7 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **NPM**: https://www.npmjs.com/package/toonify-mcp
+- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP 文檔**: https://code.claude.com/docs/mcp
 - **TOON 格式**: https://github.com/toon-format/toon
 
@@ -295,12 +310,12 @@ MIT License - 請參閱 [LICENSE](LICENSE)
 
 ## 版本更新記錄
 
-### v0.4.0（2025-12-26）- 最新版本
-**更快、更聰明！**
-- ⚡ 速度提升 50-500 倍（幾乎感覺不到延遲）
-- 🧠 會記住處理過的資料，不重複工作
-- 🔧 修復了多個效能問題，運作更穩定
-- ✅ 通過 122 項嚴格測試，品質有保證
+### v0.5.0（2026-01-21）- 最新版本
+**SDK 與工具全面更新！**
+- 🧩 MCP SDK 升級至 1.25.x
+- 📦 更新 tokenizer 與 YAML 依賴
+- 🧪 Jest 30 + SWC TypeScript ESM 轉換
+- 🔒 透過 npm audit 修復安全性問題
 
 ### v0.3.0（2025-12-26）
 **支援更多語言！**

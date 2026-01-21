@@ -5,15 +5,13 @@
 MCP サーバー + Claude Code プラグインによる構造化データの自動トークン最適化。
 透過的な TOON フォーマット変換により、**データ構造に応じて Claude API トークン使用量を 30-65% 削減**し、構造化データでは一般的に **50-55%** の節約を実現します。
 
-## v0.4.0 の新機能
+## v0.5.0 の新機能
 
-✨ **強化されたキャッシングシステム！**
-- ✅ TTL 有効期限とオプションのディスク永続化を備えた LRU キャッシュ
-- ✅ キャッシュヒット時のパフォーマンスが 50-500 倍向上（約 0.1ms vs 5-50ms）
-- ✅ 3 つの新しい MCP ツール：`clear_cache`、`get_cache_stats`、`cleanup_expired_cache`
-- ✅ 自動最適化結果キャッシング - 同一コンテンツの再処理を回避
-- ✅ 重大なバグ修正：競合状態、過剰なディスク I/O、O(n) パフォーマンス問題
-- ✅ 全 122 テスト合格（以前は 105）- 5 つのベンチマークテスト失敗を修正
+✨ **SDK とツール周りの更新！**
+- ✅ MCP SDK を最新の 1.25.x 系に更新
+- ✅ トークナイザーと YAML の依存関係を更新
+- ✅ SWC ベースの TypeScript ESM 変換で Jest 30 へ移行
+- ✅ npm audit によるセキュリティ修正を適用
 
 ## 機能
 
@@ -27,42 +25,57 @@ MCP サーバー + Claude Code プラグインによる構造化データの自�
 
 ## インストール
 
-### オプション A：pcircle.ai マーケットプレイスからインストール（最も簡単）🌟
+### オプション A：GitHub からダウンロード（推奨）🌟
+
+**GitHub リポジトリから直接インストール（npm 公開は不要）：**
+
+```bash
+# 1. リポジトリをダウンロード
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 2. 依存関係をインストールしてビルド
+npm install
+npm run build
+
+# 3. ローカルからグローバルにインストール
+npm install -g .
+```
+
+### オプション B：pcircle.ai マーケットプレイスからインストール（最も簡単）🌟
 
 **ワンクリックインストール：**
 
 Claude Code で [pcircle.ai マーケットプレイス](https://claudemarketplaces.com) を開き、toonify-mcp をワンクリックでインストール。マーケットプレイスがすべて自動的に処理します！
 
-### オプション B：Claude Code プラグイン（推奨）⭐
+### オプション C：Claude Code プラグイン（推奨）⭐
 
 **手動呼び出し不要の自動トークン最適化：**
 
-```bash
-# 1. グローバルインストール
-npm install -g toonify-mcp
+前提条件：オプション A または B を完了し、`toonify-mcp` バイナリを利用可能にしてください。
 
-# 2. プラグインとして追加（自動モード）
+```bash
+# 1. プラグインとして追加（自動モード）
 claude plugin add toonify-mcp
 
-# 3. インストールを確認
+# 2. インストールを確認
 claude plugin list
 # 表示されるはず：toonify-mcp ✓
 ```
 
 **これで完了！** PostToolUse フックが Read、Grep、その他のファイルツールからの構造化データを自動的に傍受して最適化します。
 
-### オプション B：MCP サーバー（手動モード）
+### オプション D：MCP サーバー（手動モード）
 
 **明示的な制御または非 Claude Code MCP クライアント用：**
 
-```bash
-# 1. グローバルインストール
-npm install -g toonify-mcp
+前提条件：オプション A または B を完了し、`toonify-mcp` バイナリを利用可能にしてください。
 
-# 2. MCP サーバーとして登録
+```bash
+# 1. MCP サーバーとして登録
 claude mcp add toonify -- toonify-mcp
 
-# 3. 確認
+# 2. 確認
 claude mcp list
 # 表示されるはず：toonify: toonify-mcp - ✓ Connected
 ```
@@ -236,7 +249,7 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**：https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**：https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **NPM**：https://www.npmjs.com/package/toonify-mcp
+- **GitHub**：https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP ドキュメント**：https://code.claude.com/docs/mcp
 - **TOON フォーマット**：https://github.com/toon-format/toon
 
@@ -252,13 +265,10 @@ MIT ライセンス - 詳細は [LICENSE](LICENSE) を参照
 
 ## 変更履歴
 
-### v0.4.0（2025-12-26）
-- ✨ **強化されたキャッシングシステム** - TTL 有効期限とオプションのディスク永続化を備えた LRU キャッシュ
-- ✨ キャッシュヒット時のパフォーマンスが 50-500 倍向上（約 0.1ms vs 5-50ms）
-- ✨ キャッシュ管理のための 3 つの新しい MCP ツール
-- 🐛 重大なバグ修正：競合状態、過剰なディスク I/O、O(n) パフォーマンス
-- 🐛 誤ったキャッシュヒット、検証の欠落、未処理エラーを修正
-- ✅ 全 122 テスト合格（5 つのベンチマークテスト失敗を修正）
+### v0.5.0（2026-01-21）
+- ✨ **SDK とツール周りの更新** - MCP SDK、トークナイザー、YAML を更新
+- ✨ SWC ベースの TypeScript ESM 変換で Jest 30 へ移行
+- 🔒 npm audit によるセキュリティ修正を適用
 
 ### v0.3.0（2025-12-26）
 - ✨ **多言語トークン最適化** - 15 以上の言語の正確なカウント

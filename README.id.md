@@ -5,15 +5,13 @@
 Server MCP + Plugin Claude Code yang menyediakan optimasi token otomatis untuk data terstruktur.
 Mengurangi penggunaan token Claude API sebesar **30-65% tergantung struktur data** melalui konversi format TOON yang transparan, dengan penghematan tipikal **50-55%** untuk data terstruktur.
 
-## Fitur Baru di v0.4.0
+## Fitur Baru di v0.5.0
 
-✨ **Sistem Caching yang Ditingkatkan!**
-- ✅ Cache LRU dengan kedaluwarsa TTL dan persistensi disk opsional
-- ✅ Peningkatan kinerja 50-500x pada cache hit (~0,1ms vs 5-50ms)
-- ✅ Tiga tool MCP baru: `clear_cache`, `get_cache_stats`, `cleanup_expired_cache`
-- ✅ Caching hasil optimasi otomatis - menghindari pemrosesan ulang konten identik
-- ✅ Perbaikan bug kritis: kondisi race, I/O disk berlebihan, masalah kinerja O(n)
-- ✅ Semua 122 tes lulus (sebelumnya 105) - memperbaiki 5 kegagalan tes benchmark
+✨ **Pembaruan SDK dan tooling!**
+- ✅ SDK MCP diperbarui ke lini 1.25.x
+- ✅ Dependensi tokenizer dan YAML diperbarui
+- ✅ Migrasi Jest 30 dengan transform ESM TypeScript berbasis SWC
+- ✅ Perbaikan keamanan diterapkan via npm audit
 
 ## Fitur
 
@@ -27,42 +25,57 @@ Mengurangi penggunaan token Claude API sebesar **30-65% tergantung struktur data
 
 ## Instalasi
 
-### Opsi A: Instal dari marketplace pcircle.ai (Termudah) 🌟
+### Opsi A: Unduh dari GitHub (Direkomendasikan) 🌟
+
+**Instalasi langsung dari repositori GitHub (tanpa perlu npm publish):**
+
+```bash
+# 1. Unduh repositori
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 2. Instal dependensi dan build
+npm install
+npm run build
+
+# 3. Instal global dari sumber lokal
+npm install -g .
+```
+
+### Opsi B: Instal dari marketplace pcircle.ai (Termudah) 🌟
 
 **Instalasi satu klik:**
 
 Buka [marketplace pcircle.ai](https://claudemarketplaces.com) di Claude Code dan instal toonify-mcp dengan satu klik. Marketplace menangani semuanya secara otomatis!
 
-### Opsi B: Plugin Claude Code (Direkomendasikan) ⭐
+### Opsi C: Plugin Claude Code (Direkomendasikan) ⭐
 
 **Optimasi token otomatis tanpa panggilan manual:**
 
-```bash
-# 1. Instal global
-npm install -g toonify-mcp
+Prasyarat: selesaikan opsi A atau B agar biner `toonify-mcp` tersedia.
 
-# 2. Tambahkan sebagai plugin (mode otomatis)
+```bash
+# 1. Tambahkan sebagai plugin (mode otomatis)
 claude plugin add toonify-mcp
 
-# 3. Verifikasi instalasi
+# 2. Verifikasi instalasi
 claude plugin list
 # Seharusnya menampilkan: toonify-mcp ✓
 ```
 
 **Selesai!** Hook PostToolUse sekarang akan secara otomatis mencegat dan mengoptimalkan data terstruktur dari Read, Grep, dan tool file lainnya.
 
-### Opsi B: Server MCP (mode manual)
+### Opsi D: Server MCP (mode manual)
 
 **Untuk kontrol eksplisit atau klien MCP non-Claude Code:**
 
-```bash
-# 1. Instal global
-npm install -g toonify-mcp
+Prasyarat: selesaikan opsi A atau B agar biner `toonify-mcp` tersedia.
 
-# 2. Daftarkan sebagai server MCP
+```bash
+# 1. Daftarkan sebagai server MCP
 claude mcp add toonify -- toonify-mcp
 
-# 3. Verifikasi
+# 2. Verifikasi
 claude mcp list
 # Seharusnya menampilkan: toonify: toonify-mcp - ✓ Connected
 ```
@@ -236,7 +249,7 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **NPM**: https://www.npmjs.com/package/toonify-mcp
+- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Dokumentasi MCP**: https://code.claude.com/docs/mcp
 - **Format TOON**: https://github.com/toon-format/toon
 
@@ -252,13 +265,10 @@ Lisensi MIT - lihat [LICENSE](LICENSE)
 
 ## Catatan Perubahan
 
-### v0.4.0 (2025-12-26)
-- ✨ **Sistem caching yang ditingkatkan** - Cache LRU dengan kedaluwarsa TTL dan persistensi opsional
-- ✨ Peningkatan kinerja 50-500x pada cache hit (~0,1ms vs 5-50ms)
-- ✨ Tiga tool MCP baru untuk manajemen cache
-- 🐛 Perbaikan bug kritis: kondisi race, I/O disk berlebihan, kinerja O(n)
-- 🐛 Memperbaiki cache hit palsu, validasi yang hilang, error yang tidak ditangani
-- ✅ Semua 122 tes lulus (memperbaiki 5 kegagalan tes benchmark)
+### v0.5.0 (2026-01-21)
+- ✨ **Pembaruan SDK dan tooling** - SDK MCP, tokenizer, dan YAML diperbarui
+- ✨ Migrasi Jest 30 dengan transform ESM TypeScript berbasis SWC
+- 🔒 Perbaikan keamanan via npm audit
 
 ### v0.3.0 (2025-12-26)
 - ✨ **Optimasi token multibahasa** - penghitungan akurat untuk 15+ bahasa
