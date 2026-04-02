@@ -3,9 +3,9 @@
 /**
  * Toonify PostToolUse Hook
  *
- * Intercepts tool results from Read, Grep, Glob, WebFetch and
- * converts structured data (JSON/CSV/YAML) to TOON format to
- * reduce token usage by 30-65%.
+ * Intercepts tool results from Read, Grep, Glob, WebFetch and:
+ * - Converts structured data (JSON/CSV/YAML) to TOON format (30-65% savings)
+ * - Compresses source code (TS/Py/Go) by removing comments & blank lines (10-35% savings)
  *
  * Input:  JSON on stdin with { tool_name, tool_response, ... }
  * Output: JSON on stdout with { continue, hookSpecificOutput }
@@ -110,6 +110,148 @@ function detectStructuredData(content) {
   return null;
 }
 
+// --- Code Detection ---
+
+function detectCode(content) {
+  const lines = content.split('\n');
+  if (lines.length < 5) return null;
+  const sample = lines.slice(0, 50).join('\n');
+
+  // TypeScript/JavaScript
+  const tsIndicators = [
+    /\bimport\s+.*\bfrom\s+['"]/,
+    /\bexport\s+(default\s+)?(class|function|const|interface|type)\b/,
+    /:\s*(string|number|boolean|void)\b/,
+    /=>\s*[{(]/,
+    /\binterface\s+\w+/,
+    /\bconst\s+\w+\s*:\s*\w+/,
+  ];
+  if (tsIndicators.filter(p => p.test(sample)).length >= 2) return 'code-ts';
+
+  // Python
+  const pyIndicators = [
+    /^def\s+\w+\s*\(/m,
+    /^class\s+\w+.*:/m,
+    /^from\s+\w+\s+import\b/m,
+    /^import\s+\w+/m,
+    /^\s+self\./m,
+    /:\s*$\n\s+/m,
+  ];
+  if (pyIndicators.filter(p => p.test(sample)).length >= 2) return 'code-py';
+
+  // Go
+  const goIndicators = [
+    /^package\s+\w+/m,
+    /^func\s+/m,
+    /\bfmt\.\w+/,
+    /\b:=\s/,
+    /\berr\s*!=\s*nil\b/,
+  ];
+  if (goIndicators.filter(p => p.test(sample)).length >= 2) return 'code-go';
+
+  // Generic code
+  const genericIndicators = [
+    /[{}\[\]();]/,
+    /\b(function|class|return|if|else|for|while)\b/,
+    /\/\/.+$/m,
+    /^\s{2,}\S/m,
+  ];
+  if (genericIndicators.filter(p => p.test(sample)).length >= 3) return 'code-generic';
+
+  return null;
+}
+
+// --- Code Compression (lightweight, safe layers only) ---
+
+function compressCode(content, codeType) {
+  let result = content;
+
+  // Layer 1: Merge consecutive blank lines
+  result = result.replace(/\n{3,}/g, '\n\n');
+
+  // Layer 2: Remove inline comments (not pure comment lines)
+  result = result.split('\n').map(line => {
+    if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) return line;
+    const trimmed = line.trimStart();
+    if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) return line;
+    if (/https?:\/\//.test(line)) return line;
+
+    if (codeType === 'code-py') {
+      // Python inline # (simple: split on first # not in string)
+      const hashIdx = findInlineHash(line);
+      if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
+    } else {
+      // C-style inline // (simple: split on // not in string or URL)
+      const slashIdx = findInlineDoubleSlash(line);
+      if (slashIdx > 0) return line.slice(0, slashIdx).trimEnd();
+    }
+    return line;
+  }).join('\n');
+
+  // Layer 3: Remove comment-only lines (preserve TODO/FIXME and JSDoc first line)
+  result = result.split('\n').filter((line, idx, arr) => {
+    const trimmed = line.trimStart();
+    if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) return true;
+    if (trimmed.startsWith('/**')) return true; // JSDoc first line
+    if (codeType === 'code-py' && trimmed.startsWith('#')) return false;
+    if (codeType !== 'code-py' && trimmed.startsWith('//')) return false;
+    return true;
+  }).join('\n');
+
+  // Layer 4: Shorten deep import paths
+  if (codeType === 'code-ts' || codeType === 'code-generic') {
+    result = result.replace(
+      /(from\s+['"])(\.\.\/){2,}[^'"]*\/([^'"]+)(['"])/g,
+      '$1…/$3$4'
+    );
+  }
+
+  // Final cleanup
+  result = result.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+
+  return result;
+}
+
+function findInlineDoubleSlash(line) {
+  let inString = null;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inString) {
+      if (ch === inString && line[i - 1] !== '\\') inString = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') { inString = ch; continue; }
+    if (ch === '/' && line[i + 1] === '/') {
+      const before = line.slice(0, i).trimEnd();
+      if (before.length === 0) return -1; // Pure comment line
+      return i;
+    }
+  }
+  return -1;
+}
+
+function findInlineHash(line) {
+  let inString = null;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inString) {
+      if (ch === inString && line[i - 1] !== '\\') inString = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      if (line.slice(i, i + 3) === '"""' || line.slice(i, i + 3) === "'''") return -1;
+      inString = ch;
+      continue;
+    }
+    if (ch === '#') {
+      const before = line.slice(0, i).trimEnd();
+      if (before.length === 0) return -1; // Pure comment line
+      return i;
+    }
+  }
+  return -1;
+}
+
 // --- Rough Token Estimation ---
 
 function estimateTokens(text) {
@@ -161,29 +303,47 @@ async function main() {
 
     // Detect structured data
     const structured = detectStructuredData(tool_response);
-    if (!structured) {
-      return passthrough();
+
+    let output;
+    let formatLabel;
+    let savingsPercent;
+
+    if (structured) {
+      // Structured data → TOON format
+      const toonContent = toonEncode(structured.data);
+      const originalLen = tool_response.length;
+      const optimizedLen = toonContent.length;
+      savingsPercent = ((originalLen - optimizedLen) / originalLen) * 100;
+
+      if (savingsPercent < config.minSavingsThreshold) {
+        return passthrough();
+      }
+
+      formatLabel = structured.type.toUpperCase();
+      output = `[TOON-${formatLabel}]\n${toonContent}`;
+    } else {
+      // Try code detection + compression
+      const codeType = detectCode(tool_response);
+      if (!codeType) {
+        return passthrough();
+      }
+
+      const compressed = compressCode(tool_response, codeType);
+      const originalLen = tool_response.length;
+      const compressedLen = compressed.length;
+      savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
+
+      // Code compression typically has lower savings — use lower threshold (10%)
+      if (savingsPercent < 10) {
+        return passthrough();
+      }
+
+      formatLabel = codeType.replace('code-', '').toUpperCase();
+      output = compressed;
     }
-
-    // Convert to TOON format
-    const toonContent = toonEncode(structured.data);
-
-    // Calculate savings
-    const originalLen = tool_response.length;
-    const optimizedLen = toonContent.length;
-    const savingsPercent = ((originalLen - optimizedLen) / originalLen) * 100;
-
-    // Skip if savings too low
-    if (savingsPercent < config.minSavingsThreshold) {
-      return passthrough();
-    }
-
-    // Build optimized output
-    const header = `[TOON-${structured.type.toUpperCase()}]`;
-    let output = `${header}\n${toonContent}`;
 
     if (config.showStats) {
-      output += `\n\n--- Toonify: ${structured.type.toUpperCase()} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
+      output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
     }
 
     // Return optimized content

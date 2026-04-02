@@ -15,7 +15,7 @@ export interface OptimizationResult {
     percentage: number;
     withCaching?: number; // Additional savings from caching
   };
-  format?: 'json' | 'csv' | 'yaml' | 'unknown';
+  format?: 'json' | 'csv' | 'yaml' | 'code-ts' | 'code-py' | 'code-go' | 'code-generic' | 'unknown';
   reason?: string; // Why optimization was skipped
   // v0.3.0: Cache-related fields
   cachedContent?: CachedContent;
