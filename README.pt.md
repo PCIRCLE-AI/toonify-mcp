@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Servidor MCP + Plugin Claude Code fornecendo otimização automática de tokens para dados estruturados.
-Reduz o uso de tokens da API do Claude em **25-66% dependendo da estrutura de dados** através da conversão transparente para o formato TOON, com economias típicas de **~48%** para dados estruturados.
+Servidor MCP + Plugin Claude Code fornecendo otimização automática de tokens para dados estruturados **e código-fonte**.
+Reduz o uso de tokens da API do Claude em **25-66%** em JSON/CSV/YAML e **20-48%** em código-fonte TypeScript/Python/Go através de uma arquitetura pipeline.
 
-## Novidades na v0.5.0
+## Novidades na v0.6.0
 
-✨ **Atualizações de SDK e tooling!**
-- ✅ SDK MCP atualizado para a linha 1.25.x
-- ✅ Dependências de tokenizer e YAML atualizadas
-- ✅ Migração para Jest 30 com transform ESM de TypeScript via SWC
-- ✅ Correções de segurança aplicadas via npm audit
+✨ **Arquitetura pipeline + compressão de código!**
+- ✅ **Motor pipeline** — arquitetura modular Detector → Router → Compressor → Evaluator
+- ✅ **Compressão de código** — TypeScript (37%), Python (48%), Go (32%) de economia através de remoção heurística de comentários/espaços em branco
+- ✅ **6 camadas de compressão** — de segura (linhas em branco, comentários inline) a agressiva (sumarização de imports, colapso de padrões repetitivos)
+- ✅ **Hook atualizado** — hook PostToolUse agora comprime código-fonte além de dados estruturados
+- ✅ Design extensível — adicione novos formatos implementando uma única interface `Compressor`
+- ✅ Compatibilidade total com versões anteriores — todas as APIs externas inalteradas
+- ✅ 196 testes (antes 157), revisão de código abrangente aprovada
 
 ## Recursos
 
 - **Redução de 25-66% de Tokens** (tipicamente ~48%) para dados JSON, CSV, YAML
+- **Compressão de Código de 20-48%** para código-fonte TypeScript, Python, Go
+- **Arquitetura Pipeline** - Motor extensível Detector → Compressor → Evaluator
 - **Suporte Multilíngue** - Contagem precisa de tokens para mais de 15 idiomas
 - **Totalmente Automático** - Hook PostToolUse intercepta resultados de ferramentas
 - **Configuração Zero** - Funciona imediatamente com padrões sensatos
@@ -264,6 +269,16 @@ Licença MIT - veja [LICENSE](LICENSE)
 ---
 
 ## Changelog
+
+### v0.6.0 (2026-04-03)
+- ✨ **Arquitetura pipeline** — motor modular Detector → Router → Compressor → Evaluator
+- ✨ **Compressão de código** — compressão heurística para TypeScript (37%), Python (48%), Go (32%)
+- ✨ **6 camadas de compressão** — mesclar linhas em branco, remover comentários inline/bloco, encurtar imports, sumarizar imports, colapsar padrões repetitivos
+- ✨ **Garantias de segurança** — nunca remove lógica de código, preserva TODO/FIXME, preserva resumos JSDoc/docstring
+- ✨ **Hook atualizado** — hook PostToolUse agora detecta e comprime código-fonte (Camadas 1-4)
+- ✨ **Extensível** — adicione novos tipos de conteúdo implementando a interface `Compressor` e registrando no pipeline
+- 🔧 TokenOptimizer refatorado para padrão facade — todas as APIs externas inalteradas
+- 📊 196 testes (antes 157), revisão de código abrangente de 16 dimensões aprovada
 
 ### v0.5.0 (2026-01-21)
 - ✨ **Atualizações de SDK e tooling** - SDK MCP, tokenizer e YAML atualizados

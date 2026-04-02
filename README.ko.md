@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-구조화된 데이터의 자동 토큰 최적화를 제공하는 MCP 서버 + Claude Code 플러그인입니다.
-투명한 TOON 형식 변환을 통해 Claude API 토큰 사용량을 **데이터 구조에 따라 25-66% 감소**시키며, 구조화된 데이터의 경우 일반적으로 **약 48%의 절감 효과**를 제공합니다.
+구조화된 데이터 **및 소스 코드**의 자동 토큰 최적화를 제공하는 MCP 서버 + Claude Code 플러그인입니다.
+파이프라인 아키텍처를 통해 JSON/CSV/YAML에서 **25-66%**, TypeScript/Python/Go 소스 코드에서 **20-48%** 의 토큰 감소를 달성합니다.
 
-## v0.5.0의 새로운 기능
+## v0.6.0의 새로운 기능
 
-✨ **SDK 및 도구 업데이트!**
-- ✅ MCP SDK를 최신 1.25.x 라인으로 업데이트
-- ✅ 토크나이저 및 YAML 의존성 업데이트
-- ✅ SWC 기반 TypeScript ESM 변환으로 Jest 30 마이그레이션
-- ✅ npm audit를 통한 보안 수정 적용
+✨ **파이프라인 아키텍처 + 코드 압축!**
+- ✅ **파이프라인 엔진** — 모듈형 Detector → Router → Compressor → Evaluator 아키텍처
+- ✅ **코드 압축** — TypeScript(37%), Python(48%), Go(32%) 휴리스틱 기반 압축
+- ✅ **6개 압축 레이어** — 빈 줄 병합, 인라인 주석 제거, import 경로 축약, import 요약, 반복 패턴 축소
+- ✅ **훅 강화** — PostToolUse 훅이 구조화된 데이터 외에 소스 코드도 압축
+- ✅ 확장 가능한 설계 — `Compressor` 인터페이스를 구현하여 새로운 형식 추가
+- ✅ 완전한 하위 호환성 — 모든 외부 API 변경 없음
+- ✅ 196개 테스트(157개에서 증가), 포괄적인 코드 리뷰 통과
 
 ## 주요 기능
 
 - **25-66% 토큰 감소** (일반적으로 약 48%) JSON, CSV, YAML 데이터 대상
+- **20-48% 코드 압축** - TypeScript, Python, Go 소스 코드 대상
+- **파이프라인 아키텍처** - 확장 가능한 Detector → Compressor → Evaluator 엔진
 - **다국어 지원** - 15개 이상의 언어에 대한 정확한 토큰 계산
 - **완전 자동** - PostToolUse 훅이 도구 결과를 자동으로 가로챔
 - **무설정** - 합리적인 기본값으로 즉시 작동
@@ -264,6 +269,15 @@ MIT License - [LICENSE](LICENSE) 참조
 ---
 
 ## 변경 이력
+
+### v0.6.0 (2026-04-03)
+- ✨ **파이프라인 아키텍처** — 모듈형 Detector → Router → Compressor → Evaluator 엔진
+- ✨ **코드 압축** — TypeScript(37%), Python(48%), Go(32%) 휴리스틱 기반 압축
+- ✨ **6개 압축 레이어** — 빈 줄 병합, 인라인 주석 제거, import 경로 축약, import 요약, 반복 패턴 축소
+- ✨ **훅 강화** — PostToolUse 훅이 구조화된 데이터 외에 소스 코드도 압축
+- ✨ **확장 가능** — `Compressor` 인터페이스를 구현하고 파이프라인에 등록하여 새로운 형식 추가
+- 🔧 TokenOptimizer를 파사드 패턴으로 리팩토링 — 모든 외부 API 변경 없음
+- 📊 196개 테스트(157개에서 증가), 포괄적인 코드 리뷰 통과
 
 ### v0.5.0 (2026-01-21)
 - ✨ **SDK 및 도구 업데이트** - MCP SDK, 토크나이저, YAML 업데이트

@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Serveur MCP + Plugin Claude Code offrant une optimisation automatique des tokens pour les données structurées.
-Réduit l'utilisation des tokens de l'API Claude de **30 à 65 % selon la structure des données** grâce à la conversion transparente au format TOON, avec des économies typiques d'environ **~40 %** pour les données structurées.
+Serveur MCP + Plugin Claude Code offrant une optimisation automatique des tokens pour les données structurées **et le code source**.
+Réduit l'utilisation des tokens de l'API Claude de **25-66 %** sur JSON/CSV/YAML et **20-48 %** sur le code source TypeScript/Python/Go grâce à une architecture pipeline.
 
-## Nouveautés de la v0.5.0
+## Nouveautés de la v0.6.0
 
-✨ **Mises à jour SDK et tooling !**
-- ✅ SDK MCP mis à jour vers la branche 1.25.x
-- ✅ Dépendances tokenizer et YAML mises à jour
-- ✅ Migration vers Jest 30 avec transformation ESM TypeScript via SWC
-- ✅ Correctifs de sécurité appliqués via npm audit
+✨ **Architecture pipeline + compression de code !**
+- ✅ **Moteur pipeline** — architecture modulaire Detector → Router → Compressor → Evaluator
+- ✅ **Compression de code** — TypeScript (37 %), Python (48 %), Go (32 %) via suppression heuristique de commentaires/espaces
+- ✅ **6 couches de compression** — fusion de lignes vides, suppression de commentaires inline, raccourcissement des imports, résumé des imports, repli des motifs répétitifs
+- ✅ **Hook amélioré** — le hook PostToolUse compresse désormais le code source en plus des données structurées
+- ✅ Conception extensible — ajoutez de nouveaux formats en implémentant l'interface `Compressor`
+- ✅ Compatibilité totale ascendante — toutes les APIs externes inchangées
+- ✅ 196 tests (contre 157 auparavant), revue de code exhaustive validée
 
 ## Fonctionnalités
 
-- **Réduction de 30 à 65 % des tokens** (typiquement ~40 %) pour les données JSON, CSV, YAML
+- **Réduction de 25-66 % des tokens** (typiquement ~48 %) pour les données JSON, CSV, YAML
+- **Compression de code de 20-48 %** pour le code source TypeScript, Python, Go
+- **Architecture pipeline** - Moteur extensible Detector → Compressor → Evaluator
 - **Support multilingue** - Comptage précis des tokens pour plus de 15 langues
 - **Entièrement automatique** - Le hook PostToolUse intercepte les résultats des outils
 - **Zéro configuration** - Fonctionne immédiatement avec des paramètres par défaut sensés
@@ -101,7 +106,7 @@ Le hook détecte le JSON, convertit en TOON
   ↓
 Contenu optimisé envoyé à l'API Claude
   ↓
-Réduction de 30 à 65 % (typiquement ~40 %) des tokens obtenue ✨
+Réduction de 25-66 % (typiquement ~48 %) des tokens obtenue ✨
 ```
 
 ### Mode Serveur MCP (Manuel)
@@ -265,6 +270,15 @@ Licence MIT - voir [LICENSE](LICENSE)
 
 ## Journal des modifications
 
+### v0.6.0 (2026-04-03)
+- ✨ **Architecture pipeline** — moteur modulaire Detector → Router → Compressor → Evaluator
+- ✨ **Compression de code** — TypeScript (37 %), Python (48 %), Go (32 %) via compression heuristique
+- ✨ **6 couches de compression** — fusion de lignes vides, suppression de commentaires inline, raccourcissement des imports, résumé des imports, repli des motifs répétitifs
+- ✨ **Hook amélioré** — le hook PostToolUse détecte et compresse le code source (Couches 1-4)
+- ✨ **Extensible** — ajoutez de nouveaux types de contenu en implémentant l'interface `Compressor` et en l'enregistrant dans le pipeline
+- 🔧 TokenOptimizer refactorisé en patron façade — toutes les APIs externes inchangées
+- 📊 196 tests (contre 157 auparavant), revue de code exhaustive validée
+
 ### v0.5.0 (2026-01-21)
 - ✨ **Mises à jour SDK et tooling** - SDK MCP, tokenizer et YAML mis à jour
 - ✨ Migration vers Jest 30 avec transformation ESM TypeScript via SWC
@@ -275,7 +289,7 @@ Licence MIT - voir [LICENSE](LICENSE)
 - ✨ Multiplicateurs de tokens adaptés aux langues (2x chinois, 2,5x japonais, 3x arabe, etc.)
 - ✨ Détection et optimisation des textes multilingues
 - ✨ Tests de référence complets avec statistiques réelles
-- 📊 Revendications d'économies de tokens basées sur des données (plage de 30 à 65 %, typiquement ~40 %)
+- 📊 Revendications d'économies de tokens basées sur des données (plage de 25-66 %, typiquement ~48 %)
 - ✅ Plus de 75 tests réussis, y compris les cas limites multilingues
 - 📝 Versions multilingues du README
 

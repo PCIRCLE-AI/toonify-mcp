@@ -2,26 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-MCP server + Claude Code Plugin providing automatic token optimization for structured data.
-Reduces Claude API token usage by **25-66% depending on data structure** through transparent TOON format conversion, with typical savings of **around 48%** for structured data.
+MCP server + Claude Code Plugin providing automatic token optimization for structured data **and source code**.
+Reduces Claude API token usage by **25-66%** on JSON/CSV/YAML and **20-48%** on TypeScript/Python/Go source code through a pipeline architecture.
 
-## What's New in v0.5.0
+## What's New in v0.6.0
 
-✨ **Major Quality & Security Update!**
-- ✅ MCP SDK updated to 1.29.x with TypeScript 6.0
-- ✅ **PostToolUse hook** now fully functional — auto-optimizes Read, Grep, Glob, WebFetch results
-- ✅ **Marketplace install** fixed — `claude plugin marketplace add` works correctly
-- ✅ Token counting accuracy improved — uses raw tiktoken BPE (no inflated multipliers)
-- ✅ YAML detection hardened — no longer misdetects plain text as YAML
-- ✅ CSV parser handles quoted fields (`"Smith, John"`)
-- ✅ 10 security vulnerabilities fixed (including yaml DoS)
-- ✅ DoS protection — 10MB content size limit, safe RegExp compilation
-- ✅ Resource safety — WASM cleanup on shutdown, async disk I/O, atomic writes
-- ✅ 157 tests (up from 75), 0 vulnerabilities
+✨ **Pipeline Architecture + Code Compression!**
+- ✅ **Pipeline engine** — modular Detector → Router → Compressor → Evaluator architecture
+- ✅ **Code compression** — TypeScript (37%), Python (48%), Go (32%) savings via heuristic-based comment/whitespace removal
+- ✅ **6 compression layers** — from safe (blank lines, inline comments) to aggressive (import summarization, repetitive pattern collapse)
+- ✅ **Hook upgraded** — PostToolUse hook now compresses source code in addition to structured data
+- ✅ Extensible design — add new formats by implementing a single `Compressor` interface
+- ✅ Full backwards compatibility — all external APIs unchanged
+- ✅ 196 tests (up from 157), comprehensive code review passed
 
 ## Features
 
 - **25-66% Token Reduction** (typically ~48%) for JSON, CSV, YAML data
+- **20-48% Code Compression** for TypeScript, Python, Go source code
+- **Pipeline Architecture** - Extensible Detector → Compressor → Evaluator engine
 - **Multilingual Support** - Accurate token counting for 15+ languages
 - **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
 - **Fully Automatic** - PostToolUse hook intercepts tool results
@@ -105,11 +104,12 @@ Claude Code calls Read tool
   ↓
 PostToolUse hook intercepts result
   ↓
-Hook detects JSON, converts to TOON
+Pipeline: Detect → Route → Compress → Evaluate
   ↓
-Optimized content sent to Claude API
+JSON/CSV/YAML → TOON format (25-66% savings)
+Source code → comment/whitespace removal (20-48% savings)
   ↓
-25-66% token reduction achieved (typically ~48%) ✨
+Optimized content sent to Claude API ✨
 ```
 
 ### MCP Server Mode (Manual)
@@ -181,9 +181,9 @@ products[2]{id,name,price}:
 ### When Does Auto-Optimization Trigger?
 
 The PostToolUse hook automatically optimizes when:
-- ✅ Content is valid JSON, CSV, or YAML
+- ✅ Content is valid JSON, CSV, YAML, **or source code** (TS/Py/Go)
 - ✅ Content size ≥ `minTokensThreshold` (default: 50 tokens)
-- ✅ Estimated savings ≥ `minSavingsThreshold` (default: 30%)
+- ✅ Estimated savings ≥ threshold (30% for structured data, 10% for code)
 - ✅ Tool is NOT in `skipToolPatterns` (e.g., not Bash/Write/Edit)
 
 ### View Optimization Stats
@@ -239,7 +239,7 @@ export TOONIFY_SHOW_STATS=true
 - Check `minTokensThreshold` - content might be too small
 - Check `minSavingsThreshold` - savings might be < 30%
 - Check `skipToolPatterns` - tool might be in skip list
-- Verify content is valid JSON/CSV/YAML
+- Verify content is valid JSON/CSV/YAML or recognized source code
 
 ### Performance Issues
 
@@ -295,6 +295,16 @@ MIT License - see [LICENSE](LICENSE)
 ---
 
 ## Changelog
+
+### v0.6.0 (2026-04-03)
+- ✨ **Pipeline architecture** — modular Detector → Router → Compressor → Evaluator engine
+- ✨ **Code compression** — heuristic-based compression for TypeScript (37%), Python (48%), Go (32%)
+- ✨ **6 compression layers** — merge blank lines, remove inline/block comments, shorten imports, summarize imports, collapse repetitive patterns
+- ✨ **Safety guarantees** — never removes code logic, preserves TODO/FIXME, preserves JSDoc/docstring summaries
+- ✨ **Hook upgraded** — PostToolUse hook now detects and compresses source code (Layers 1-4)
+- ✨ **Extensible** — add new content types by implementing `Compressor` interface and registering with pipeline
+- 🔧 TokenOptimizer refactored to facade pattern — all external APIs unchanged
+- 📊 196 tests (up from 157), comprehensive 16-dimension code review passed
 
 ### v0.5.0 (2026-01-21)
 - ✨ **PostToolUse hook** fully implemented — auto-optimizes Read/Grep/Glob/WebFetch

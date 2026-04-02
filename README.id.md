@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Server MCP + Plugin Claude Code yang menyediakan optimasi token otomatis untuk data terstruktur.
-Mengurangi penggunaan token Claude API sebesar **25-66% tergantung struktur data** melalui konversi format TOON yang transparan, dengan penghematan tipikal **~48%** untuk data terstruktur.
+Server MCP + Plugin Claude Code yang menyediakan optimasi token otomatis untuk data terstruktur **dan kode sumber**.
+Mengurangi penggunaan token Claude API sebesar **25-66%** untuk JSON/CSV/YAML dan **20-48%** untuk kode sumber TypeScript/Python/Go melalui arsitektur pipeline.
 
-## Fitur Baru di v0.5.0
+## Fitur Baru di v0.6.0
 
-✨ **Pembaruan SDK dan tooling!**
-- ✅ SDK MCP diperbarui ke lini 1.25.x
-- ✅ Dependensi tokenizer dan YAML diperbarui
-- ✅ Migrasi Jest 30 dengan transform ESM TypeScript berbasis SWC
-- ✅ Perbaikan keamanan diterapkan via npm audit
+✨ **Arsitektur pipeline + kompresi kode!**
+- ✅ **Mesin pipeline** — arsitektur modular Detector → Router → Compressor → Evaluator
+- ✅ **Kompresi kode** — TypeScript (37%), Python (48%), Go (32%) penghematan melalui penghapusan komentar/spasi berbasis heuristik
+- ✅ **6 lapisan kompresi** — dari aman (baris kosong, komentar inline) hingga agresif (ringkasan import, pelipatan pola berulang)
+- ✅ **Hook ditingkatkan** — hook PostToolUse sekarang mengompresi kode sumber selain data terstruktur
+- ✅ Desain yang dapat diperluas — tambahkan format baru dengan mengimplementasikan satu antarmuka `Compressor`
+- ✅ Kompatibilitas mundur penuh — semua API eksternal tidak berubah
+- ✅ 196 pengujian (sebelumnya 157), tinjauan kode komprehensif lulus
 
 ## Fitur
 
 - **Pengurangan Token 25-66%** (biasanya ~48%) untuk data JSON, CSV, YAML
+- **Kompresi Kode 20-48%** untuk kode sumber TypeScript, Python, Go
+- **Arsitektur Pipeline** - Mesin yang dapat diperluas Detector → Compressor → Evaluator
 - **Dukungan Multibahasa** - Penghitungan token akurat untuk 15+ bahasa
 - **Sepenuhnya Otomatis** - Hook PostToolUse mencegat hasil tool
 - **Tanpa Konfigurasi** - Bekerja langsung dengan nilai default yang masuk akal
@@ -264,6 +269,16 @@ Lisensi MIT - lihat [LICENSE](LICENSE)
 ---
 
 ## Catatan Perubahan
+
+### v0.6.0 (2026-04-03)
+- ✨ **Arsitektur pipeline** — mesin modular Detector → Router → Compressor → Evaluator
+- ✨ **Kompresi kode** — kompresi berbasis heuristik untuk TypeScript (37%), Python (48%), Go (32%)
+- ✨ **6 lapisan kompresi** — menggabungkan baris kosong, menghapus komentar inline/blok, mempersingkat import, meringkas import, melipat pola berulang
+- ✨ **Jaminan keamanan** — tidak pernah menghapus logika kode, mempertahankan TODO/FIXME, mempertahankan ringkasan JSDoc/docstring
+- ✨ **Hook ditingkatkan** — hook PostToolUse sekarang mendeteksi dan mengompresi kode sumber (Lapisan 1-4)
+- ✨ **Dapat diperluas** — tambahkan tipe konten baru dengan mengimplementasikan antarmuka `Compressor` dan mendaftarkannya ke pipeline
+- 🔧 TokenOptimizer direfaktor ke pola facade — semua API eksternal tidak berubah
+- 📊 196 pengujian (sebelumnya 157), tinjauan kode komprehensif 16 dimensi lulus
 
 ### v0.5.0 (2026-01-21)
 - ✨ **Pembaruan SDK dan tooling** - SDK MCP, tokenizer, dan YAML diperbarui

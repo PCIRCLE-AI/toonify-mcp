@@ -4,7 +4,7 @@
 
 > **讓 Claude Code 使用更便宜！自動幫你省下 25-66% 的費用。**
 
-如果你用 Claude Code 處理資料檔案（像是 Excel、JSON、CSV），這個工具會**自動壓縮**這些資料，讓你少花**將近一半的錢**。完全自動，不用學任何技術。
+如果你用 Claude Code 處理資料檔案或程式碼（JSON、CSV、TypeScript、Python），這個工具會**自動壓縮**內容，讓你少花**將近一半的錢**。完全自動，不用學任何技術。
 
 ## 💡 這是什麼？
 
@@ -16,23 +16,21 @@
 
 **完全不用改變使用習慣**，裝好就自動運作！
 
-## ✨ 最新版本亮點（v0.5.0）
+## ✨ 最新版本亮點（v0.6.0）
 
-**品質與安全性大幅升級！**
-- ✅ MCP SDK 升級至 1.29 + TypeScript 6.0
-- ✅ **PostToolUse hook** 完整實作 — 自動優化 Read/Grep/Glob/WebFetch 結果
-- ✅ **Marketplace 安裝修復** — `claude plugin marketplace add` 正常運作
-- ✅ Token 計數精確度提升 — 使用原始 tiktoken BPE（無膨脹乘數）
-- ✅ YAML 偵測強化 — 不再誤判純文字為 YAML
-- ✅ CSV 解析器支援引號欄位（如 `"王小明, Jr."`）
-- 🔒 修復 10 個安全漏洞（含 yaml DoS）
-- 🔒 DoS 防護 — 10MB 內容上限、安全正規表達式
-- 🛡️ WASM 資源在 process 結束時自動釋放
-- 📊 157 個測試（從 75 提升），所有模組覆蓋
+**Pipeline 架構 + 程式碼壓縮！**
+- ✅ **Pipeline 引擎** — 模組化 Detector → Router → Compressor → Evaluator 架構
+- ✅ **程式碼壓縮** — TypeScript（37%）、Python（48%）、Go（32%）的 token 節省
+- ✅ **6 層壓縮** — 從安全（空行、行內註解）到積極（import 摘要、重複模式折疊）
+- ✅ **Hook 升級** — PostToolUse hook 現在也能壓縮程式碼
+- ✅ 可擴充設計 — 實作 `Compressor` 介面即可新增格式
+- ✅ 完全向後相容 — 所有外部 API 不變
+- ✅ 196 個測試（從 157 提升）
 
 ## 🌟 為什麼要用？
 
 - 💰 **省錢** - 資料檔案處理費用減少 25-66%（平均約 48%）
+- 💻 **程式碼也能壓** - TypeScript/Python/Go 程式碼省 20-48% token
 - 🌏 **支援中文** - 完美支援繁體中文、簡體中文及 15+ 種語言
 - 🤖 **全自動** - 裝好就用，背景自動運作
 - 🎯 **零學習成本** - 不用看教學，不用改程式
@@ -199,7 +197,7 @@ products[2]{id,name,price}:
 ### 什麼時候會自動優化？
 
 工具會自動判斷，滿足以下條件就會優化：
-- ✅ 檔案類型是 JSON、CSV 或 YAML（資料檔案）
+- ✅ 檔案類型是 JSON、CSV 或 YAML（資料檔案）或程式碼（TS/Py/Go）
 - ✅ 檔案夠大（超過 50 tokens）
 - ✅ 能省超過 30%（太少就不值得優化）
 - ✅ 不是指令類型（像 Bash、Write、Edit 這類不適合優化）
@@ -317,7 +315,15 @@ MIT License - 請參閱 [LICENSE](LICENSE)
 
 ## 版本更新記錄
 
-### v0.5.0（2026-01-21）- 最新版本
+### v0.6.0（2026-04-03）
+- ✨ **Pipeline 架構** — 模組化 Detector → Router → Compressor → Evaluator 引擎
+- ✨ **程式碼壓縮** — TypeScript（37%）、Python（48%）、Go（32%）啟發式壓縮
+- ✨ **6 層壓縮** — 合併空行、移除註解、縮短 import、摘要 import、折疊重複模式
+- ✨ **Hook 升級** — PostToolUse hook 現在也能偵測和壓縮程式碼（Layer 1-4）
+- 🔧 TokenOptimizer 重構為 facade 模式 — 所有外部 API 不變
+- 📊 196 個測試（從 157 提升）
+
+### v0.5.0（2026-01-21）
 **SDK 與工具全面更新！**
 - 🧩 MCP SDK 升級至 1.25.x
 - 📦 更新 tokenizer 與 YAML 依賴

@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-MCP-Server + Claude Code Plugin zur automatischen Token-Optimierung für strukturierte Daten.
-Reduziert den Claude-API-Token-Verbrauch um **25-66% je nach Datenstruktur** durch transparente TOON-Format-Konvertierung, mit typischen Einsparungen von **~48%** für strukturierte Daten.
+MCP-Server + Claude Code Plugin zur automatischen Token-Optimierung für strukturierte Daten **und Quellcode**.
+Reduziert den Claude-API-Token-Verbrauch um **25-66%** bei JSON/CSV/YAML und **20-48%** bei TypeScript/Python/Go-Quellcode durch eine Pipeline-Architektur.
 
-## Neu in v0.5.0
+## Neu in v0.6.0
 
-✨ **SDK- und Tooling-Updates!**
-- ✅ MCP SDK auf die aktuelle 1.25.x-Reihe aktualisiert
-- ✅ Tokenizer- und YAML-Abhängigkeiten aktualisiert
-- ✅ Jest 30-Migration mit SWC-basiertem TypeScript-ESM-Transform
-- ✅ Sicherheitsfixes via npm audit angewendet
+✨ **Pipeline-Architektur + Code-Komprimierung!**
+- ✅ **Pipeline-Engine** — modulare Detector → Router → Compressor → Evaluator Architektur
+- ✅ **Code-Komprimierung** — TypeScript (37%), Python (48%), Go (32%) Einsparungen durch heuristikbasierte Kommentar-/Whitespace-Entfernung
+- ✅ **6 Komprimierungsschichten** — von sicher (Leerzeilen, Inline-Kommentare) bis aggressiv (Import-Zusammenfassung, repetitives Muster-Kollabieren)
+- ✅ **Hook aufgerüstet** — PostToolUse-Hook komprimiert jetzt auch Quellcode zusätzlich zu strukturierten Daten
+- ✅ Erweiterbares Design — neue Formate durch Implementierung einer einzelnen `Compressor`-Schnittstelle hinzufügen
+- ✅ Vollständige Abwärtskompatibilität — alle externen APIs unverändert
+- ✅ 196 Tests (zuvor 157), umfassende Code-Review bestanden
 
 ## Funktionen
 
 - **25-66% Token-Reduktion** (typischerweise ~48%) für JSON, CSV, YAML-Daten
+- **20-48% Code-Komprimierung** für TypeScript, Python, Go-Quellcode
+- **Pipeline-Architektur** - Erweiterbarer Detector → Compressor → Evaluator Engine
 - **Mehrsprachige Unterstützung** - Präzise Token-Zählung für über 15 Sprachen
 - **Vollautomatisch** - PostToolUse-Hook fängt Tool-Ergebnisse ab
 - **Keine Konfiguration nötig** - Funktioniert sofort mit sinnvollen Standardwerten
@@ -264,6 +269,16 @@ MIT License - siehe [LICENSE](LICENSE)
 ---
 
 ## Änderungsprotokoll
+
+### v0.6.0 (2026-04-03)
+- ✨ **Pipeline-Architektur** — modulare Detector → Router → Compressor → Evaluator Engine
+- ✨ **Code-Komprimierung** — heuristikbasierte Komprimierung für TypeScript (37%), Python (48%), Go (32%)
+- ✨ **6 Komprimierungsschichten** — Leerzeilen zusammenführen, Inline-/Block-Kommentare entfernen, Imports kürzen, Imports zusammenfassen, repetitive Muster kollabieren
+- ✨ **Sicherheitsgarantien** — entfernt niemals Code-Logik, behält TODO/FIXME bei, bewahrt JSDoc/Docstring-Zusammenfassungen
+- ✨ **Hook aufgerüstet** — PostToolUse-Hook erkennt und komprimiert jetzt auch Quellcode (Schichten 1-4)
+- ✨ **Erweiterbar** — neue Inhaltstypen durch Implementierung der `Compressor`-Schnittstelle und Pipeline-Registrierung hinzufügen
+- 🔧 TokenOptimizer zu Fassaden-Muster refaktoriert — alle externen APIs unverändert
+- 📊 196 Tests (zuvor 157), umfassende 16-Dimensionen Code-Review bestanden
 
 ### v0.5.0 (2026-01-21)
 - ✨ **SDK- und Tooling-Updates** - MCP SDK, Tokenizer und YAML-Abhängigkeiten aktualisiert

@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Máy chủ MCP + Plugin Claude Code cung cấp tối ưu hóa token tự động cho dữ liệu có cấu trúc.
-Giảm 25-66% việc sử dụng token của Claude API **tùy thuộc vào cấu trúc dữ liệu** thông qua chuyển đổi định dạng TOON minh bạch, với mức tiết kiệm điển hình **~48%** cho dữ liệu có cấu trúc.
+Máy chủ MCP + Plugin Claude Code cung cấp tối ưu hóa token tự động cho dữ liệu có cấu trúc **và mã nguồn**.
+Giảm **25-66%** token cho JSON/CSV/YAML và **20-48%** cho mã nguồn TypeScript/Python/Go thông qua kiến trúc pipeline.
 
-## Có gì mới trong v0.5.0
+## Có gì mới trong v0.6.0
 
-✨ **Cập nhật SDK và tooling!**
-- ✅ MCP SDK cập nhật lên dòng 1.25.x
-- ✅ Cập nhật phụ thuộc tokenizer và YAML
-- ✅ Di chuyển sang Jest 30 với chuyển đổi TypeScript ESM dựa trên SWC
-- ✅ Áp dụng bản vá bảo mật qua npm audit
+✨ **Kiến trúc pipeline + nén mã nguồn!**
+- ✅ **Động cơ pipeline** — kiến trúc module hóa Detector → Router → Compressor → Evaluator
+- ✅ **Nén mã nguồn** — TypeScript (37%), Python (48%), Go (32%) tiết kiệm thông qua loại bỏ comment/khoảng trắng dựa trên heuristic
+- ✅ **6 lớp nén** — từ an toàn (dòng trống, comment inline) đến tích cực (tóm tắt import, thu gọn mẫu lặp lại)
+- ✅ **Hook nâng cấp** — Hook PostToolUse giờ đây nén cả mã nguồn ngoài dữ liệu có cấu trúc
+- ✅ Thiết kế mở rộng — thêm định dạng mới bằng cách triển khai giao diện `Compressor` duy nhất
+- ✅ Hoàn toàn tương thích ngược — tất cả API bên ngoài không thay đổi
+- ✅ 196 bài kiểm tra (trước đó 157), đánh giá mã nguồn toàn diện đã vượt qua
 
 ## Tính năng
 
 - **Giảm 25-66% token** (thường ~48%) cho dữ liệu JSON, CSV, YAML
+- **Nén mã nguồn 20-48%** cho mã nguồn TypeScript, Python, Go
+- **Kiến trúc pipeline** - Động cơ mở rộng Detector → Compressor → Evaluator
 - **Hỗ trợ đa ngôn ngữ** - Đếm token chính xác cho hơn 15 ngôn ngữ
 - **Hoàn toàn tự động** - Hook PostToolUse chặn kết quả công cụ
 - **Không cần cấu hình** - Hoạt động ngay lập tức với các giá trị mặc định hợp lý
@@ -264,6 +269,16 @@ Giấy phép MIT - xem [LICENSE](LICENSE)
 ---
 
 ## Nhật ký thay đổi
+
+### v0.6.0 (2026-04-03)
+- ✨ **Kiến trúc pipeline** — động cơ module hóa Detector → Router → Compressor → Evaluator
+- ✨ **Nén mã nguồn** — nén dựa trên heuristic cho TypeScript (37%), Python (48%), Go (32%)
+- ✨ **6 lớp nén** — gộp dòng trống, xóa comment inline/block, rút gọn import, tóm tắt import, thu gọn mẫu lặp lại
+- ✨ **Đảm bảo an toàn** — không bao giờ xóa logic mã, giữ lại TODO/FIXME, giữ lại tóm tắt JSDoc/docstring
+- ✨ **Hook nâng cấp** — hook PostToolUse giờ phát hiện và nén mã nguồn (Lớp 1-4)
+- ✨ **Mở rộng** — thêm loại nội dung mới bằng cách triển khai giao diện `Compressor` và đăng ký với pipeline
+- 🔧 TokenOptimizer tái cấu trúc sang mẫu facade — tất cả API bên ngoài không thay đổi
+- 📊 196 bài kiểm tra (trước đó 157), đánh giá mã nguồn toàn diện 16 chiều đã vượt qua
 
 ### v0.5.0 (2026-01-21)
 - ✨ **Cập nhật SDK và tooling** - MCP SDK, tokenizer và YAML được cập nhật
