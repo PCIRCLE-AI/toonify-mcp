@@ -235,6 +235,11 @@ export class ToonifyMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
+    // Release WASM and cache resources on process exit
+    process.on('exit', () => this.optimizer.destroy());
+    process.on('SIGINT', () => { this.optimizer.destroy(); process.exit(0); });
+    process.on('SIGTERM', () => { this.optimizer.destroy(); process.exit(0); });
+
     // MCP protocol uses stdout for messages, so we log status to stderr
     console.error('[ToonifyMCPServer] Server running on stdio');
   }

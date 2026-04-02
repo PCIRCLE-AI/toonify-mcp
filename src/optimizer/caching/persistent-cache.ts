@@ -9,6 +9,7 @@
  */
 
 import fs from 'fs';
+import { promises as fsp } from 'fs';
 import path from 'path';
 import os from 'os';
 import type { LRUCacheEntry } from './cache-types.js';
@@ -25,6 +26,13 @@ interface WriteOperation<T> {
   reject: (error: Error) => void;
 }
 
+/** Allowed base directories for cache files */
+const ALLOWED_CACHE_BASES = [
+  path.join(os.homedir(), '.toonify-mcp'),
+  path.join(os.homedir(), '.claude'),
+  os.tmpdir(),
+];
+
 export class PersistentCache<T = unknown> {
   private filePath: string;
   private writeQueue: WriteOperation<T>[] = [];
@@ -35,12 +43,32 @@ export class PersistentCache<T = unknown> {
 
   constructor(filePath: string) {
     // Expand ~ to home directory
-    this.filePath = filePath.startsWith('~')
+    const expanded = filePath.startsWith('~')
       ? path.join(os.homedir(), filePath.slice(1))
       : filePath;
 
+    // Resolve to absolute path and validate against path traversal
+    this.filePath = path.resolve(expanded);
+    this.validatePath(this.filePath);
+
     // Ensure directory exists
     this.ensureDirectory();
+  }
+
+  /**
+   * Validate cache file path stays within allowed directories.
+   * Prevents path traversal attacks via malicious persistPath config.
+   */
+  private validatePath(resolvedPath: string): void {
+    const isAllowed = ALLOWED_CACHE_BASES.some(base =>
+      resolvedPath.startsWith(path.resolve(base))
+    );
+    if (!isAllowed) {
+      throw new Error(
+        `Cache path "${resolvedPath}" is outside allowed directories. ` +
+        `Allowed: ${ALLOWED_CACHE_BASES.join(', ')}`
+      );
+    }
   }
 
   /**
@@ -77,19 +105,17 @@ export class PersistentCache<T = unknown> {
   }
 
   /**
-   * Save all cache entries to disk synchronously (atomic write)
-   * Internal use only
+   * Save all cache entries to disk (atomic write via temp file + rename)
+   * Internal use only — async to avoid blocking event loop
    */
-  private saveAllSync(entries: LRUCacheEntry<T>[]): void {
+  private async saveAllAsync(entries: LRUCacheEntry<T>[]): Promise<void> {
     try {
       const tempPath = `${this.filePath}.tmp`;
       const content = JSON.stringify(entries, null, 2);
 
-      // Write to temp file first
-      fs.writeFileSync(tempPath, content, 'utf-8');
-
-      // Atomic rename
-      fs.renameSync(tempPath, this.filePath);
+      // Write to temp file first, then atomic rename
+      await fsp.writeFile(tempPath, content, 'utf-8');
+      await fsp.rename(tempPath, this.filePath);
     } catch (error) {
       console.error('[PersistentCache] Failed to save cache:', error);
       throw error;
@@ -174,7 +200,7 @@ export class PersistentCache<T = unknown> {
           const entries = this.loadAll();
           const filtered = entries.filter(e => e.key !== operation.key);
           if (filtered.length !== entries.length) {
-            this.saveAllSync(filtered);
+            await this.saveAllAsync(filtered);
           }
         }
         break;
@@ -185,8 +211,10 @@ export class PersistentCache<T = unknown> {
           clearTimeout(this.batchTimer);
           this.batchTimer = null;
         }
-        if (fs.existsSync(this.filePath)) {
-          fs.unlinkSync(this.filePath);
+        try {
+          await fsp.unlink(this.filePath);
+        } catch {
+          // File doesn't exist — nothing to delete
         }
         break;
 
@@ -197,7 +225,7 @@ export class PersistentCache<T = unknown> {
             clearTimeout(this.batchTimer);
             this.batchTimer = null;
           }
-          this.saveAllSync(operation.entries);
+          await this.saveAllAsync(operation.entries);
         }
         break;
     }
@@ -219,7 +247,7 @@ export class PersistentCache<T = unknown> {
   /**
    * Flush all pending writes to disk
    */
-  private flushPendingWrites(): void {
+  private async flushPendingWrites(): Promise<void> {
     if (this.pendingWrites.size === 0) {
       return;
     }
@@ -232,7 +260,7 @@ export class PersistentCache<T = unknown> {
       entryMap.set(key, entry);
     }
 
-    this.saveAllSync(Array.from(entryMap.values()));
+    await this.saveAllAsync(Array.from(entryMap.values()));
     this.pendingWrites.clear();
     this.batchTimer = null;
   }

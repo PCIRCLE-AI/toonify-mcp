@@ -121,9 +121,11 @@ export class LRUCache<T = unknown> {
     this.cache.set(key, entry);
     this.stats.currentSize = this.cache.size;
 
-    // Persist to disk if enabled
+    // Persist to disk if enabled — handle async errors to prevent unhandled rejections
     if (this.persistentCache) {
-      this.persistentCache.save(key, entry);
+      this.persistentCache.save(key, entry).catch(err => {
+        console.error('[LRUCache] Persistent save failed:', err);
+      });
     }
   }
 
@@ -152,9 +154,11 @@ export class LRUCache<T = unknown> {
       this.stats.evictions++;
       this.stats.currentSize = this.cache.size;
 
-      // Remove from disk
+      // Remove from disk — handle async errors
       if (this.persistentCache) {
-        this.persistentCache.delete(firstKey);
+        this.persistentCache.delete(firstKey).catch(err => {
+          console.error('[LRUCache] Persistent delete failed:', err);
+        });
       }
     }
   }
@@ -187,7 +191,9 @@ export class LRUCache<T = unknown> {
         removed++;
 
         if (this.persistentCache) {
-          this.persistentCache.delete(key);
+          this.persistentCache.delete(key).catch(err => {
+            console.error('[LRUCache] Persistent cleanup delete failed:', err);
+          });
         }
       }
     }

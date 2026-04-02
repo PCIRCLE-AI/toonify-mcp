@@ -13,11 +13,15 @@ import type {
 import { CacheOptimizer, LRUCache, type LRUCacheConfig } from './caching/index.js';
 import { MultilingualTokenizer } from './multilingual/index.js';
 
+/** Maximum content size to process (10 MB) — prevents DoS via unbounded JSON.parse */
+const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
+
 export class TokenOptimizer {
   private config: OptimizationConfig;
   private tokenEncoder: MultilingualTokenizer;
   private cacheOptimizer: CacheOptimizer;
   private resultCache: LRUCache<OptimizationResult>;
+  private skipPatternCache: Map<string, RegExp | null> = new Map();
 
   constructor(config: Partial<OptimizationConfig> = {}) {
     this.config = {
@@ -50,14 +54,22 @@ export class TokenOptimizer {
     // Validate resultCache configuration
     this.validateResultCacheConfig(this.config.resultCache);
 
-    // v0.3.0: Use multilingual tokenizer
-    this.tokenEncoder = new MultilingualTokenizer('gpt-4', true);
+    // Initialize tokenizer with fallback on WASM load failure
+    try {
+      this.tokenEncoder = new MultilingualTokenizer('gpt-4', true);
+    } catch (error) {
+      console.error('[TokenOptimizer] tiktoken init failed, using fallback:', error);
+      this.tokenEncoder = new MultilingualTokenizer('gpt-4', false);
+    }
 
     // Initialize cache optimizer
     this.cacheOptimizer = new CacheOptimizer(this.config.caching);
 
     // v0.4.0: Initialize LRU cache for optimization results
     this.resultCache = new LRUCache<OptimizationResult>(this.config.resultCache);
+
+    // Pre-compile skip patterns for safety and performance
+    this.compileSkipPatterns();
   }
 
   /**
@@ -74,6 +86,16 @@ export class TokenOptimizer {
         originalContent: String(content),
         originalTokens: 0,
         reason: 'Invalid input: content must be a string'
+      };
+    }
+
+    // Size limit to prevent DoS via unbounded parsing
+    if (content.length > MAX_CONTENT_SIZE) {
+      return {
+        optimized: false,
+        originalContent: content,
+        originalTokens: 0,
+        reason: `Content too large: ${(content.length / 1024 / 1024).toFixed(1)}MB exceeds ${MAX_CONTENT_SIZE / 1024 / 1024}MB limit`
       };
     }
 
@@ -347,13 +369,28 @@ export class TokenOptimizer {
   }
 
   /**
-   * Check if tool should be skipped
+   * Pre-compile skip patterns at construction time.
+   * Invalid regex patterns are logged and skipped rather than crashing at runtime.
+   */
+  private compileSkipPatterns(): void {
+    for (const pattern of this.config.skipToolPatterns ?? []) {
+      try {
+        this.skipPatternCache.set(pattern, new RegExp(pattern));
+      } catch (error) {
+        console.warn(`[TokenOptimizer] Invalid skip pattern "${pattern}":`, error);
+        this.skipPatternCache.set(pattern, null);
+      }
+    }
+  }
+
+  /**
+   * Check if tool should be skipped using pre-compiled patterns
    */
   private shouldSkipTool(toolName: string): boolean {
-    return this.config.skipToolPatterns?.some(pattern => {
-      const regex = new RegExp(pattern);
-      return regex.test(toolName);
-    }) ?? false;
+    for (const [, regex] of this.skipPatternCache) {
+      if (regex && regex.test(toolName)) return true;
+    }
+    return false;
   }
 
   /**
@@ -446,5 +483,15 @@ export class TokenOptimizer {
       resultCache: this.resultCache.getStats(),
       promptCache: this.cacheOptimizer.getMetrics()
     };
+  }
+
+  /**
+   * Release resources (tiktoken WASM memory, caches).
+   * Call on server shutdown to prevent memory leaks.
+   */
+  destroy(): void {
+    this.tokenEncoder.free();
+    this.resultCache.clear();
+    this.skipPatternCache.clear();
   }
 }
