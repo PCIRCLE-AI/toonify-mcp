@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 MCP-Server + Claude Code Plugin zur automatischen Token-Optimierung für strukturierte Daten.
-Reduziert den Claude-API-Token-Verbrauch um **30-65% je nach Datenstruktur** durch transparente TOON-Format-Konvertierung, mit typischen Einsparungen von **50-55%** für strukturierte Daten.
+Reduziert den Claude-API-Token-Verbrauch um **30-65% je nach Datenstruktur** durch transparente TOON-Format-Konvertierung, mit typischen Einsparungen von **~40%** für strukturierte Daten.
 
 ## Neu in v0.5.0
 
@@ -15,7 +15,7 @@ Reduziert den Claude-API-Token-Verbrauch um **30-65% je nach Datenstruktur** dur
 
 ## Funktionen
 
-- **30-65% Token-Reduktion** (typischerweise 50-55%) für JSON, CSV, YAML-Daten
+- **30-65% Token-Reduktion** (typischerweise ~40%) für JSON, CSV, YAML-Daten
 - **Mehrsprachige Unterstützung** - Präzise Token-Zählung für über 15 Sprachen
 - **Vollautomatisch** - PostToolUse-Hook fängt Tool-Ergebnisse ab
 - **Keine Konfiguration nötig** - Funktioniert sofort mit sinnvollen Standardwerten
@@ -101,7 +101,7 @@ Hook erkennt JSON, konvertiert zu TOON
   ↓
 Optimierter Inhalt wird an Claude-API gesendet
   ↓
-50-55% typische Token-Reduktion erreicht ✨
+30-65% (typischerweise ~40%) Token-Reduktion erreicht ✨
 ```
 
 ### MCP-Server-Modus (Manuell)
@@ -275,7 +275,7 @@ MIT License - siehe [LICENSE](LICENSE)
 - ✨ Sprachabhängige Token-Multiplikatoren (2x Chinesisch, 2,5x Japanisch, 3x Arabisch, etc.)
 - ✨ Erkennung und Optimierung mehrsprachiger Texte
 - ✨ Umfassende Benchmark-Tests mit echten Statistiken
-- 📊 Datengestützte Token-Einsparungs-Angaben (30-65% Bereich, typischerweise 50-55%)
+- 📊 Datengestützte Token-Einsparungs-Angaben (30-65% Bereich, typischerweise ~40%)
 - ✅ 75+ bestandene Tests, einschließlich mehrsprachiger Randfälle
 - 📝 Mehrsprachige README-Versionen
 

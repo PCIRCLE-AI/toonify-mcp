@@ -1,67 +1,247 @@
-# Dependencies
-node_modules/
-package-lock.json
-yarn.lock
+# =============================================================================
+# Toonify MCP - .gitignore
+# Token optimization MCP server for Claude Code
+# =============================================================================
 
-# Build output
-dist/
-build/
-*.js.map
-
-# TypeScript
-*.tsbuildinfo
-
-# Testing
-coverage/
-.nyc_output/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Environment
+# 🔐 SECURITY - Secrets & Credentials (CRITICAL)
 .env
+.env.*
+!.env.example
+!.env.*.example
 .env.local
 .env.*.local
 
-# Logs
+# Keys & Certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+*.crt
+certs/
+!certs/.gitkeep
+
+# Credentials files
+credentials.*
+secrets.*
+*.secret
+*.secrets
+secret.*
+secrets/
+.secrets/
+
+# API keys
+api_key*
+apikey*
+*-api-key*
+
+# 📄 INTERNAL DOCUMENTS - Never commit to public repos (CRITICAL)
+
+# Planning & Architecture
+docs/plans/**
+!docs/plans/README.md
+docs/archive/**
+!docs/archive/README.md
+docs/internal/**
+docs/architecture/**
+docs/decisions/**
+docs/design/**
+docs/diagrams/**
+
+# Development notes
+docs/brainstorming/**
+docs/ideas/**
+docs/meetings/**
+docs/notes/**
+docs/wip/**
+docs/drafts/**
+docs/refactoring/**
+
+# Planning file patterns
+*.plan.md
+*.planning.md
+*-planning.md
+*.ideas.md
+*.brainstorm.md
+*.notes.md
+*.wip.md
+*.draft.md
+*.scratch.md
+*.personal.md
+*-ideas.md
+*-notes.md
+*-summary.md
+*-analysis.md
+*-audit.md
+*-debug.md
+*-progress.md
+
+# Implementation docs
+*IMPLEMENTATION*.md
+*_IMPLEMENTATION*.md
+IMPLEMENTATION_*.md
+*MIGRATION*.md
+REFACTORING_ANALYSIS.md
+*-implementation-plan*.md
+*-roadmap*.md
+*-business-strategy*.md
+
+# Project-specific (toonify-mcp)
+design/
+research/
+hooks/node_modules/
+scripts/
+*-debug.*
+HANDOFF.md
+PUBLISHING.md
+test-mcp-call.sh
+test-languages.mjs
+token_stats.json
+
+# Meeting & progress
+meetings/
+notes/
+personal/
+.notes/
+scratch/
+brainstorming/
+ideas/
+wip/
+
+# 💻 OS Files
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# 📝 IDE & Editors
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim/Neovim
+*.swp
+*.swo
+*~
+*.un~
+Session.vim
+.netrwhist
+tags
+
+# Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Visual Studio
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.vcxproj*
+
+# AI/Dev Tools
+.claude/
+.cursor/
+.copilot/
+.tabnine/
+
+# 📊 Logs
 logs/
 *.log
+*.log.*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+debug.log
+error.log
 
-# Metrics (local only)
-token_stats.json
-.claude/
+# 📁 Temporary Files
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
 
-# Session handoffs (not for other developers)
-HANDOFF.md
+# 📦 Dependencies
+node_modules/
+.pnp
+.pnp.js
+package-lock.json
+yarn.lock
 
-# Publishing guide (personal workflow)
-PUBLISHING.md
+# 🏗️ Build Outputs
+dist/
+build/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+*.js.map
 
-# npm package tarballs (build artifacts)
+# 🧪 Testing & Coverage
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+
+# 💾 Database & Data
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# NPM publishing
 *.tgz
 
-# Test scripts (personal)
-test-mcp-call.sh
-test-languages.mjs
-
-# Internal development files (DO NOT PUSH)
-design/
-research/
-hooks/
-scripts/
-*.plan.md
-*.planning.md
-*.notes.md
-*-analysis.md
-*-debug.*
+.codex/context/

@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 Máy chủ MCP + Plugin Claude Code cung cấp tối ưu hóa token tự động cho dữ liệu có cấu trúc.
-Giảm 30-65% việc sử dụng token của Claude API **tùy thuộc vào cấu trúc dữ liệu** thông qua chuyển đổi định dạng TOON minh bạch, với mức tiết kiệm điển hình **50-55%** cho dữ liệu có cấu trúc.
+Giảm 30-65% việc sử dụng token của Claude API **tùy thuộc vào cấu trúc dữ liệu** thông qua chuyển đổi định dạng TOON minh bạch, với mức tiết kiệm điển hình **~40%** cho dữ liệu có cấu trúc.
 
 ## Có gì mới trong v0.5.0
 
@@ -15,7 +15,7 @@ Giảm 30-65% việc sử dụng token của Claude API **tùy thuộc vào cấ
 
 ## Tính năng
 
-- **Giảm 30-65% token** (thường 50-55%) cho dữ liệu JSON, CSV, YAML
+- **Giảm 30-65% token** (thường ~40%) cho dữ liệu JSON, CSV, YAML
 - **Hỗ trợ đa ngôn ngữ** - Đếm token chính xác cho hơn 15 ngôn ngữ
 - **Hoàn toàn tự động** - Hook PostToolUse chặn kết quả công cụ
 - **Không cần cấu hình** - Hoạt động ngay lập tức với các giá trị mặc định hợp lý
@@ -101,7 +101,7 @@ Hook phát hiện JSON, chuyển đổi sang TOON
   ↓
 Nội dung đã tối ưu hóa được gửi đến Claude API
   ↓
-Đạt được mức giảm token điển hình 50-55% ✨
+Đạt được mức giảm token điển hình ~40% ✨
 ```
 
 ### Chế độ máy chủ MCP (thủ công)
@@ -275,7 +275,7 @@ Giấy phép MIT - xem [LICENSE](LICENSE)
 - ✨ Hệ số nhân token nhận biết ngôn ngữ (2x Trung, 2.5x Nhật, 3x Ả Rập, v.v.)
 - ✨ Phát hiện và tối ưu hóa văn bản hỗn hợp nhiều ngôn ngữ
 - ✨ Kiểm tra chuẩn toàn diện với thống kê thực tế
-- 📊 Tuyên bố tiết kiệm token được hỗ trợ bởi dữ liệu (phạm vi 30-65%, thường 50-55%)
+- 📊 Tuyên bố tiết kiệm token được hỗ trợ bởi dữ liệu (phạm vi 30-65%, thường ~40%)
 - ✅ Hơn 75 kiểm tra đã vượt qua, bao gồm các trường hợp biên đa ngôn ngữ
 - 📝 Các phiên bản README đa ngôn ngữ
 
