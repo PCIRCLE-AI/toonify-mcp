@@ -291,13 +291,13 @@ export class PersistentCache<T = unknown> {
    */
   getFileSize(): number {
     try {
-      if (fs.existsSync(this.filePath)) {
-        const stats = fs.statSync(this.filePath);
-        return stats.size;
-      }
-      return 0;
+      const stats = fs.statSync(this.filePath);
+      return stats.size;
     } catch (error) {
-      return 0;
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        console.error('[PersistentCache] Failed to get file size:', error);
+      }
+      return 0; // File doesn't exist = 0 bytes (expected on first use)
     }
   }
 

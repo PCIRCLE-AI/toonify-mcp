@@ -13,6 +13,26 @@ export interface LanguageDetectionResult {
   detectedPatterns: number;
 }
 
+/**
+ * Pre-compiled global RegExp variants for each language profile pattern.
+ * Created once at module load to avoid repeated `new RegExp()` calls per detection,
+ * which would be both a performance issue and a potential ReDoS vector if patterns
+ * were ever made configurable.
+ */
+const GLOBAL_PATTERNS: Map<LanguageProfile, RegExp[]> = new Map();
+const TEST_PATTERNS: Map<LanguageProfile, RegExp[]> = new Map();
+
+for (const profile of LANGUAGE_PROFILES) {
+  GLOBAL_PATTERNS.set(
+    profile,
+    profile.detectionPatterns.map(p => new RegExp(p.source, 'g'))
+  );
+  TEST_PATTERNS.set(
+    profile,
+    profile.detectionPatterns.map(p => new RegExp(p.source, p.flags.replace('g', '')))
+  );
+}
+
 export class LanguageDetector {
   private sampleSize: number;
 
@@ -35,13 +55,15 @@ export class LanguageDetector {
     // Use first N characters for detection (performance optimization)
     const sample = text.slice(0, this.sampleSize);
 
-    // Score each language profile
+    // Score each language profile using pre-compiled global patterns
     const scores = LANGUAGE_PROFILES.map(profile => {
       let matchedPatterns = 0;
       let totalMatches = 0;
 
-      for (const pattern of profile.detectionPatterns) {
-        const matches = sample.match(new RegExp(pattern, 'g'));
+      const globalPatterns = GLOBAL_PATTERNS.get(profile)!;
+      for (const pattern of globalPatterns) {
+        pattern.lastIndex = 0; // Reset global regex state
+        const matches = sample.match(pattern);
         if (matches && matches.length > 0) {
           matchedPatterns++;
           totalMatches += matches.length;
@@ -110,10 +132,9 @@ export class LanguageDetector {
     const detected: LanguageProfile[] = [];
 
     for (const profile of LANGUAGE_PROFILES) {
-      for (const pattern of profile.detectionPatterns) {
-        // Create new RegExp to avoid lastIndex issues with global patterns
-        const testPattern = new RegExp(pattern.source, pattern.flags.replace('g', ''));
-        if (testPattern.test(sample)) {
+      const testPats = TEST_PATTERNS.get(profile)!;
+      for (const pattern of testPats) {
+        if (pattern.test(sample)) {
           detected.push(profile);
           break;
         }
