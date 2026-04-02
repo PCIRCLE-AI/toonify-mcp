@@ -213,13 +213,15 @@ export class TokenOptimizer {
       }
     } catch {}
 
-    // Try YAML
-    try {
-      const data = yaml.parse(content);
-      if (typeof data === 'object' && data !== null) {
-        return { type: 'yaml', data, confidence: 0.9 };
-      }
-    } catch {}
+    // Try YAML — only if content looks like YAML (multiple key: value lines)
+    if (this.looksLikeYAML(content)) {
+      try {
+        const data = yaml.parse(content);
+        if (typeof data === 'object' && data !== null) {
+          return { type: 'yaml', data, confidence: 0.9 };
+        }
+      } catch {}
+    }
 
     // Try CSV (simple heuristic)
     if (this.looksLikeCSV(content)) {
@@ -230,6 +232,35 @@ export class TokenOptimizer {
     }
 
     return null;
+  }
+
+  /**
+   * YAML detection heuristic — requires structural complexity beyond simple key: value
+   */
+  private looksLikeYAML(content: string): boolean {
+    const lines = content.split('\n').filter(l => l.trim());
+    if (lines.length < 3) return false;
+
+    // Count lines matching YAML key: value pattern
+    const yamlLinePattern = /^\s*[\w][\w\s.-]*:\s*.+/;
+    const listItemPattern = /^\s*-\s+/;
+    const indentedPattern = /^\s{2,}\S/;
+
+    let yamlLines = 0;
+    let listItems = 0;
+    let indented = 0;
+
+    for (const line of lines.slice(0, 20)) {
+      if (yamlLinePattern.test(line)) yamlLines++;
+      if (listItemPattern.test(line)) listItems++;
+      if (indentedPattern.test(line)) indented++;
+    }
+
+    // Require meaningful YAML structure: multiple key-value lines OR list items with nesting
+    const hasStructure = (yamlLines >= 3) || (listItems >= 2 && indented >= 2);
+    const yamlDensity = (yamlLines + listItems) / Math.min(lines.length, 20);
+
+    return hasStructure && yamlDensity >= 0.3;
   }
 
   /**
@@ -253,14 +284,14 @@ export class TokenOptimizer {
   }
 
   /**
-   * Parse simple CSV to array of objects
+   * Parse CSV to array of objects, handling quoted fields
    */
   private parseSimpleCSV(content: string): Record<string, string>[] {
     const lines = content.split('\n').filter(l => l.trim());
-    const headers = lines[0].split(',').map(h => h.trim());
+    const headers = this.parseCSVLine(lines[0]);
 
     return lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim());
+      const values = this.parseCSVLine(line);
       const obj: Record<string, string> = {};
       headers.forEach((header, i) => {
         obj[header] = values[i] || '';
@@ -270,13 +301,49 @@ export class TokenOptimizer {
   }
 
   /**
-   * Count tokens in text with language awareness
+   * Parse a single CSV line, respecting quoted fields
+   */
+  private parseCSVLine(line: string): string[] {
+    const fields: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (inQuotes) {
+        if (char === '"' && line[i + 1] === '"') {
+          current += '"';
+          i++; // skip escaped quote
+        } else if (char === '"') {
+          inQuotes = false;
+        } else {
+          current += char;
+        }
+      } else {
+        if (char === '"') {
+          inQuotes = true;
+        } else if (char === ',') {
+          fields.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+    }
+
+    fields.push(current.trim());
+    return fields;
+  }
+
+  /**
+   * Count tokens using tiktoken BPE tokenizer.
+   * Always uses raw tiktoken counts — language multipliers are NOT applied here
+   * because tiktoken already returns accurate token counts for all languages.
+   * Language multipliers are only useful for rough estimation without a tokenizer.
    */
   private countTokens(text: string): number {
-    if (!this.config.multilingual?.enabled) {
-      return this.tokenEncoder.countBase(text);
-    }
-    return this.tokenEncoder.count(text);
+    return this.tokenEncoder.countBase(text);
   }
 
   /**
