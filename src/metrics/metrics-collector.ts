@@ -5,7 +5,11 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { createRequire } from 'module';
 import type { TokenStats } from '../optimizer/types.js';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../../package.json') as { version: string };
 
 export interface OptimizationMetric {
   timestamp: string;
@@ -137,7 +141,7 @@ export class MetricsCollector {
     const costSavings = ((totalSavingsWithCache / 1_000_000) * 3).toFixed(2);
 
     let dashboard = `
-📊 Token Optimization Stats (v0.5.0)
+📊 Token Optimization Stats (v${version})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Requests: ${stats.totalRequests}
 Optimized: ${stats.optimizedRequests} (${optimizationRate}%)

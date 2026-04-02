@@ -218,7 +218,6 @@ temp/
 node_modules/
 .pnp
 .pnp.js
-package-lock.json
 yarn.lock
 
 # 🏗️ Build Outputs
