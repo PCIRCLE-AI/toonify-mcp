@@ -1,17 +1,17 @@
 /**
- * TokenOptimizer: Core optimization logic using Toonify
+ * TokenOptimizer: Facade over the Pipeline engine.
+ * External API unchanged from v0.5.0 — internal logic delegated to Pipeline.
  */
 
-import { encode as toonEncode } from '@toon-format/toon';
-import yaml from 'yaml';
 import type {
   OptimizationResult,
   ToolMetadata,
-  StructuredData,
   OptimizationConfig
 } from './types.js';
 import { CacheOptimizer, LRUCache, type LRUCacheConfig } from './caching/index.js';
 import { MultilingualTokenizer } from './multilingual/index.js';
+import { Pipeline } from './pipeline/index.js';
+import { ToonCompressor, CodeCompressor } from './compressors/index.js';
 
 /** Maximum content size to process (10 MB) — prevents DoS via unbounded JSON.parse */
 const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
@@ -22,6 +22,7 @@ export class TokenOptimizer {
   private cacheOptimizer: CacheOptimizer;
   private resultCache: LRUCache<OptimizationResult>;
   private skipPatternCache: Map<string, RegExp | null> = new Map();
+  private pipeline: Pipeline;
 
   constructor(config: Partial<OptimizationConfig> = {}) {
     this.config = {
@@ -62,10 +63,15 @@ export class TokenOptimizer {
       this.tokenEncoder = new MultilingualTokenizer('gpt-4', false);
     }
 
+    // Initialize pipeline with compressors
+    this.pipeline = new Pipeline(this.tokenEncoder);
+    this.pipeline.register(new ToonCompressor());
+    this.pipeline.register(new CodeCompressor());
+
     // Initialize cache optimizer
     this.cacheOptimizer = new CacheOptimizer(this.config.caching);
 
-    // v0.4.0: Initialize LRU cache for optimization results
+    // Initialize LRU cache for optimization results
     this.resultCache = new LRUCache<OptimizationResult>(this.config.resultCache);
 
     // Pre-compile skip patterns for safety and performance
@@ -73,7 +79,7 @@ export class TokenOptimizer {
   }
 
   /**
-   * Main optimization method
+   * Main optimization method — API unchanged, delegates to Pipeline internally.
    */
   async optimize(
     content: string,
@@ -101,8 +107,7 @@ export class TokenOptimizer {
 
     const startTime = Date.now();
 
-    // v0.4.0: Check LRU cache first
-    // Include metadata in cache key to avoid false cache hits
+    // Check LRU cache first
     const cacheKey = this.generateCacheKey(content, metadata);
     const cachedResult = this.resultCache.get(cacheKey);
     if (cachedResult) {
@@ -129,38 +134,16 @@ export class TokenOptimizer {
       };
     }
 
-    // Detect structured data
-    const structuredData = this.detectStructuredData(content);
-    if (!structuredData) {
-      return {
-        optimized: false,
-        originalContent: content,
-        originalTokens: this.countTokens(content),
-        reason: 'Not structured data'
-      };
-    }
-
     try {
-      // Convert to TOON format
-      const toonContent = toonEncode(structuredData.data);
+      // Delegate to pipeline: detect → route → compress → evaluate
+      const pipelineResult = this.pipeline.run(content, this.config.minSavingsThreshold);
 
-      // Count tokens
-      const originalTokens = this.countTokens(content);
-      const optimizedTokens = this.countTokens(toonContent);
-
-      // Calculate savings (guard against division by zero)
-      const tokenSavings = originalTokens - optimizedTokens;
-      const savingsPercentage = originalTokens > 0 
-        ? (tokenSavings / originalTokens) * 100 
-        : 0;
-
-      // Check if worth using
-      if (savingsPercentage < this.config.minSavingsThreshold) {
+      if (!pipelineResult.optimized) {
         return {
           optimized: false,
           originalContent: content,
-          originalTokens,
-          reason: `Savings too low: ${savingsPercentage.toFixed(1)}%`
+          originalTokens: pipelineResult.originalTokens,
+          reason: pipelineResult.reason,
         };
       }
 
@@ -170,50 +153,58 @@ export class TokenOptimizer {
         return {
           optimized: false,
           originalContent: content,
-          originalTokens,
+          originalTokens: pipelineResult.originalTokens,
           reason: `Processing timeout: ${elapsed}ms`
         };
       }
 
-      // v0.3.0: Wrap with caching structure
-      const cachedContent = this.cacheOptimizer.wrapWithCaching(
-        toonContent,
-        metadata?.toolName || 'unknown',
-        structuredData.type,
-        originalTokens,
-        optimizedTokens
-      );
+      // Wrap with caching structure (for structured data formats)
+      const format = pipelineResult.format;
+      const isStructured = format === 'json' || format === 'csv' || format === 'yaml';
 
-      // Calculate additional savings from caching
-      // Assume 90% cache hit rate after first request
-      const cacheSavings = cachedContent.cacheBreakpoint ?
-        Math.floor(tokenSavings * 0.9) : 0;
+      let optimizedContent = pipelineResult.content;
+      let cachedContent;
+
+      if (isStructured) {
+        cachedContent = this.cacheOptimizer.wrapWithCaching(
+          pipelineResult.content,
+          metadata?.toolName || 'unknown',
+          format as 'json' | 'csv' | 'yaml',
+          pipelineResult.originalTokens,
+          pipelineResult.optimizedTokens!
+        );
+        optimizedContent = cachedContent.cacheBreakpoint
+          ? cachedContent.staticPrefix + cachedContent.dynamicContent
+          : cachedContent.dynamicContent;
+      }
+
+      const tokenSavings = pipelineResult.savings!.tokens;
+      const cacheSavings = cachedContent?.cacheBreakpoint
+        ? Math.floor(tokenSavings * 0.9)
+        : 0;
 
       const result: OptimizationResult = {
         optimized: true,
         originalContent: content,
-        optimizedContent: cachedContent.cacheBreakpoint ?
-          cachedContent.staticPrefix + cachedContent.dynamicContent :
-          cachedContent.dynamicContent,
-        originalTokens,
-        optimizedTokens,
+        optimizedContent,
+        originalTokens: pipelineResult.originalTokens,
+        optimizedTokens: pipelineResult.optimizedTokens,
         savings: {
           tokens: tokenSavings,
-          percentage: savingsPercentage,
+          percentage: pipelineResult.savings!.percentage,
           withCaching: cacheSavings
         },
-        format: structuredData.type,
+        format: pipelineResult.format,
         cachedContent,
         cacheMetrics: this.cacheOptimizer.getMetrics()
       };
 
-      // v0.4.0: Store result in LRU cache
+      // Store result in LRU cache
       this.resultCache.set(cacheKey, result);
 
       return result;
 
     } catch (error) {
-      // Silent fallback on error
       return {
         optimized: false,
         originalContent: content,
@@ -224,145 +215,7 @@ export class TokenOptimizer {
   }
 
   /**
-   * Detect if content is structured data (JSON/CSV/YAML)
-   */
-  private detectStructuredData(content: string): StructuredData | null {
-    // Try JSON first
-    try {
-      const data = JSON.parse(content);
-      if (typeof data === 'object' && data !== null) {
-        return { type: 'json', data, confidence: 1.0 };
-      }
-    } catch {}
-
-    // Try YAML — only if content looks like YAML (multiple key: value lines)
-    if (this.looksLikeYAML(content)) {
-      try {
-        const data = yaml.parse(content);
-        if (typeof data === 'object' && data !== null) {
-          return { type: 'yaml', data, confidence: 0.9 };
-        }
-      } catch {}
-    }
-
-    // Try CSV (simple heuristic)
-    if (this.looksLikeCSV(content)) {
-      try {
-        const data = this.parseSimpleCSV(content);
-        return { type: 'csv', data, confidence: 0.8 };
-      } catch {}
-    }
-
-    return null;
-  }
-
-  /**
-   * YAML detection heuristic — requires structural complexity beyond simple key: value
-   */
-  private looksLikeYAML(content: string): boolean {
-    const lines = content.split('\n').filter(l => l.trim());
-    if (lines.length < 3) return false;
-
-    // Count lines matching YAML key: value pattern
-    const yamlLinePattern = /^\s*[\w][\w\s.-]*:\s*.+/;
-    const listItemPattern = /^\s*-\s+/;
-    const indentedPattern = /^\s{2,}\S/;
-
-    let yamlLines = 0;
-    let listItems = 0;
-    let indented = 0;
-
-    for (const line of lines.slice(0, 20)) {
-      if (yamlLinePattern.test(line)) yamlLines++;
-      if (listItemPattern.test(line)) listItems++;
-      if (indentedPattern.test(line)) indented++;
-    }
-
-    // Require meaningful YAML structure: multiple key-value lines OR list items with nesting
-    const hasStructure = (yamlLines >= 3) || (listItems >= 2 && indented >= 2);
-    const yamlDensity = (yamlLines + listItems) / Math.min(lines.length, 20);
-
-    return hasStructure && yamlDensity >= 0.3;
-  }
-
-  /**
-   * Simple CSV detection heuristic
-   */
-  private looksLikeCSV(content: string): boolean {
-    const lines = content.split('\n').filter(l => l.trim());
-    if (lines.length < 2) return false;
-
-    const firstLineCommas = (lines[0].match(/,/g) || []).length;
-    if (firstLineCommas === 0) return false;
-
-    // Check if most lines have similar comma count
-    let matchingLines = 0;
-    for (let i = 1; i < Math.min(lines.length, 10); i++) {
-      const commas = (lines[i].match(/,/g) || []).length;
-      if (commas === firstLineCommas) matchingLines++;
-    }
-
-    return matchingLines >= Math.min(lines.length - 1, 7);
-  }
-
-  /**
-   * Parse CSV to array of objects, handling quoted fields
-   */
-  private parseSimpleCSV(content: string): Record<string, string>[] {
-    const lines = content.split('\n').filter(l => l.trim());
-    const headers = this.parseCSVLine(lines[0]);
-
-    return lines.slice(1).map(line => {
-      const values = this.parseCSVLine(line);
-      const obj: Record<string, string> = {};
-      headers.forEach((header, i) => {
-        obj[header] = values[i] || '';
-      });
-      return obj;
-    });
-  }
-
-  /**
-   * Parse a single CSV line, respecting quoted fields
-   */
-  private parseCSVLine(line: string): string[] {
-    const fields: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-
-      if (inQuotes) {
-        if (char === '"' && line[i + 1] === '"') {
-          current += '"';
-          i++; // skip escaped quote
-        } else if (char === '"') {
-          inQuotes = false;
-        } else {
-          current += char;
-        }
-      } else {
-        if (char === '"') {
-          inQuotes = true;
-        } else if (char === ',') {
-          fields.push(current.trim());
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-    }
-
-    fields.push(current.trim());
-    return fields;
-  }
-
-  /**
    * Count tokens using tiktoken BPE tokenizer.
-   * Always uses raw tiktoken counts — language multipliers are NOT applied here
-   * because tiktoken already returns accurate token counts for all languages.
-   * Language multipliers are only useful for rough estimation without a tokenizer.
    */
   private countTokens(text: string): number {
     return this.tokenEncoder.countBase(text);
@@ -370,7 +223,6 @@ export class TokenOptimizer {
 
   /**
    * Pre-compile skip patterns at construction time.
-   * Invalid regex patterns are logged and skipped rather than crashing at runtime.
    */
   private compileSkipPatterns(): void {
     for (const pattern of this.config.skipToolPatterns ?? []) {
@@ -395,7 +247,6 @@ export class TokenOptimizer {
 
   /**
    * Generate cache key from content and metadata
-   * Includes toolName to prevent false cache hits across different tools
    */
   private generateCacheKey(content: string, metadata?: ToolMetadata): string {
     const metadataKey = metadata?.toolName || 'unknown';
@@ -405,7 +256,6 @@ export class TokenOptimizer {
 
   /**
    * Validate resultCache configuration
-   * Throws error if configuration is invalid
    */
   private validateResultCacheConfig(config: Partial<LRUCacheConfig> | undefined): void {
     if (!config) {
@@ -447,37 +297,24 @@ export class TokenOptimizer {
     }
   }
 
-  /**
-   * Get cache optimizer instance for external access
-   */
+  // --- Public API (unchanged from v0.5.0) ---
+
   getCacheOptimizer(): CacheOptimizer {
     return this.cacheOptimizer;
   }
 
-  /**
-   * v0.4.0: Get LRU cache instance for external access
-   */
   getResultCache(): LRUCache<OptimizationResult> {
     return this.resultCache;
   }
 
-  /**
-   * v0.4.0: Clear optimization result cache
-   */
   clearResultCache(): void {
     this.resultCache.clear();
   }
 
-  /**
-   * v0.4.0: Clean up expired cache entries
-   */
   cleanupExpiredCache(): number {
     return this.resultCache.cleanup();
   }
 
-  /**
-   * v0.4.0: Get combined cache statistics
-   */
   getCacheStats(): { resultCache: import('./caching/cache-types.js').LRUCacheStats; promptCache: import('./caching/cache-types.js').CacheMetrics } {
     return {
       resultCache: this.resultCache.getStats(),
@@ -486,8 +323,14 @@ export class TokenOptimizer {
   }
 
   /**
+   * Get the pipeline instance for direct access
+   */
+  getPipeline(): Pipeline {
+    return this.pipeline;
+  }
+
+  /**
    * Release resources (tiktoken WASM memory, caches).
-   * Call on server shutdown to prevent memory leaks.
    */
   destroy(): void {
     this.tokenEncoder.free();
