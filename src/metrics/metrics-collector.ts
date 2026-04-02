@@ -116,14 +116,13 @@ export class MetricsCollector {
   }
 
   /**
-   * Save stats to disk
+   * Save stats to disk using atomic write (temp file + rename)
+   * to prevent corruption from concurrent processes.
    */
   private async saveStats(stats: TokenStats): Promise<void> {
-    await fs.writeFile(
-      this.statsPath,
-      JSON.stringify(stats, null, 2),
-      'utf-8'
-    );
+    const tempPath = `${this.statsPath}.tmp`;
+    await fs.writeFile(tempPath, JSON.stringify(stats, null, 2), 'utf-8');
+    await fs.rename(tempPath, this.statsPath);
   }
 
   /**
