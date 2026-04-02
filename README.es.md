@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 Servidor MCP + Plugin de Claude Code que proporciona optimización automática de tokens para datos estructurados.
-Reduce el uso de tokens de la API de Claude en **30-65% según la estructura de datos** mediante conversión transparente al formato TOON, con ahorros típicos del **~40%** para datos estructurados.
+Reduce el uso de tokens de la API de Claude en **25-66% según la estructura de datos** mediante conversión transparente al formato TOON, con ahorros típicos del **~48%** para datos estructurados.
 
 ## Novedades en v0.5.0
 
@@ -15,7 +15,7 @@ Reduce el uso de tokens de la API de Claude en **30-65% según la estructura de 
 
 ## Características
 
-- **Reducción de tokens del 30-65%** (típicamente ~40%) para datos JSON, CSV y YAML
+- **Reducción de tokens del 25-66%** (típicamente ~48%) para datos JSON, CSV y YAML
 - **Soporte multilingüe** - Conteo preciso de tokens para más de 15 idiomas
 - **Completamente automático** - El hook PostToolUse intercepta resultados de herramientas
 - **Configuración cero** - Funciona inmediatamente con valores predeterminados sensatos
@@ -101,7 +101,7 @@ El hook detecta JSON, convierte a TOON
   ↓
 Contenido optimizado enviado a la API de Claude
   ↓
-Reducción de tokens del 30-65% (típicamente ~40%) lograda ✨
+Reducción de tokens del 25-66% (típicamente ~48%) lograda ✨
 ```
 
 ### Modo servidor MCP (manual)
@@ -275,7 +275,7 @@ Licencia MIT - ver [LICENSE](LICENSE)
 - ✨ Multiplicadores de tokens conscientes del idioma (2x chino, 2.5x japonés, 3x árabe, etc.)
 - ✨ Detección y optimización de texto en idiomas mixtos
 - ✨ Pruebas de referencia completas con estadísticas reales
-- 📊 Afirmaciones de ahorro de tokens respaldadas por datos (rango 30-65%, típicamente ~40%)
+- 📊 Afirmaciones de ahorro de tokens respaldadas por datos (rango 25-66%, típicamente ~48%)
 - ✅ Más de 75 pruebas pasadas, incluidos casos extremos multilingües
 - 📝 Versiones README multilingües
 

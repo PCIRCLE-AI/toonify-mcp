@@ -2,9 +2,9 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-> **讓 Claude Code 使用更便宜！自動幫你省下 30-65% 的費用。**
+> **讓 Claude Code 使用更便宜！自動幫你省下 25-66% 的費用。**
 
-如果你用 Claude Code 處理資料檔案（像是 Excel、JSON、CSV），這個工具會**自動壓縮**這些資料，讓你少花 **一半的錢**。完全自動，不用學任何技術。
+如果你用 Claude Code 處理資料檔案（像是 Excel、JSON、CSV），這個工具會**自動壓縮**這些資料，讓你少花**將近一半的錢**。完全自動，不用學任何技術。
 
 ## 💡 這是什麼？
 
@@ -12,27 +12,34 @@
 - 你用 Claude Code 讀取一個很大的 Excel 檔案
 - 通常這會花你很多 token（就是錢）
 - 安裝 Toonify 後，它會**自動**把資料壓縮
-- 你的花費立刻減少 **約 40%**
+- 你的花費立刻減少 **約 48%**
 
 **完全不用改變使用習慣**，裝好就自動運作！
 
 ## ✨ 最新版本亮點（v0.5.0）
 
-**SDK 與工具全面更新！**
-- 🧩 MCP SDK 升級至 1.25.x
-- 📦 更新 tokenizer 與 YAML 依賴
-- 🧪 Jest 30 + SWC TypeScript ESM 轉換
-- 🔒 透過 npm audit 修復安全性問題
+**品質與安全性大幅升級！**
+- ✅ MCP SDK 升級至 1.29 + TypeScript 6.0
+- ✅ **PostToolUse hook** 完整實作 — 自動優化 Read/Grep/Glob/WebFetch 結果
+- ✅ **Marketplace 安裝修復** — `claude plugin marketplace add` 正常運作
+- ✅ Token 計數精確度提升 — 使用原始 tiktoken BPE（無膨脹乘數）
+- ✅ YAML 偵測強化 — 不再誤判純文字為 YAML
+- ✅ CSV 解析器支援引號欄位（如 `"王小明, Jr."`）
+- 🔒 修復 10 個安全漏洞（含 yaml DoS）
+- 🔒 DoS 防護 — 10MB 內容上限、安全正規表達式
+- 🛡️ WASM 資源在 process 結束時自動釋放
+- 📊 157 個測試（從 75 提升），所有模組覆蓋
 
 ## 🌟 為什麼要用？
 
-- 💰 **省錢** - 資料檔案處理費用減少 30-65%（平均約 40%）
+- 💰 **省錢** - 資料檔案處理費用減少 25-66%（平均約 48%）
 - 🌏 **支援中文** - 完美支援繁體中文、簡體中文及 15+ 種語言
 - 🤖 **全自動** - 裝好就用，背景自動運作
 - 🎯 **零學習成本** - 不用看教學，不用改程式
 - 🔄 **兩種用法** - 可以全自動，也可以手動控制
 - 📊 **看得到省多少** - 隨時查看幫你省了多少錢
 - 🛡️ **安全可靠** - 出問題會自動退回，不影響工作
+- 🔒 **安全強化** - 輸入限制、路徑驗證、原子寫入
 
 ## 📦 如何安裝？
 
@@ -115,7 +122,7 @@ Hook 偵測 JSON，轉換為 TOON
   ↓
 優化後的內容發送到 Claude API
   ↓
-達成 30-65% token 減少（典型約 40%）✨
+達成 25-66% token 減少（典型約 48%）✨
 ```
 
 ### MCP 伺服器模式（手動）

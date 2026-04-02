@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 Server MCP + Plugin Claude Code yang menyediakan optimasi token otomatis untuk data terstruktur.
-Mengurangi penggunaan token Claude API sebesar **30-65% tergantung struktur data** melalui konversi format TOON yang transparan, dengan penghematan tipikal **~40%** untuk data terstruktur.
+Mengurangi penggunaan token Claude API sebesar **25-66% tergantung struktur data** melalui konversi format TOON yang transparan, dengan penghematan tipikal **~48%** untuk data terstruktur.
 
 ## Fitur Baru di v0.5.0
 
@@ -15,7 +15,7 @@ Mengurangi penggunaan token Claude API sebesar **30-65% tergantung struktur data
 
 ## Fitur
 
-- **Pengurangan Token 30-65%** (biasanya ~40%) untuk data JSON, CSV, YAML
+- **Pengurangan Token 25-66%** (biasanya ~48%) untuk data JSON, CSV, YAML
 - **Dukungan Multibahasa** - Penghitungan token akurat untuk 15+ bahasa
 - **Sepenuhnya Otomatis** - Hook PostToolUse mencegat hasil tool
 - **Tanpa Konfigurasi** - Bekerja langsung dengan nilai default yang masuk akal
@@ -101,7 +101,7 @@ Hook mendeteksi JSON, konversi ke TOON
   ↓
 Konten yang dioptimalkan dikirim ke Claude API
   ↓
-Pengurangan token 30-65% (biasanya ~40%) tercapai ✨
+Pengurangan token 25-66% (biasanya ~48%) tercapai ✨
 ```
 
 ### Mode Server MCP (manual)
@@ -275,7 +275,7 @@ Lisensi MIT - lihat [LICENSE](LICENSE)
 - ✨ Pengali token sadar bahasa (2x Mandarin, 2.5x Jepang, 3x Arab, dll.)
 - ✨ Deteksi dan optimasi teks campuran multibahasa
 - ✨ Tes benchmark komprehensif dengan statistik nyata
-- 📊 Klaim penghematan token yang didukung data (rentang 30-65%, biasanya ~40%)
+- 📊 Klaim penghematan token yang didukung data (rentang 25-66%, biasanya ~48%)
 - ✅ 75+ tes lulus, termasuk kasus edge multibahasa
 - 📝 Versi README multibahasa
 
