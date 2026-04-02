@@ -1,6 +1,6 @@
 {
   "name": "toonify",
-  "description": "Automatic token optimization for structured data using TOON format. Reduces Claude API token usage by 30-65% on JSON, CSV, and YAML data through transparent PostToolUse hook interception.",
+  "description": "Automatic token optimization for structured data using TOON format. Reduces Claude API token usage by 25-66% on JSON, CSV, and YAML data through transparent PostToolUse hook interception.",
   "author": {
     "name": "PCIRCLE AI"
   },

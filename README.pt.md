@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 Servidor MCP + Plugin Claude Code fornecendo otimização automática de tokens para dados estruturados.
-Reduz o uso de tokens da API do Claude em **30-65% dependendo da estrutura de dados** através da conversão transparente para o formato TOON, com economias típicas de **~40%** para dados estruturados.
+Reduz o uso de tokens da API do Claude em **25-66% dependendo da estrutura de dados** através da conversão transparente para o formato TOON, com economias típicas de **~48%** para dados estruturados.
 
 ## Novidades na v0.5.0
 
@@ -15,7 +15,7 @@ Reduz o uso de tokens da API do Claude em **30-65% dependendo da estrutura de da
 
 ## Recursos
 
-- **Redução de 30-65% de Tokens** (tipicamente ~40%) para dados JSON, CSV, YAML
+- **Redução de 25-66% de Tokens** (tipicamente ~48%) para dados JSON, CSV, YAML
 - **Suporte Multilíngue** - Contagem precisa de tokens para mais de 15 idiomas
 - **Totalmente Automático** - Hook PostToolUse intercepta resultados de ferramentas
 - **Configuração Zero** - Funciona imediatamente com padrões sensatos
@@ -101,7 +101,7 @@ Hook detecta JSON, converte para TOON
   ↓
 Conteúdo otimizado enviado à API Claude
   ↓
-Redução típica de ~40% de tokens alcançada ✨
+Redução típica de ~48% de tokens alcançada ✨
 ```
 
 ### Modo Servidor MCP (Manual)
@@ -275,7 +275,7 @@ Licença MIT - veja [LICENSE](LICENSE)
 - ✨ Multiplicadores de tokens conscientes do idioma (2x chinês, 2.5x japonês, 3x árabe, etc.)
 - ✨ Detecção e otimização de texto em idiomas mistos
 - ✨ Testes de benchmark abrangentes com estatísticas reais
-- 📊 Alegações de economia de tokens baseadas em dados (faixa de 30-65%, tipicamente ~40%)
+- 📊 Alegações de economia de tokens baseadas em dados (faixa de 25-66%, tipicamente ~48%)
 - ✅ Mais de 75 testes passando, incluindo casos extremos multilíngues
 - 📝 Versões multilíngues do README
 

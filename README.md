@@ -3,19 +3,25 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 MCP server + Claude Code Plugin providing automatic token optimization for structured data.
-Reduces Claude API token usage by **30-65% depending on data structure** through transparent TOON format conversion, with typical savings of **around 40%** for structured data.
+Reduces Claude API token usage by **25-66% depending on data structure** through transparent TOON format conversion, with typical savings of **around 48%** for structured data.
 
 ## What's New in v0.5.0
 
-✨ **SDK + Tooling Updates!**
-- ✅ MCP SDK updated to the latest 1.25.x line
-- ✅ Tokenizer and YAML dependencies updated
-- ✅ Jest 30 migration with SWC-based TypeScript ESM transform
-- ✅ Security fixes applied via npm audit
+✨ **Major Quality & Security Update!**
+- ✅ MCP SDK updated to 1.29.x with TypeScript 6.0
+- ✅ **PostToolUse hook** now fully functional — auto-optimizes Read, Grep, Glob, WebFetch results
+- ✅ **Marketplace install** fixed — `claude plugin marketplace add` works correctly
+- ✅ Token counting accuracy improved — uses raw tiktoken BPE (no inflated multipliers)
+- ✅ YAML detection hardened — no longer misdetects plain text as YAML
+- ✅ CSV parser handles quoted fields (`"Smith, John"`)
+- ✅ 10 security vulnerabilities fixed (including yaml DoS)
+- ✅ DoS protection — 10MB content size limit, safe RegExp compilation
+- ✅ Resource safety — WASM cleanup on shutdown, async disk I/O, atomic writes
+- ✅ 157 tests (up from 75), 0 vulnerabilities
 
 ## Features
 
-- **30-65% Token Reduction** (typically ~40%) for JSON, CSV, YAML data
+- **25-66% Token Reduction** (typically ~48%) for JSON, CSV, YAML data
 - **Multilingual Support** - Accurate token counting for 15+ languages
 - **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
 - **Fully Automatic** - PostToolUse hook intercepts tool results
@@ -23,6 +29,7 @@ Reduces Claude API token usage by **30-65% depending on data structure** through
 - **Dual Mode** - Works as Plugin (auto) or MCP Server (manual)
 - **Built-in Metrics** - Track token savings locally
 - **Silent Fallback** - Never breaks your workflow
+- **Security Hardened** - Input size limits, path validation, safe regex, atomic writes
 
 ## Installation
 
@@ -102,7 +109,7 @@ Hook detects JSON, converts to TOON
   ↓
 Optimized content sent to Claude API
   ↓
-30-65% token reduction achieved (typically ~40%) ✨
+25-66% token reduction achieved (typically ~48%) ✨
 ```
 
 ### MCP Server Mode (Manual)
@@ -274,7 +281,6 @@ npm uninstall -g toonify-mcp
 
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP Docs**: https://code.claude.com/docs/mcp
 - **TOON Format**: https://github.com/toon-format/toon
 
@@ -291,16 +297,27 @@ MIT License - see [LICENSE](LICENSE)
 ## Changelog
 
 ### v0.5.0 (2026-01-21)
-- ✨ **SDK & tooling updates** - MCP SDK, tokenizer, and YAML dependencies refreshed
-- ✨ Jest 30 migration with SWC-based TypeScript ESM transform
-- 🔒 Security fixes applied via npm audit
+- ✨ **PostToolUse hook** fully implemented — auto-optimizes Read/Grep/Glob/WebFetch
+- ✨ **Marketplace install** fixed — `claude plugin marketplace add` works correctly
+- ✨ **TypeScript 6.0** + MCP SDK 1.29 + Jest 30 with SWC
+- ✨ **Token counting accuracy** — raw tiktoken BPE, no inflated language multipliers
+- ✨ **YAML detection** hardened — requires structural complexity, rejects plain text
+- ✨ **CSV parser** handles quoted fields with embedded commas
+- 🔒 10 security vulnerabilities fixed (yaml DoS, picomatch ReDoS, qs bypass)
+- 🔒 DoS protection: 10MB input limit, safe RegExp pre-compilation
+- 🔒 Path traversal protection on persistent cache paths
+- 🔒 Atomic file writes prevent data corruption
+- 🛡️ WASM resource cleanup on process shutdown (SIGINT/SIGTERM)
+- 🛡️ Async disk I/O — no event loop blocking
+- 🛡️ All async persistence errors properly handled (no unhandled rejections)
+- 📊 157 tests (up from 75), all modules covered
+- 📊 Benchmark-verified savings: avg 48%, median 53%, range 25-66%
 
 ### v0.3.0 (2025-12-26)
 - ✨ **Multilingual token optimization** - accurate counting for 15+ languages
-- ✨ Language-aware token multipliers (2x Chinese, 2.5x Japanese, 3x Arabic, etc.)
 - ✨ Mixed-language text detection and optimization
 - ✨ Comprehensive benchmark testing with real statistics
-- 📊 Data-backed token savings claims (30-65% range, typically ~40%)
+- 📊 Data-backed token savings claims (25-66% range, typically ~48%)
 - ✅ 75+ tests passing, including multilingual edge cases
 - 📝 Multilingual README versions
 
