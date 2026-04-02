@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Free & Open Source Token Optimization Plugin</title>
-    <meta name="description" content="Free & open-source MCP plugin for Claude Code. Automatically reduces token usage by 25-66% for structured data through transparent TOON format conversion.">
+    <meta name="description" content="Free & open-source MCP plugin for Claude Code. Automatically reduces token usage by 25-66% for structured data and 20-48% for source code (TS/Py/Go) through pipeline architecture.">
 
     <!-- Google Fonts: JetBrains Mono + IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -356,7 +356,7 @@
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Automatically reduce Claude API token usage by <strong style="color: var(--text-primary);">25-66%</strong> (typically ~48%) for JSON, CSV, and YAML data through transparent TOON format conversion.
+                Automatically reduce Claude API token usage by <strong style="color: var(--text-primary);">25-66%</strong> for JSON/CSV/YAML and <strong style="color: var(--text-primary);">20-48%</strong> for TypeScript/Python/Go source code through pipeline architecture.
             </p>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -501,7 +501,7 @@
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">4</div>
                         <div>
                             <h3 class="font-bold mb-1" style="color: var(--text-primary);">Optimized content sent to Claude API</h3>
-                            <p style="color: var(--text-secondary);">~48% typical token reduction achieved ✨</p>
+                            <p style="color: var(--text-secondary);">25-66% structured data + 20-48% source code savings ✨</p>
                         </div>
                     </div>
                 </div>
@@ -543,7 +543,7 @@ claude plugin list
 <span class="comment"># Should show: toonify-mcp ✓</span></code>
                     </div>
                     <p class="mt-4" style="color: var(--text-secondary);">
-                        <strong style="color: var(--text-primary);">That's it!</strong> The PostToolUse hook will now automatically intercept and optimize structured data from Read, Grep, and other file tools.
+                        <strong style="color: var(--text-primary);">That's it!</strong> The PostToolUse hook will now automatically intercept and optimize structured data and source code from Read, Grep, and other file tools.
                     </p>
                 </div>
 

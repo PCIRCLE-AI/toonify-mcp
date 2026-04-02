@@ -2,20 +2,25 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-MCP サーバー + Claude Code プラグインによる構造化データの自動トークン最適化。
-透過的な TOON フォーマット変換により、**データ構造に応じて Claude API トークン使用量を 25-66% 削減**し、構造化データでは一般的に **約48%** の節約を実現します。
+MCP サーバー + Claude Code プラグインによる構造化データ**およびソースコード**の自動トークン最適化。
+JSON/CSV/YAML で **25-66%**、TypeScript/Python/Go ソースコードで **20-48%** のトークン削減を Pipeline アーキテクチャで実現します。
 
-## v0.5.0 の新機能
+## v0.6.0 の新機能
 
-✨ **SDK とツール周りの更新！**
-- ✅ MCP SDK を最新の 1.25.x 系に更新
-- ✅ トークナイザーと YAML の依存関係を更新
-- ✅ SWC ベースの TypeScript ESM 変換で Jest 30 へ移行
-- ✅ npm audit によるセキュリティ修正を適用
+✨ **Pipeline アーキテクチャ + コード圧縮！**
+- ✅ **Pipeline エンジン** — モジュラー Detector → Router → Compressor → Evaluator アーキテクチャ
+- ✅ **コード圧縮** — TypeScript（37%）、Python（48%）、Go（32%）のヒューリスティックベース圧縮
+- ✅ **6 圧縮レイヤー** — 空行マージ、インラインコメント削除、importパス短縮、import要約、繰り返しパターン折りたたみ
+- ✅ **フック強化** — PostToolUse フックが構造化データに加えソースコードも圧縮
+- ✅ 拡張可能な設計 — `Compressor` インターフェースを実装するだけで新フォーマットに対応
+- ✅ 完全な後方互換性 — すべての外部 API は変更なし
+- ✅ 196 テスト（157 から増加）、包括的なコードレビュー合格
 
 ## 機能
 
 - **25-66% のトークン削減**（通常 約48%）- JSON、CSV、YAML データに対応
+- **20-48% のコード圧縮** - TypeScript、Python、Go ソースコードに対応
+- **Pipeline アーキテクチャ** - 拡張可能な Detector → Compressor → Evaluator エンジン
 - **多言語サポート** - 15 以上の言語の正確なトークンカウント
 - **完全自動** - PostToolUse フックがツール結果を傍受
 - **設定不要** - 賢明なデフォルト設定で開箱即用
@@ -264,6 +269,15 @@ MIT ライセンス - 詳細は [LICENSE](LICENSE) を参照
 ---
 
 ## 変更履歴
+
+### v0.6.0（2026-04-03）
+- ✨ **Pipeline アーキテクチャ** — モジュラー Detector → Router → Compressor → Evaluator エンジン
+- ✨ **コード圧縮** — TypeScript（37%）、Python（48%）、Go（32%）のヒューリスティックベース圧縮
+- ✨ **6 圧縮レイヤー** — 空行マージ、インラインコメント削除、importパス短縮、import要約、繰り返しパターン折りたたみ
+- ✨ **フック強化** — PostToolUse フックが構造化データに加えソースコードも圧縮
+- ✨ **拡張可能** — `Compressor` インターフェースを実装し Pipeline に登録するだけで新フォーマットに対応
+- 🔧 TokenOptimizer をファサードパターンにリファクタリング — すべての外部 API は変更なし
+- 📊 196 テスト（157 から増加）、包括的なコードレビュー合格
 
 ### v0.5.0（2026-01-21）
 - ✨ **SDK とツール周りの更新** - MCP SDK、トークナイザー、YAML を更新
