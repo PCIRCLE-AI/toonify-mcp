@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 MCP server + Claude Code Plugin providing automatic token optimization for structured data.
-Reduces Claude API token usage by **30-65% depending on data structure** through transparent TOON format conversion, with typical savings of **50-55%** for structured data.
+Reduces Claude API token usage by **30-65% depending on data structure** through transparent TOON format conversion, with typical savings of **around 40%** for structured data.
 
 ## What's New in v0.5.0
 
@@ -15,7 +15,7 @@ Reduces Claude API token usage by **30-65% depending on data structure** through
 
 ## Features
 
-- **30-65% Token Reduction** (typically 50-55%) for JSON, CSV, YAML data
+- **30-65% Token Reduction** (typically ~40%) for JSON, CSV, YAML data
 - **Multilingual Support** - Accurate token counting for 15+ languages
 - **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
 - **Fully Automatic** - PostToolUse hook intercepts tool results
@@ -102,7 +102,7 @@ Hook detects JSON, converts to TOON
   ↓
 Optimized content sent to Claude API
   ↓
-50-55% typical token reduction achieved ✨
+30-65% token reduction achieved (typically ~40%) ✨
 ```
 
 ### MCP Server Mode (Manual)
@@ -300,7 +300,7 @@ MIT License - see [LICENSE](LICENSE)
 - ✨ Language-aware token multipliers (2x Chinese, 2.5x Japanese, 3x Arabic, etc.)
 - ✨ Mixed-language text detection and optimization
 - ✨ Comprehensive benchmark testing with real statistics
-- 📊 Data-backed token savings claims (30-65% range, typically 50-55%)
+- 📊 Data-backed token savings claims (30-65% range, typically ~40%)
 - ✅ 75+ tests passing, including multilingual edge cases
 - 📝 Multilingual README versions
 

@@ -3,7 +3,7 @@
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
 Serveur MCP + Plugin Claude Code offrant une optimisation automatique des tokens pour les données structurées.
-Réduit l'utilisation des tokens de l'API Claude de **30 à 65 % selon la structure des données** grâce à la conversion transparente au format TOON, avec des économies typiques de **50 à 55 %** pour les données structurées.
+Réduit l'utilisation des tokens de l'API Claude de **30 à 65 % selon la structure des données** grâce à la conversion transparente au format TOON, avec des économies typiques d'environ **~40 %** pour les données structurées.
 
 ## Nouveautés de la v0.5.0
 
@@ -15,7 +15,7 @@ Réduit l'utilisation des tokens de l'API Claude de **30 à 65 % selon la struct
 
 ## Fonctionnalités
 
-- **Réduction de 30 à 65 % des tokens** (typiquement 50 à 55 %) pour les données JSON, CSV, YAML
+- **Réduction de 30 à 65 % des tokens** (typiquement ~40 %) pour les données JSON, CSV, YAML
 - **Support multilingue** - Comptage précis des tokens pour plus de 15 langues
 - **Entièrement automatique** - Le hook PostToolUse intercepte les résultats des outils
 - **Zéro configuration** - Fonctionne immédiatement avec des paramètres par défaut sensés
@@ -101,7 +101,7 @@ Le hook détecte le JSON, convertit en TOON
   ↓
 Contenu optimisé envoyé à l'API Claude
   ↓
-Réduction typique de 50 à 55 % des tokens obtenue ✨
+Réduction de 30 à 65 % (typiquement ~40 %) des tokens obtenue ✨
 ```
 
 ### Mode Serveur MCP (Manuel)
@@ -275,7 +275,7 @@ Licence MIT - voir [LICENSE](LICENSE)
 - ✨ Multiplicateurs de tokens adaptés aux langues (2x chinois, 2,5x japonais, 3x arabe, etc.)
 - ✨ Détection et optimisation des textes multilingues
 - ✨ Tests de référence complets avec statistiques réelles
-- 📊 Revendications d'économies de tokens basées sur des données (plage de 30 à 65 %, typiquement 50 à 55 %)
+- 📊 Revendications d'économies de tokens basées sur des données (plage de 30 à 65 %, typiquement ~40 %)
 - ✅ Plus de 75 tests réussis, y compris les cas limites multilingues
 - 📝 Versions multilingues du README
 
