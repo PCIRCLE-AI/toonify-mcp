@@ -299,6 +299,14 @@ npm uninstall -g toonify-mcp
 
 歡迎貢獻！請參閱 [CONTRIBUTING.md](CONTRIBUTING.md) 獲取指南。
 
+## 支援
+
+若需要安裝協助、回報問題或查看商業聯絡方式，請參閱 [SUPPORT.md](SUPPORT.md)。
+
+## 安全性回報
+
+若發現安全性問題，請依照 [SECURITY.md](SECURITY.md) 的方式私下回報。
+
 ## 授權
 
 MIT License - 請參閱 [LICENSE](LICENSE)

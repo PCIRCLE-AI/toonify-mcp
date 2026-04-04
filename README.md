@@ -294,6 +294,14 @@ npm uninstall -g toonify-mcp
 
 Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+## Support
+
+For setup help, bug reports, and commercial contact paths, see [SUPPORT.md](SUPPORT.md).
+
+## Security
+
+Please report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
+
 ## License
 
 MIT License - see [LICENSE](LICENSE)
