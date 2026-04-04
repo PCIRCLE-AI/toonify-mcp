@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### 옵션 B: pcircle.ai 마켓플레이스에서 설치 (가장 쉬움) 🌟
+### 옵션 B: Claude Marketplaces에서 설치 (사용 가능한 경우) 🌟
 
 **원클릭 설치:**
 
-Claude Code에서 [pcircle.ai 마켓플레이스](https://claudemarketplaces.com)를 방문하여 toonify-mcp를 클릭 한 번으로 설치하세요. 마켓플레이스가 모든 것을 자동으로 처리합니다!
+Claude Code에서 [Claude Marketplaces](https://claudemarketplaces.com)를 열고, 환경에서 marketplace distribution이 지원될 경우 `toonify-mcp`를 클릭 한 번으로 설치할 수 있습니다.
 
 ### 옵션 C: Claude Code 플러그인 (권장) ⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## 링크
 
+- **Docs**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP Docs**: https://code.claude.com/docs/mcp
 - **TOON Format**: https://github.com/toon-format/toon
 
@@ -262,50 +262,16 @@ npm uninstall -g toonify-mcp
 
 기여를 환영합니다! 가이드라인은 [CONTRIBUTING.md](CONTRIBUTING.md)를 참조하세요.
 
+## 지원
+
+설치 도움말, 버그 보고, 상업 문의 경로는 [SUPPORT.md](SUPPORT.md)를 참고하세요.
+
+## 보안
+
+취약점은 [SECURITY.md](SECURITY.md)에 안내된 방식으로 비공개로 제보해 주세요.
+
 ## 라이선스
 
 MIT License - [LICENSE](LICENSE) 참조
 
----
-
-## 변경 이력
-
-### v0.6.0 (2026-04-03)
-- ✨ **파이프라인 아키텍처** — 모듈형 Detector → Router → Compressor → Evaluator 엔진
-- ✨ **코드 압축** — TypeScript(37%), Python(48%), Go(32%) 휴리스틱 기반 압축
-- ✨ **6개 압축 레이어** — 빈 줄 병합, 인라인 주석 제거, import 경로 축약, import 요약, 반복 패턴 축소
-- ✨ **훅 강화** — PostToolUse 훅이 구조화된 데이터 외에 소스 코드도 압축
-- ✨ **확장 가능** — `Compressor` 인터페이스를 구현하고 파이프라인에 등록하여 새로운 형식 추가
-- 🔧 TokenOptimizer를 파사드 패턴으로 리팩토링 — 모든 외부 API 변경 없음
-- 📊 196개 테스트(157개에서 증가), 포괄적인 코드 리뷰 통과
-
-### v0.5.0 (2026-01-21)
-- ✨ **SDK 및 도구 업데이트** - MCP SDK, 토크나이저, YAML 업데이트
-- ✨ SWC 기반 TypeScript ESM 변환으로 Jest 30 마이그레이션
-- 🔒 npm audit를 통한 보안 수정
-
-### v0.3.0 (2025-12-26)
-- ✨ **다국어 토큰 최적화** - 15개 이상의 언어에 대한 정확한 계산
-- ✨ 언어별 토큰 승수 (중국어 2배, 일본어 2.5배, 아랍어 3배 등)
-- ✨ 혼합 언어 텍스트 감지 및 최적화
-- ✨ 실제 통계를 사용한 포괄적인 벤치마크 테스트
-- 📊 데이터 기반 토큰 절감 수치 (25-66% 범위, 일반적으로 약 48%)
-- ✅ 다국어 엣지 케이스를 포함한 75개 이상의 테스트 통과
-- 📝 다국어 README 버전
-
-### v0.2.0 (2025-12-25)
-- ✨ PostToolUse 훅을 사용한 Claude Code 플러그인 지원 추가
-- ✨ 자동 토큰 최적화 (수동 호출 불필요)
-- ✨ 플러그인 설정 시스템
-- ✨ 이중 모드: 플러그인 (자동) + MCP 서버 (수동)
-- 📝 포괄적인 문서 업데이트
-
-### v0.1.1 (2024-12-24)
-- 🐛 버그 수정 및 개선
-- 📝 문서 업데이트
-
-### v0.1.0 (2024-12-24)
-- 🎉 초기 릴리스
-- ✨ MCP 서버 구현
-- ✨ TOON 형식 최적화
-- ✨ 내장 메트릭 추적
+릴리스 이력은 [CHANGELOG.md](CHANGELOG.md)를 참고하세요.

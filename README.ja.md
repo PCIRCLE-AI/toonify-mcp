@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### オプション B：pcircle.ai マーケットプレイスからインストール（最も簡単）🌟
+### オプション B：Claude Marketplaces からインストール（利用可能な場合）🌟
 
 **ワンクリックインストール：**
 
-Claude Code で [pcircle.ai マーケットプレイス](https://claudemarketplaces.com) を開き、toonify-mcp をワンクリックでインストール。マーケットプレイスがすべて自動的に処理します！
+Claude Code で [Claude Marketplaces](https://claudemarketplaces.com) を開き、環境で marketplace distribution が利用可能な場合は `toonify-mcp` をワンクリックでインストールできます。
 
 ### オプション C：Claude Code プラグイン（推奨）⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## リンク
 
+- **Docs**：https://toonify.pcircle.ai/
 - **GitHub**：https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**：https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**：https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP ドキュメント**：https://code.claude.com/docs/mcp
 - **TOON フォーマット**：https://github.com/toon-format/toon
 
@@ -262,50 +262,16 @@ npm uninstall -g toonify-mcp
 
 貢献を歓迎します！ガイドラインについては [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
 
+## サポート
+
+セットアップ支援、バグ報告、商用連絡先については [SUPPORT.md](SUPPORT.md) を参照してください。
+
+## セキュリティ
+
+脆弱性は [SECURITY.md](SECURITY.md) に記載された方法で非公開で報告してください。
+
 ## ライセンス
 
 MIT ライセンス - 詳細は [LICENSE](LICENSE) を参照
 
----
-
-## 変更履歴
-
-### v0.6.0（2026-04-03）
-- ✨ **Pipeline アーキテクチャ** — モジュラー Detector → Router → Compressor → Evaluator エンジン
-- ✨ **コード圧縮** — TypeScript（37%）、Python（48%）、Go（32%）のヒューリスティックベース圧縮
-- ✨ **6 圧縮レイヤー** — 空行マージ、インラインコメント削除、importパス短縮、import要約、繰り返しパターン折りたたみ
-- ✨ **フック強化** — PostToolUse フックが構造化データに加えソースコードも圧縮
-- ✨ **拡張可能** — `Compressor` インターフェースを実装し Pipeline に登録するだけで新フォーマットに対応
-- 🔧 TokenOptimizer をファサードパターンにリファクタリング — すべての外部 API は変更なし
-- 📊 196 テスト（157 から増加）、包括的なコードレビュー合格
-
-### v0.5.0（2026-01-21）
-- ✨ **SDK とツール周りの更新** - MCP SDK、トークナイザー、YAML を更新
-- ✨ SWC ベースの TypeScript ESM 変換で Jest 30 へ移行
-- 🔒 npm audit によるセキュリティ修正を適用
-
-### v0.3.0（2025-12-26）
-- ✨ **多言語トークン最適化** - 15 以上の言語の正確なカウント
-- ✨ 言語を考慮したトークン倍率（中国語 2 倍、日本語 2.5 倍、アラビア語 3 倍など）
-- ✨ 混合言語テキストの検出と最適化
-- ✨ 実際の統計を使用した包括的なベンチマークテスト
-- 📊 データに裏付けられたトークン節約の主張（25-66% の範囲、通常 約48%）
-- ✅ 多言語エッジケースを含む 75 以上のテスト合格
-- 📝 多言語 README バージョン
-
-### v0.2.0（2025-12-25）
-- ✨ PostToolUse フックによる Claude Code プラグインサポートの追加
-- ✨ 自動トークン最適化（手動呼び出し不要）
-- ✨ プラグイン設定システム
-- ✨ デュアルモード：プラグイン（自動）+ MCP サーバー（手動）
-- 📝 包括的なドキュメント更新
-
-### v0.1.1（2024-12-24）
-- 🐛 バグ修正と改善
-- 📝 ドキュメント更新
-
-### v0.1.0（2024-12-24）
-- 🎉 初回リリース
-- ✨ MCP サーバー実装
-- ✨ TOON フォーマット最適化
-- ✨ 組み込みメトリクス追跡
+リリース履歴は [CHANGELOG.md](CHANGELOG.md) を参照してください。

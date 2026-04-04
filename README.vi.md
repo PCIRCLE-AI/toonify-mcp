@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### Tùy chọn B: Cài đặt từ marketplace pcircle.ai (Dễ nhất) 🌟
+### Tùy chọn B: Cài đặt từ Claude Marketplaces (nếu khả dụng) 🌟
 
 **Cài đặt một cú nhấp:**
 
-Duyệt đến [marketplace pcircle.ai](https://claudemarketplaces.com) trong Claude Code và cài đặt toonify-mcp chỉ với một cú nhấp. Marketplace xử lý mọi thứ tự động!
+Mở [Claude Marketplaces](https://claudemarketplaces.com) trong Claude Code và cài đặt `toonify-mcp` chỉ với một cú nhấp khi phân phối qua marketplace khả dụng trong môi trường của bạn.
 
 ### Tùy chọn C: Plugin Claude Code (Khuyến nghị) ⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## Liên kết
 
+- **Docs**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Tài liệu MCP**: https://code.claude.com/docs/mcp
 - **Định dạng TOON**: https://github.com/toon-format/toon
 
@@ -262,51 +262,16 @@ npm uninstall -g toonify-mcp
 
 Đóng góp được chào đón! Vui lòng xem [CONTRIBUTING.md](CONTRIBUTING.md) để biết hướng dẫn.
 
+## Hỗ trợ
+
+Để được trợ giúp cài đặt, báo lỗi và xem các kênh liên hệ thương mại, hãy xem [SUPPORT.md](SUPPORT.md).
+
+## Bảo mật
+
+Vui lòng báo cáo lỗ hổng riêng tư theo hướng dẫn trong [SECURITY.md](SECURITY.md).
+
 ## Giấy phép
 
 Giấy phép MIT - xem [LICENSE](LICENSE)
 
----
-
-## Nhật ký thay đổi
-
-### v0.6.0 (2026-04-03)
-- ✨ **Kiến trúc pipeline** — động cơ module hóa Detector → Router → Compressor → Evaluator
-- ✨ **Nén mã nguồn** — nén dựa trên heuristic cho TypeScript (37%), Python (48%), Go (32%)
-- ✨ **6 lớp nén** — gộp dòng trống, xóa comment inline/block, rút gọn import, tóm tắt import, thu gọn mẫu lặp lại
-- ✨ **Đảm bảo an toàn** — không bao giờ xóa logic mã, giữ lại TODO/FIXME, giữ lại tóm tắt JSDoc/docstring
-- ✨ **Hook nâng cấp** — hook PostToolUse giờ phát hiện và nén mã nguồn (Lớp 1-4)
-- ✨ **Mở rộng** — thêm loại nội dung mới bằng cách triển khai giao diện `Compressor` và đăng ký với pipeline
-- 🔧 TokenOptimizer tái cấu trúc sang mẫu facade — tất cả API bên ngoài không thay đổi
-- 📊 196 bài kiểm tra (trước đó 157), đánh giá mã nguồn toàn diện 16 chiều đã vượt qua
-
-### v0.5.0 (2026-01-21)
-- ✨ **Cập nhật SDK và tooling** - MCP SDK, tokenizer và YAML được cập nhật
-- ✨ Di chuyển sang Jest 30 với chuyển đổi TypeScript ESM dựa trên SWC
-- 🔒 Áp dụng bản vá bảo mật qua npm audit
-
-### v0.3.0 (2025-12-26)
-- ✨ **Tối ưu hóa token đa ngôn ngữ** - đếm chính xác cho hơn 15 ngôn ngữ
-- ✨ Hệ số nhân token nhận biết ngôn ngữ (2x Trung, 2.5x Nhật, 3x Ả Rập, v.v.)
-- ✨ Phát hiện và tối ưu hóa văn bản hỗn hợp nhiều ngôn ngữ
-- ✨ Kiểm tra chuẩn toàn diện với thống kê thực tế
-- 📊 Tuyên bố tiết kiệm token được hỗ trợ bởi dữ liệu (phạm vi 25-66%, thường ~48%)
-- ✅ Hơn 75 kiểm tra đã vượt qua, bao gồm các trường hợp biên đa ngôn ngữ
-- 📝 Các phiên bản README đa ngôn ngữ
-
-### v0.2.0 (2025-12-25)
-- ✨ Đã thêm hỗ trợ plugin Claude Code với hook PostToolUse
-- ✨ Tối ưu hóa token tự động (không cần gọi thủ công)
-- ✨ Hệ thống cấu hình plugin
-- ✨ Chế độ kép: Plugin (tự động) + Máy chủ MCP (thủ công)
-- 📝 Cập nhật tài liệu toàn diện
-
-### v0.1.1 (2024-12-24)
-- 🐛 Sửa lỗi và cải tiến
-- 📝 Cập nhật tài liệu
-
-### v0.1.0 (2024-12-24)
-- 🎉 Phát hành ban đầu
-- ✨ Triển khai máy chủ MCP
-- ✨ Tối ưu hóa định dạng TOON
-- ✨ Theo dõi chỉ số tích hợp
+Xem lịch sử phát hành tại [CHANGELOG.md](CHANGELOG.md).

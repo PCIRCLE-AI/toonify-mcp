@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### Option B : Installer depuis le marketplace pcircle.ai (Le plus facile) 🌟
+### Option B : Installer via Claude Marketplaces (si disponible) 🌟
 
 **Installation en un clic :**
 
-Accédez au [marketplace pcircle.ai](https://claudemarketplaces.com) dans Claude Code et installez toonify-mcp en un clic. Le marketplace gère tout automatiquement !
+Accédez à [Claude Marketplaces](https://claudemarketplaces.com) dans Claude Code et installez `toonify-mcp` en un clic si la distribution via marketplace est disponible dans votre environnement.
 
 ### Option C : Plugin Claude Code (Recommandé) ⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## Liens
 
+- **Docs** : https://toonify.pcircle.ai/
 - **GitHub** : https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues** : https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub** : https://github.com/PCIRCLE-AI/toonify-mcp
 - **Documentation MCP** : https://code.claude.com/docs/mcp
 - **Format TOON** : https://github.com/toon-format/toon
 
@@ -262,50 +262,16 @@ npm uninstall -g toonify-mcp
 
 Les contributions sont les bienvenues ! Veuillez consulter [CONTRIBUTING.md](CONTRIBUTING.md) pour les directives.
 
+## Support
+
+Pour l'aide à l'installation, les signalements de bugs et les contacts commerciaux, consultez [SUPPORT.md](SUPPORT.md).
+
+## Sécurité
+
+Veuillez signaler les vulnérabilités en privé comme décrit dans [SECURITY.md](SECURITY.md).
+
 ## Licence
 
 Licence MIT - voir [LICENSE](LICENSE)
 
----
-
-## Journal des modifications
-
-### v0.6.0 (2026-04-03)
-- ✨ **Architecture pipeline** — moteur modulaire Detector → Router → Compressor → Evaluator
-- ✨ **Compression de code** — TypeScript (37 %), Python (48 %), Go (32 %) via compression heuristique
-- ✨ **6 couches de compression** — fusion de lignes vides, suppression de commentaires inline, raccourcissement des imports, résumé des imports, repli des motifs répétitifs
-- ✨ **Hook amélioré** — le hook PostToolUse détecte et compresse le code source (Couches 1-4)
-- ✨ **Extensible** — ajoutez de nouveaux types de contenu en implémentant l'interface `Compressor` et en l'enregistrant dans le pipeline
-- 🔧 TokenOptimizer refactorisé en patron façade — toutes les APIs externes inchangées
-- 📊 196 tests (contre 157 auparavant), revue de code exhaustive validée
-
-### v0.5.0 (2026-01-21)
-- ✨ **Mises à jour SDK et tooling** - SDK MCP, tokenizer et YAML mis à jour
-- ✨ Migration vers Jest 30 avec transformation ESM TypeScript via SWC
-- 🔒 Correctifs de sécurité via npm audit
-
-### v0.3.0 (2025-12-26)
-- ✨ **Optimisation multilingue des tokens** - comptage précis pour plus de 15 langues
-- ✨ Multiplicateurs de tokens adaptés aux langues (2x chinois, 2,5x japonais, 3x arabe, etc.)
-- ✨ Détection et optimisation des textes multilingues
-- ✨ Tests de référence complets avec statistiques réelles
-- 📊 Revendications d'économies de tokens basées sur des données (plage de 25-66 %, typiquement ~48 %)
-- ✅ Plus de 75 tests réussis, y compris les cas limites multilingues
-- 📝 Versions multilingues du README
-
-### v0.2.0 (2025-12-25)
-- ✨ Ajout du support du Plugin Claude Code avec hook PostToolUse
-- ✨ Optimisation automatique des tokens (aucun appel manuel nécessaire)
-- ✨ Système de configuration du plugin
-- ✨ Mode double : Plugin (auto) + Serveur MCP (manuel)
-- 📝 Mise à jour complète de la documentation
-
-### v0.1.1 (2024-12-24)
-- 🐛 Corrections de bugs et améliorations
-- 📝 Mises à jour de la documentation
-
-### v0.1.0 (2024-12-24)
-- 🎉 Version initiale
-- ✨ Implémentation du serveur MCP
-- ✨ Optimisation au format TOON
-- ✨ Suivi des métriques intégré
+Pour l'historique des versions, consultez [CHANGELOG.md](CHANGELOG.md).

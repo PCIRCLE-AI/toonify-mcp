@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### Option B: Installation aus dem pcircle.ai Marketplace (Am einfachsten) 🌟
+### Option B: Installation über Claude Marketplaces (falls verfügbar) 🌟
 
 **Ein-Klick-Installation:**
 
-Navigieren Sie zum [pcircle.ai Marketplace](https://claudemarketplaces.com) in Claude Code und installieren Sie toonify-mcp mit einem Klick. Der Marketplace übernimmt alles automatisch!
+Navigieren Sie in Claude Code zu [Claude Marketplaces](https://claudemarketplaces.com) und installieren Sie `toonify-mcp` mit einem Klick, sofern die Marketplace-Verteilung in Ihrer Umgebung verfügbar ist.
 
 ### Option C: Claude Code Plugin (Empfohlen) ⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## Links
 
+- **Docs**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP Docs**: https://code.claude.com/docs/mcp
 - **TOON Format**: https://github.com/toon-format/toon
 
@@ -262,51 +262,16 @@ npm uninstall -g toonify-mcp
 
 Beiträge sind willkommen! Bitte lesen Sie [CONTRIBUTING.md](CONTRIBUTING.md) für Richtlinien.
 
+## Support
+
+Hilfe bei Einrichtung, Fehlermeldungen und kommerziellen Kontaktwegen finden Sie in [SUPPORT.md](SUPPORT.md).
+
+## Sicherheit
+
+Bitte melden Sie Sicherheitslücken vertraulich wie in [SECURITY.md](SECURITY.md) beschrieben.
+
 ## Lizenz
 
 MIT License - siehe [LICENSE](LICENSE)
 
----
-
-## Änderungsprotokoll
-
-### v0.6.0 (2026-04-03)
-- ✨ **Pipeline-Architektur** — modulare Detector → Router → Compressor → Evaluator Engine
-- ✨ **Code-Komprimierung** — heuristikbasierte Komprimierung für TypeScript (37%), Python (48%), Go (32%)
-- ✨ **6 Komprimierungsschichten** — Leerzeilen zusammenführen, Inline-/Block-Kommentare entfernen, Imports kürzen, Imports zusammenfassen, repetitive Muster kollabieren
-- ✨ **Sicherheitsgarantien** — entfernt niemals Code-Logik, behält TODO/FIXME bei, bewahrt JSDoc/Docstring-Zusammenfassungen
-- ✨ **Hook aufgerüstet** — PostToolUse-Hook erkennt und komprimiert jetzt auch Quellcode (Schichten 1-4)
-- ✨ **Erweiterbar** — neue Inhaltstypen durch Implementierung der `Compressor`-Schnittstelle und Pipeline-Registrierung hinzufügen
-- 🔧 TokenOptimizer zu Fassaden-Muster refaktoriert — alle externen APIs unverändert
-- 📊 196 Tests (zuvor 157), umfassende 16-Dimensionen Code-Review bestanden
-
-### v0.5.0 (2026-01-21)
-- ✨ **SDK- und Tooling-Updates** - MCP SDK, Tokenizer und YAML-Abhängigkeiten aktualisiert
-- ✨ Jest 30-Migration mit SWC-basiertem TypeScript-ESM-Transform
-- 🔒 Sicherheitsfixes via npm audit
-
-### v0.3.0 (2025-12-26)
-- ✨ **Mehrsprachige Token-Optimierung** - präzise Zählung für über 15 Sprachen
-- ✨ Sprachabhängige Token-Multiplikatoren (2x Chinesisch, 2,5x Japanisch, 3x Arabisch, etc.)
-- ✨ Erkennung und Optimierung mehrsprachiger Texte
-- ✨ Umfassende Benchmark-Tests mit echten Statistiken
-- 📊 Datengestützte Token-Einsparungs-Angaben (25-66% Bereich, typischerweise ~48%)
-- ✅ 75+ bestandene Tests, einschließlich mehrsprachiger Randfälle
-- 📝 Mehrsprachige README-Versionen
-
-### v0.2.0 (2025-12-25)
-- ✨ Claude Code Plugin-Unterstützung mit PostToolUse-Hook hinzugefügt
-- ✨ Automatische Token-Optimierung (keine manuellen Aufrufe erforderlich)
-- ✨ Plugin-Konfigurationssystem
-- ✨ Dual-Modus: Plugin (automatisch) + MCP-Server (manuell)
-- 📝 Umfassende Dokumentationsaktualisierung
-
-### v0.1.1 (2024-12-24)
-- 🐛 Fehlerbehebungen und Verbesserungen
-- 📝 Dokumentationsaktualisierungen
-
-### v0.1.0 (2024-12-24)
-- 🎉 Erstveröffentlichung
-- ✨ MCP-Server-Implementierung
-- ✨ TOON-Format-Optimierung
-- ✨ Integrierte Metrik-Verfolgung
+Den Versionsverlauf finden Sie in [CHANGELOG.md](CHANGELOG.md).

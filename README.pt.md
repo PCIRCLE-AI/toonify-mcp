@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### Opção B: Instalar do marketplace pcircle.ai (Mais fácil) 🌟
+### Opção B: Instalar via Claude Marketplaces (se disponível) 🌟
 
 **Instalação com um clique:**
 
-Navegue até o [marketplace pcircle.ai](https://claudemarketplaces.com) no Claude Code e instale toonify-mcp com um clique. O marketplace cuida de tudo automaticamente!
+Abra [Claude Marketplaces](https://claudemarketplaces.com) no Claude Code e instale `toonify-mcp` com um clique quando a distribuição por marketplace estiver disponível no seu ambiente.
 
 ### Opção C: Plugin Claude Code (Recomendado) ⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## Links
 
+- **Docs**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP Docs**: https://code.claude.com/docs/mcp
 - **TOON Format**: https://github.com/toon-format/toon
 
@@ -262,51 +262,16 @@ npm uninstall -g toonify-mcp
 
 Contribuições são bem-vindas! Por favor, consulte [CONTRIBUTING.md](CONTRIBUTING.md) para diretrizes.
 
+## Suporte
+
+Para ajuda de instalação, relatos de bugs e caminhos de contato comercial, consulte [SUPPORT.md](SUPPORT.md).
+
+## Segurança
+
+Reporte vulnerabilidades em particular conforme descrito em [SECURITY.md](SECURITY.md).
+
 ## Licença
 
 Licença MIT - veja [LICENSE](LICENSE)
 
----
-
-## Changelog
-
-### v0.6.0 (2026-04-03)
-- ✨ **Arquitetura pipeline** — motor modular Detector → Router → Compressor → Evaluator
-- ✨ **Compressão de código** — compressão heurística para TypeScript (37%), Python (48%), Go (32%)
-- ✨ **6 camadas de compressão** — mesclar linhas em branco, remover comentários inline/bloco, encurtar imports, sumarizar imports, colapsar padrões repetitivos
-- ✨ **Garantias de segurança** — nunca remove lógica de código, preserva TODO/FIXME, preserva resumos JSDoc/docstring
-- ✨ **Hook atualizado** — hook PostToolUse agora detecta e comprime código-fonte (Camadas 1-4)
-- ✨ **Extensível** — adicione novos tipos de conteúdo implementando a interface `Compressor` e registrando no pipeline
-- 🔧 TokenOptimizer refatorado para padrão facade — todas as APIs externas inalteradas
-- 📊 196 testes (antes 157), revisão de código abrangente de 16 dimensões aprovada
-
-### v0.5.0 (2026-01-21)
-- ✨ **Atualizações de SDK e tooling** - SDK MCP, tokenizer e YAML atualizados
-- ✨ Migração para Jest 30 com transform ESM de TypeScript via SWC
-- 🔒 Correções de segurança via npm audit
-
-### v0.3.0 (2025-12-26)
-- ✨ **Otimização multilíngue de tokens** - contagem precisa para mais de 15 idiomas
-- ✨ Multiplicadores de tokens conscientes do idioma (2x chinês, 2.5x japonês, 3x árabe, etc.)
-- ✨ Detecção e otimização de texto em idiomas mistos
-- ✨ Testes de benchmark abrangentes com estatísticas reais
-- 📊 Alegações de economia de tokens baseadas em dados (faixa de 25-66%, tipicamente ~48%)
-- ✅ Mais de 75 testes passando, incluindo casos extremos multilíngues
-- 📝 Versões multilíngues do README
-
-### v0.2.0 (2025-12-25)
-- ✨ Adicionado suporte a Plugin Claude Code com hook PostToolUse
-- ✨ Otimização automática de tokens (não são necessárias chamadas manuais)
-- ✨ Sistema de configuração de plugin
-- ✨ Modo duplo: Plugin (automático) + Servidor MCP (manual)
-- 📝 Atualização abrangente da documentação
-
-### v0.1.1 (2024-12-24)
-- 🐛 Correções de bugs e melhorias
-- 📝 Atualizações de documentação
-
-### v0.1.0 (2024-12-24)
-- 🎉 Lançamento inicial
-- ✨ Implementação do Servidor MCP
-- ✨ Otimização de formato TOON
-- ✨ Rastreamento de métricas integrado
+Para o histórico de releases, consulte [CHANGELOG.md](CHANGELOG.md).

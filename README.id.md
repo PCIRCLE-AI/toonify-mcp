@@ -47,11 +47,11 @@ npm run build
 npm install -g .
 ```
 
-### Opsi B: Instal dari marketplace pcircle.ai (Termudah) 🌟
+### Opsi B: Instal dari Claude Marketplaces (jika tersedia) 🌟
 
 **Instalasi satu klik:**
 
-Buka [marketplace pcircle.ai](https://claudemarketplaces.com) di Claude Code dan instal toonify-mcp dengan satu klik. Marketplace menangani semuanya secara otomatis!
+Buka [Claude Marketplaces](https://claudemarketplaces.com) di Claude Code dan instal `toonify-mcp` dengan satu klik ketika distribusi marketplace tersedia di lingkungan Anda.
 
 ### Opsi C: Plugin Claude Code (Direkomendasikan) ⭐
 
@@ -252,9 +252,9 @@ npm uninstall -g toonify-mcp
 
 ## Tautan
 
+- **Docs**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Dokumentasi MCP**: https://code.claude.com/docs/mcp
 - **Format TOON**: https://github.com/toon-format/toon
 
@@ -262,51 +262,16 @@ npm uninstall -g toonify-mcp
 
 Kontribusi sangat disambut! Silakan lihat [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan.
 
+## Dukungan
+
+Untuk bantuan instalasi, laporan bug, dan jalur kontak komersial, lihat [SUPPORT.md](SUPPORT.md).
+
+## Keamanan
+
+Laporkan kerentanan secara privat seperti dijelaskan di [SECURITY.md](SECURITY.md).
+
 ## Lisensi
 
 Lisensi MIT - lihat [LICENSE](LICENSE)
 
----
-
-## Catatan Perubahan
-
-### v0.6.0 (2026-04-03)
-- ✨ **Arsitektur pipeline** — mesin modular Detector → Router → Compressor → Evaluator
-- ✨ **Kompresi kode** — kompresi berbasis heuristik untuk TypeScript (37%), Python (48%), Go (32%)
-- ✨ **6 lapisan kompresi** — menggabungkan baris kosong, menghapus komentar inline/blok, mempersingkat import, meringkas import, melipat pola berulang
-- ✨ **Jaminan keamanan** — tidak pernah menghapus logika kode, mempertahankan TODO/FIXME, mempertahankan ringkasan JSDoc/docstring
-- ✨ **Hook ditingkatkan** — hook PostToolUse sekarang mendeteksi dan mengompresi kode sumber (Lapisan 1-4)
-- ✨ **Dapat diperluas** — tambahkan tipe konten baru dengan mengimplementasikan antarmuka `Compressor` dan mendaftarkannya ke pipeline
-- 🔧 TokenOptimizer direfaktor ke pola facade — semua API eksternal tidak berubah
-- 📊 196 pengujian (sebelumnya 157), tinjauan kode komprehensif 16 dimensi lulus
-
-### v0.5.0 (2026-01-21)
-- ✨ **Pembaruan SDK dan tooling** - SDK MCP, tokenizer, dan YAML diperbarui
-- ✨ Migrasi Jest 30 dengan transform ESM TypeScript berbasis SWC
-- 🔒 Perbaikan keamanan via npm audit
-
-### v0.3.0 (2025-12-26)
-- ✨ **Optimasi token multibahasa** - penghitungan akurat untuk 15+ bahasa
-- ✨ Pengali token sadar bahasa (2x Mandarin, 2.5x Jepang, 3x Arab, dll.)
-- ✨ Deteksi dan optimasi teks campuran multibahasa
-- ✨ Tes benchmark komprehensif dengan statistik nyata
-- 📊 Klaim penghematan token yang didukung data (rentang 25-66%, biasanya ~48%)
-- ✅ 75+ tes lulus, termasuk kasus edge multibahasa
-- 📝 Versi README multibahasa
-
-### v0.2.0 (2025-12-25)
-- ✨ Menambahkan dukungan plugin Claude Code dengan hook PostToolUse
-- ✨ Optimasi token otomatis (tidak perlu panggilan manual)
-- ✨ Sistem konfigurasi plugin
-- ✨ Mode ganda: Plugin (otomatis) + Server MCP (manual)
-- 📝 Pembaruan dokumentasi komprehensif
-
-### v0.1.1 (2024-12-24)
-- 🐛 Perbaikan bug dan peningkatan
-- 📝 Pembaruan dokumentasi
-
-### v0.1.0 (2024-12-24)
-- 🎉 Rilis awal
-- ✨ Implementasi server MCP
-- ✨ Optimasi format TOON
-- ✨ Pelacakan metrik bawaan
+Untuk riwayat rilis, lihat [CHANGELOG.md](CHANGELOG.md).
