@@ -2,19 +2,11 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-> **讓 Claude Code 使用更便宜！自動幫你省下 25-66% 的費用。**
+Toonify MCP 是一個給 Claude Code 與 MCP 工作流程使用的自動 token 最佳化工具，能對結構化資料與部分原始碼做壓縮，在不改變日常使用方式的前提下降低上下文成本。
 
-如果你用 Claude Code 處理資料檔案或程式碼（JSON、CSV、TypeScript、Python），這個工具會**自動壓縮**內容，讓你少花**將近一半的錢**。完全自動，不用學任何技術。
-
-## 💡 這是什麼？
-
-想像一下：
-- 你用 Claude Code 讀取一個很大的 Excel 檔案
-- 通常這會花你很多 token（就是錢）
-- 安裝 Toonify 後，它會**自動**把資料壓縮
-- 你的花費立刻減少 **約 48%**
-
-**完全不用改變使用習慣**，裝好就自動運作！
+- **結構化資料：** 25-66% token 降幅（典型約 48%）
+- **原始碼：** TypeScript / Python / Go 可降 20-48%
+- **文件與安裝說明：** https://toonify.pcircle.ai/
 
 ## ✨ 最新版本亮點（v0.6.0）
 
@@ -58,11 +50,11 @@ npm run build
 npm install -g .
 ```
 
-### 方法一：從 pcircle.ai 市集安裝（最簡單）🌟
+### 方法一：從 Claude Marketplaces 安裝（若可用）🌟
 
-**一鍵安裝，完全自動：**
+**透過 Claude Marketplaces 一鍵安裝：**
 
-在 Claude Code 中瀏覽 [pcircle.ai 市集](https://claudemarketplaces.com)，點一下就能安裝 toonify-mcp！市集會自動處理所有設定。
+在 Claude Code 中瀏覽 [Claude Marketplaces](https://claudemarketplaces.com)，若你的環境已支援 marketplace distribution，可直接安裝 `toonify-mcp`。
 
 ### 方法二：自動模式（推薦給所有人）⭐
 
@@ -297,9 +289,9 @@ npm uninstall -g toonify-mcp
 
 ## 連結
 
+- **文件站**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **MCP 文檔**: https://code.claude.com/docs/mcp
 - **TOON 格式**: https://github.com/toon-format/toon
 
@@ -311,40 +303,4 @@ npm uninstall -g toonify-mcp
 
 MIT License - 請參閱 [LICENSE](LICENSE)
 
----
-
-## 版本更新記錄
-
-### v0.6.0（2026-04-03）
-- ✨ **Pipeline 架構** — 模組化 Detector → Router → Compressor → Evaluator 引擎
-- ✨ **程式碼壓縮** — TypeScript（37%）、Python（48%）、Go（32%）啟發式壓縮
-- ✨ **6 層壓縮** — 合併空行、移除註解、縮短 import、摘要 import、折疊重複模式
-- ✨ **Hook 升級** — PostToolUse hook 現在也能偵測和壓縮程式碼（Layer 1-4）
-- 🔧 TokenOptimizer 重構為 facade 模式 — 所有外部 API 不變
-- 📊 196 個測試（從 157 提升）
-
-### v0.5.0（2026-01-21）
-**SDK 與工具全面更新！**
-- 🧩 MCP SDK 升級至 1.25.x
-- 📦 更新 tokenizer 與 YAML 依賴
-- 🧪 Jest 30 + SWC TypeScript ESM 轉換
-- 🔒 透過 npm audit 修復安全性問題
-
-### v0.3.0（2025-12-26）
-**支援更多語言！**
-- 🌏 完美支援繁體中文、簡體中文、日文等 15+ 種語言
-- 📊 針對不同語言做最佳化（中文省得更多）
-- 📝 提供多語言說明文件
-
-### v0.2.0（2025-12-25）
-**自動模式登場！**
-- 🤖 新增自動模式，裝好就能用
-- 🎯 不用手動執行指令
-- 🔄 提供自動和手動兩種模式
-
-### v0.1.1（2024-12-24）
-- 🐛 修復一些小問題
-- 📝 改進說明文件
-
-### v0.1.0（2024-12-24）
-- 🎉 第一版發布！
+完整版本歷史請看 [CHANGELOG.md](CHANGELOG.md)。

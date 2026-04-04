@@ -1,7 +1,7 @@
 {
   "name": "toonify-mcp",
   "version": "0.6.0",
-  "description": "MCP server + Claude Code Plugin for automatic token optimization. Reduces token usage by 25-66% on structured data (JSON/CSV/YAML) and 20-48% on source code (TS/Py/Go) via pipeline architecture.",
+  "description": "Automatic token optimization for Claude Code and MCP workflows, including structured data and source code compression.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -40,7 +40,7 @@
   "bugs": {
     "url": "https://github.com/PCIRCLE-AI/toonify-mcp/issues"
   },
-  "homepage": "https://github.com/PCIRCLE-AI/toonify-mcp#readme",
+  "homepage": "https://toonify.pcircle.ai/",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@toon-format/toon": "^2.1.0",

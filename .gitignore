@@ -187,10 +187,12 @@ tramp
 *.vcxproj*
 
 # AI/Dev Tools
+.codex/
 .claude/
 .cursor/
 .copilot/
 .tabnine/
+.playwright-mcp/
 
 # 📊 Logs
 logs/

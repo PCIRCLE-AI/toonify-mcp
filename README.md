@@ -2,8 +2,13 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-MCP server + Claude Code Plugin providing automatic token optimization for structured data **and source code**.
-Reduces Claude API token usage by **25-66%** on JSON/CSV/YAML and **20-48%** on TypeScript/Python/Go source code through a pipeline architecture.
+Toonify MCP is an MCP server and Claude Code plugin for automatic token optimization in structured data and source-code workflows.
+
+It is designed for teams that regularly send large JSON / CSV / YAML payloads or TypeScript / Python / Go source files into model context and want lower token usage without changing day-to-day workflow.
+
+- **Structured data:** 25-66% token reduction (typically ~48%)
+- **Source code:** 20-48% reduction on TypeScript / Python / Go
+- **Docs and setup guides:** https://toonify.pcircle.ai/
 
 ## What's New in v0.6.0
 
@@ -49,11 +54,11 @@ npm run build
 npm install -g .
 ```
 
-### Option B: Install from pcircle.ai Marketplace (Easiest) 🌟
+### Option B: Install from Claude Marketplaces (if available) 🌟
 
-**One-click installation from the PCIRCLE AI marketplace:**
+**One-click installation through Claude Marketplaces:**
 
-Browse to the [pcircle.ai marketplace](https://claudemarketplaces.com) in Claude Code and install toonify-mcp with one click. The marketplace handles everything automatically!
+Browse to [Claude Marketplaces](https://claudemarketplaces.com) in Claude Code and install `toonify-mcp` with one click when marketplace distribution is available for your environment.
 
 ### Option C: Claude Code Plugin (Recommended) ⭐
 
@@ -279,6 +284,7 @@ npm uninstall -g toonify-mcp
 
 ## Links
 
+- **Docs**: https://toonify.pcircle.ai/
 - **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
 - **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
 - **MCP Docs**: https://code.claude.com/docs/mcp
@@ -292,58 +298,4 @@ Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guideli
 
 MIT License - see [LICENSE](LICENSE)
 
----
-
-## Changelog
-
-### v0.6.0 (2026-04-03)
-- ✨ **Pipeline architecture** — modular Detector → Router → Compressor → Evaluator engine
-- ✨ **Code compression** — heuristic-based compression for TypeScript (37%), Python (48%), Go (32%)
-- ✨ **6 compression layers** — merge blank lines, remove inline/block comments, shorten imports, summarize imports, collapse repetitive patterns
-- ✨ **Safety guarantees** — never removes code logic, preserves TODO/FIXME, preserves JSDoc/docstring summaries
-- ✨ **Hook upgraded** — PostToolUse hook now detects and compresses source code (Layers 1-4)
-- ✨ **Extensible** — add new content types by implementing `Compressor` interface and registering with pipeline
-- 🔧 TokenOptimizer refactored to facade pattern — all external APIs unchanged
-- 📊 196 tests (up from 157), comprehensive 16-dimension code review passed
-
-### v0.5.0 (2026-01-21)
-- ✨ **PostToolUse hook** fully implemented — auto-optimizes Read/Grep/Glob/WebFetch
-- ✨ **Marketplace install** fixed — `claude plugin marketplace add` works correctly
-- ✨ **TypeScript 6.0** + MCP SDK 1.29 + Jest 30 with SWC
-- ✨ **Token counting accuracy** — raw tiktoken BPE, no inflated language multipliers
-- ✨ **YAML detection** hardened — requires structural complexity, rejects plain text
-- ✨ **CSV parser** handles quoted fields with embedded commas
-- 🔒 10 security vulnerabilities fixed (yaml DoS, picomatch ReDoS, qs bypass)
-- 🔒 DoS protection: 10MB input limit, safe RegExp pre-compilation
-- 🔒 Path traversal protection on persistent cache paths
-- 🔒 Atomic file writes prevent data corruption
-- 🛡️ WASM resource cleanup on process shutdown (SIGINT/SIGTERM)
-- 🛡️ Async disk I/O — no event loop blocking
-- 🛡️ All async persistence errors properly handled (no unhandled rejections)
-- 📊 157 tests (up from 75), all modules covered
-- 📊 Benchmark-verified savings: avg 48%, median 53%, range 25-66%
-
-### v0.3.0 (2025-12-26)
-- ✨ **Multilingual token optimization** - accurate counting for 15+ languages
-- ✨ Mixed-language text detection and optimization
-- ✨ Comprehensive benchmark testing with real statistics
-- 📊 Data-backed token savings claims (25-66% range, typically ~48%)
-- ✅ 75+ tests passing, including multilingual edge cases
-- 📝 Multilingual README versions
-
-### v0.2.0 (2025-12-25)
-- ✨ Added Claude Code Plugin support with PostToolUse hook
-- ✨ Automatic token optimization (no manual calls needed)
-- ✨ Plugin configuration system
-- ✨ Dual mode: Plugin (auto) + MCP Server (manual)
-- 📝 Comprehensive documentation update
-
-### v0.1.1 (2024-12-24)
-- 🐛 Bug fixes and improvements
-- 📝 Documentation updates
-
-### v0.1.0 (2024-12-24)
-- 🎉 Initial release
-- ✨ MCP Server implementation
-- ✨ TOON format optimization
-- ✨ Built-in metrics tracking
+For release history, see [CHANGELOG.md](CHANGELOG.md).
