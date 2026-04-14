@@ -79,6 +79,11 @@ export class Detector {
       return { type: 'code-py', confidence: 0.85 };
     }
 
+    // PHP
+    if (this.looksLikePHP(sample)) {
+      return { type: 'code-php', confidence: 0.85 };
+    }
+
     // Go
     if (this.looksLikeGo(sample)) {
       return { type: 'code-go', confidence: 0.85 };
@@ -118,6 +123,22 @@ export class Detector {
       /^import\s+\w+/m,                    // import x
       /^\s+self\./m,                        // self.
       /:\s*$\n\s+/m,                        // colon + indented block
+    ];
+    let matches = 0;
+    for (const pattern of indicators) {
+      if (pattern.test(sample)) matches++;
+    }
+    return matches >= 2;
+  }
+
+  private looksLikePHP(sample: string): boolean {
+    const indicators = [
+      /^<\?php\b/m,                            // <?php opening tag
+      /\bnamespace\s+[\w\\]+;/m,               // namespace App\Services;
+      /\buse\s+[\w\\]+;/m,                     // use Illuminate\...;
+      /\bfunction\s+\w+\s*\(/m,               // function name(
+      /\$this->/,                              // $this->property
+      /\bpublic\s+(static\s+)?(function|readonly)\b/m, // public function / public readonly
     ];
     let matches = 0;
     for (const pattern of indicators) {

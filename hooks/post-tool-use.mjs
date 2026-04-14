@@ -139,6 +139,17 @@ function detectCode(content) {
   ];
   if (pyIndicators.filter(p => p.test(sample)).length >= 2) return 'code-py';
 
+  // PHP
+  const phpIndicators = [
+    /^<\?php\b/m,
+    /\bnamespace\s+[\w\\]+;/m,
+    /\buse\s+[\w\\]+;/m,
+    /\bfunction\s+\w+\s*\(/m,
+    /\$this->/,
+    /\bpublic\s+(static\s+)?(function|readonly)\b/m,
+  ];
+  if (phpIndicators.filter(p => p.test(sample)).length >= 2) return 'code-php';
+
   // Go
   const goIndicators = [
     /^package\s+\w+/m,
@@ -180,6 +191,12 @@ function compressCode(content, codeType) {
       // Python inline # (simple: split on first # not in string)
       const hashIdx = findInlineHash(line);
       if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
+    } else if (codeType === 'code-php') {
+      // PHP supports both // and # inline comments
+      const slashIdx = findInlineDoubleSlash(line);
+      if (slashIdx > 0) return line.slice(0, slashIdx).trimEnd();
+      const hashIdx = findInlineHash(line);
+      if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
     } else {
       // C-style inline // (simple: split on // not in string or URL)
       const slashIdx = findInlineDoubleSlash(line);
@@ -194,7 +211,8 @@ function compressCode(content, codeType) {
     if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) return true;
     if (trimmed.startsWith('/**')) return true; // JSDoc first line
     if (codeType === 'code-py' && trimmed.startsWith('#')) return false;
-    if (codeType !== 'code-py' && trimmed.startsWith('//')) return false;
+    if (codeType === 'code-php' && (trimmed.startsWith('//') || trimmed.startsWith('#'))) return false;
+    if (codeType !== 'code-py' && codeType !== 'code-php' && trimmed.startsWith('//')) return false;
     return true;
   }).join('\n');
 

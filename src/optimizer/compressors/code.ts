@@ -23,7 +23,7 @@ const CHARS_PER_TOKEN = 4;
 
 export class CodeCompressor implements Compressor {
   readonly name = 'code';
-  readonly supportedTypes: ContentType[] = ['code-ts', 'code-py', 'code-go', 'code-generic'];
+  readonly supportedTypes: ContentType[] = ['code-ts', 'code-py', 'code-go', 'code-php', 'code-generic'];
 
   compress(content: string, detection: DetectResult): CompressResult {
     const layers: string[] = [];
@@ -90,6 +90,11 @@ export class CodeCompressor implements Compressor {
 
       if (type === 'code-py') {
         // Python: remove inline # comments (but not inside strings)
+        return this.removeInlinePythonComment(line);
+      } else if (type === 'code-php') {
+        // PHP supports both // and # as inline comment styles
+        const afterSlash = this.removeInlineCStyleComment(line);
+        if (afterSlash !== line) return afterSlash;
         return this.removeInlinePythonComment(line);
       } else {
         // TS/Go/Generic: remove inline // comments (but not URLs)
@@ -217,6 +222,9 @@ export class CodeCompressor implements Compressor {
 
       // Single-line comments
       if (type === 'code-py' && trimmed.startsWith('#')) {
+        continue;
+      }
+      if (type === 'code-php' && (trimmed.startsWith('//') || trimmed.startsWith('#'))) {
         continue;
       }
       if ((type === 'code-ts' || type === 'code-go' || type === 'code-generic') && trimmed.startsWith('//')) {

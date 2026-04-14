@@ -4,7 +4,7 @@
 
 export type ContentType =
   | 'json' | 'csv' | 'yaml'
-  | 'code-ts' | 'code-py' | 'code-go' | 'code-generic'
+  | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic'
   | 'unknown';
 
 export interface DetectResult {
