@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toonify MCP Benchmark 摘要</title>
+    <meta name="description" content="Toonify MCP 的實證 benchmark 摘要頁，包含方法、量測結果與本機重跑方式。">
+    <link rel="canonical" href="https://toonify.pcircle.ai/benchmarks-zh.html">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: #f8fafc; color: #0f172a; }
+        .heading-mono { font-family: 'JetBrains Mono', monospace; }
+        .code-block { background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; padding: 1rem 1.25rem; overflow-x: auto; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; }
+        .pill { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; background: #dbeafe; color: #1d4ed8; font-size: 0.875rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="mb-8">
+            <a href="index-zh.html" class="text-blue-600 hover:text-blue-700 text-sm font-medium">&larr; 回到首頁</a>
+        </div>
+
+        <header class="mb-10">
+            <span class="pill">Proof-Backed</span>
+            <h1 class="text-4xl md:text-5xl font-bold heading-mono mt-4 mb-4">Toonify MCP Benchmark 摘要</h1>
+            <p class="text-lg text-slate-700 max-w-3xl">
+                這一頁只收錄目前可以追溯到程式碼庫、benchmark suite 或本機驗證結果的內容。任何無法重現的說法都不放在這裡。
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="card">
+                <div class="text-sm text-slate-500 heading-mono mb-2">STRUCTURED DATA SUITE</div>
+                <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">12 個案例</div>
+                <p class="text-slate-700">包含 small、medium、large、nested、多語言、CSV-like 與 API-shaped payload。</p>
+            </div>
+            <div class="card">
+                <div class="text-sm text-slate-500 heading-mono mb-2">LOCAL VERIFICATION RUN</div>
+                <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">48.1%</div>
+                <p class="text-slate-700">來自 2026 年 4 月 30 日本機驗證執行的平均節省值。</p>
+            </div>
+            <div class="card">
+                <div class="text-sm text-slate-500 heading-mono mb-2">OBSERVED RANGE</div>
+                <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">24.5-66.3%</div>
+                <p class="text-slate-700">同一次執行中觀察到的最小到最大節省範圍。</p>
+            </div>
+        </section>
+
+        <section class="card mb-10">
+            <h2 class="text-2xl font-bold heading-mono mb-4">如何重現</h2>
+            <p class="text-slate-700 mb-4">
+                上述數字來自以下這個已提交在 repo 中的 Jest benchmark suite。
+            </p>
+            <div class="code-block mb-4"><code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code></div>
+            <div class="flex flex-wrap gap-4 text-sm">
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/quick-stats.test.ts" class="text-blue-600 hover:text-blue-700">打開 benchmark suite</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/token-savings.test.ts" class="text-blue-600 hover:text-blue-700">打開延伸 token benchmark</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/code-compression-benchmark.ts" class="text-blue-600 hover:text-blue-700">打開 code compression benchmark 原始碼</a>
+            </div>
+        </section>
+
+        <section class="card mb-10">
+            <h2 class="text-2xl font-bold heading-mono mb-4">目前已驗證結果</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="py-2 pr-4">類別</th>
+                            <th class="py-2 pr-4">平均</th>
+                            <th class="py-2">備註</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700">
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Small</td><td class="py-2 pr-4">48.1%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Medium</td><td class="py-2 pr-4">65.0%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Large</td><td class="py-2 pr-4">42.6%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">CSV-like</td><td class="py-2 pr-4">24.5%</td><td class="py-2">quick suite 中 1 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Nested</td><td class="py-2 pr-4">48.2%</td><td class="py-2">1 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Multilingual</td><td class="py-2 pr-4">46.3%</td><td class="py-2">English + Chinese</td></tr>
+                        <tr><td class="py-2 pr-4">API-shaped</td><td class="py-2 pr-4">50.3%</td><td class="py-2">2 個案例</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card mb-10">
+            <h2 class="text-2xl font-bold heading-mono mb-4">這一頁沒有聲稱的事</h2>
+            <ul class="list-disc list-inside text-slate-700 space-y-2">
+                <li>這裡不宣稱任何 provider 成本節省金額。</li>
+                <li>這裡不宣稱 cache speedup，除非未來另有可重現的公開 benchmark。</li>
+                <li>這裡不宣稱各語言的 code compression 百分比，除非未來補上已提交的量測輸出。</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h2 class="text-2xl font-bold heading-mono mb-4">相關證據</h2>
+            <ul class="list-disc list-inside text-slate-700 space-y-2">
+                <li>目前版本：<a class="text-blue-600 hover:text-blue-700" href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/package.json">package.json</a></li>
+                <li>版本歷史：<a class="text-blue-600 hover:text-blue-700" href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CHANGELOG.md">CHANGELOG.md</a></li>
+                <li>主要文件：<a class="text-blue-600 hover:text-blue-700" href="index-zh.html">首頁</a></li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>

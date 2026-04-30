@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toonify MCP Benchmarks</title>
+    <meta name="description" content="Proof-backed benchmark summary for Toonify MCP, including benchmark method, measured results, and reproduction steps.">
+    <link rel="canonical" href="https://toonify.pcircle.ai/benchmarks.html">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: #f8fafc; color: #0f172a; }
+        .heading-mono { font-family: 'JetBrains Mono', monospace; }
+        .code-block { background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; padding: 1rem 1.25rem; overflow-x: auto; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; }
+        .pill { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; background: #dbeafe; color: #1d4ed8; font-size: 0.875rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="max-w-5xl mx-auto px-4 py-12">
+        <div class="mb-8">
+            <a href="index.html" class="text-blue-600 hover:text-blue-700 text-sm font-medium">&larr; Back to Home</a>
+        </div>
+
+        <header class="mb-10">
+            <span class="pill">Proof-Backed</span>
+            <h1 class="text-4xl md:text-5xl font-bold heading-mono mt-4 mb-4">Toonify MCP Benchmarks</h1>
+            <p class="text-lg text-slate-700 max-w-3xl">
+                This page summarizes the current public benchmark evidence for Toonify MCP. It is intentionally narrow: only claims we can trace to a checked-in benchmark suite or a local verification run are included here.
+            </p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="card">
+                <div class="text-sm text-slate-500 heading-mono mb-2">STRUCTURED DATA SUITE</div>
+                <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">12 fixtures</div>
+                <p class="text-slate-700">JSON-style structured-data benchmark cases covering small, medium, large, nested, multilingual, CSV-like, and API-shaped payloads.</p>
+            </div>
+            <div class="card">
+                <div class="text-sm text-slate-500 heading-mono mb-2">LOCAL VERIFICATION RUN</div>
+                <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">48.1%</div>
+                <p class="text-slate-700">Average savings from the most recent local run performed on April 30, 2026.</p>
+            </div>
+            <div class="card">
+                <div class="text-sm text-slate-500 heading-mono mb-2">OBSERVED RANGE</div>
+                <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">24.5-66.3%</div>
+                <p class="text-slate-700">Minimum to maximum savings observed in that same run.</p>
+            </div>
+        </section>
+
+        <section class="card mb-10">
+            <h2 class="text-2xl font-bold heading-mono mb-4">Reproduction</h2>
+            <p class="text-slate-700 mb-4">
+                The benchmark numbers above come from the checked-in Jest benchmark suite below.
+            </p>
+            <div class="code-block mb-4"><code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code></div>
+            <div class="flex flex-wrap gap-4 text-sm">
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/quick-stats.test.ts" class="text-blue-600 hover:text-blue-700">Open benchmark suite on GitHub</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/token-savings.test.ts" class="text-blue-600 hover:text-blue-700">Open extended token benchmark file</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/code-compression-benchmark.ts" class="text-blue-600 hover:text-blue-700">Open code compression benchmark source</a>
+            </div>
+        </section>
+
+        <section class="card mb-10">
+            <h2 class="text-2xl font-bold heading-mono mb-4">Current Verified Results</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="py-2 pr-4">Category</th>
+                            <th class="py-2 pr-4">Average</th>
+                            <th class="py-2">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700">
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Small</td><td class="py-2 pr-4">48.1%</td><td class="py-2">2 cases</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Medium</td><td class="py-2 pr-4">65.0%</td><td class="py-2">2 cases</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Large</td><td class="py-2 pr-4">42.6%</td><td class="py-2">2 cases</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">CSV-like</td><td class="py-2 pr-4">24.5%</td><td class="py-2">1 case in quick suite</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Nested</td><td class="py-2 pr-4">48.2%</td><td class="py-2">1 case</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Multilingual</td><td class="py-2 pr-4">46.3%</td><td class="py-2">English + Chinese cases</td></tr>
+                        <tr><td class="py-2 pr-4">API-shaped</td><td class="py-2 pr-4">50.3%</td><td class="py-2">2 cases</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card mb-10">
+            <h2 class="text-2xl font-bold heading-mono mb-4">What This Page Does Not Claim</h2>
+            <ul class="list-disc list-inside text-slate-700 space-y-2">
+                <li>No provider-cost savings numbers are claimed here.</li>
+                <li>No cache speedup claim is made here unless separately published with reproduction steps.</li>
+                <li>No per-language code-compression percentage is claimed here without a checked-in measured output artifact.</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h2 class="text-2xl font-bold heading-mono mb-4">Related Evidence</h2>
+            <ul class="list-disc list-inside text-slate-700 space-y-2">
+                <li>Current package version: <a class="text-blue-600 hover:text-blue-700" href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/package.json">package.json</a></li>
+                <li>Release history: <a class="text-blue-600 hover:text-blue-700" href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CHANGELOG.md">CHANGELOG.md</a></li>
+                <li>Main docs: <a class="text-blue-600 hover:text-blue-700" href="index.html">landing page</a></li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
