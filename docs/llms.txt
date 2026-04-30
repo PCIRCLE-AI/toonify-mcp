@@ -20,12 +20,14 @@ Less ideal
 - Content that depends heavily on exact original formatting
 
 Install
-- Plugin mode: clone repo, build, install locally, add marketplace, install `toonify-mcp@pcircle-ai`, verify with `claude plugin list`
-- MCP mode: register `toonify-mcp` with `claude mcp add toonify -- toonify-mcp`
+- Plugin mode: clone the repo, build it, install it locally, then run `toonify-mcp setup`
+- MCP mode: run `toonify-mcp setup mcp`
 
 Verification
+- `toonify-mcp setup` handles local marketplace setup plus install, update, or re-enable
 - `toonify-mcp doctor` validates local install
 - `toonify-mcp status` shows recent optimization activity
+- `claude mcp list` can confirm MCP connectivity when you use MCP mode
 
 Public pages
 - Landing page: https://toonify.pcircle.ai/

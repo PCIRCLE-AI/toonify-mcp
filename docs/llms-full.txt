@@ -28,15 +28,14 @@ Who may not need it
 How to install
 1. Clone the repo and build it locally
 2. Install `toonify-mcp` from the local checkout
-3. Add the local marketplace file
-4. Install `toonify-mcp@pcircle-ai` in Claude Code plugin mode
-5. Verify with `claude plugin list`
+3. Run `toonify-mcp setup` for plugin mode
+4. Run `toonify-mcp setup mcp` only if you need MCP server mode
 
 How to verify
+- `toonify-mcp setup`
 - `toonify-mcp doctor`
 - `toonify-mcp status`
-- `claude plugin list`
-- `claude mcp list`
+- `claude mcp list` when MCP mode is enabled
 
 Public proof
 - Repo: https://github.com/PCIRCLE-AI/toonify-mcp
