@@ -337,11 +337,12 @@
                     <a href="index-zh.html" class="text-sm" style="color: var(--text-tertiary);">中文</a>
                 </div>
                 <div class="hidden md:flex space-x-8">
-                    <a href="#proof" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Proof</a>
+                    <a href="#fit" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Who It's For</a>
+                    <a href="#examples" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Example</a>
+                    <a href="#installation" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Install</a>
                     <a href="#features" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Features</a>
                     <a href="#how-it-works" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">How It Works</a>
-                    <a href="#installation" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Installation</a>
-                    <a href="#examples" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Examples</a>
+                    <a href="#proof" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Benchmarks</a>
                     <a href="https://github.com/PCIRCLE-AI/toonify-mcp" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition" target="_blank">GitHub</a>
                 </div>
             </div>
@@ -352,221 +353,108 @@
     <section class="py-20" style="background: var(--bg-primary);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-5xl md:text-6xl font-bold heading-mono mb-6" style="color: var(--text-primary);">
-                Cut Claude Code<br>
-                <span class="gradient-text">Context Cost on Large Tool Outputs</span>
+                Make Large Claude Code Outputs Smaller<br>
+                <span class="gradient-text">Before They Hit Context</span>
             </h1>
 
             <!-- GitHub Badges -->
             <div class="flex justify-center flex-wrap gap-3 mb-6">
                 <img src="https://img.shields.io/github/stars/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub stars">
-                <img src="https://img.shields.io/github/forks/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub forks">
-                <img src="https://img.shields.io/github/license/PCIRCLE-AI/toonify-mcp" alt="License">
                 <img src="https://img.shields.io/badge/version-0.6.0-blue" alt="Version">
                 <img src="https://img.shields.io/badge/tests-196%20passing-brightgreen" alt="196 tests passing">
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Compress large JSON, CSV, YAML, and supported source files before they enter model context, without changing your workflow.
-                The current structured-data benchmark suite shows <strong style="color: var(--text-primary);">48.1% average savings</strong> across 12 fixtures, with a <strong style="color: var(--text-primary);">24.5-66.3% range</strong>.
+                Toonify compresses large JSON, CSV, YAML, API responses, and supported source files so Claude Code workflows stay the same while token overhead drops.
             </p>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
                 <a href="#installation" class="btn-primary">
-                    Quick Install
+                    Install Plugin
                 </a>
-                <a href="benchmarks.html" class="btn-secondary" target="_blank">
-                    Review Proof →
+                <a href="#examples" class="btn-secondary">
+                    See Example →
                 </a>
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                MIT Licensed • v0.6.0 • 196 tests passing
+                Open source • MIT licensed • v0.6.0 • 196 tests passing
             </div>
         </div>
     </section>
 
-    <!-- Quick Stats -->
-    <section class="py-12" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                <div class="stat-item">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">12</div>
-                    <div style="color: var(--text-secondary);">Benchmark Fixtures</div>
-                </div>
-                <div class="stat-item" style="animation-delay: 0.1s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">48.1%</div>
-                    <div style="color: var(--text-secondary);">Average Savings</div>
-                </div>
-                <div class="stat-item" style="animation-delay: 0.2s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">24.5-66.3%</div>
-                    <div style="color: var(--text-secondary);">Savings Range</div>
-                </div>
-                <div class="stat-item" style="animation-delay: 0.3s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
-                    <div style="color: var(--text-secondary);">Tests Passing</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Proof Section -->
-    <section id="proof" class="py-16" style="background: var(--bg-primary);">
+    <!-- Fit Section -->
+    <section id="fit" class="py-16" style="background: var(--bg-primary);">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">What We Can Prove</h2>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Best for Large Tool Output</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    Everything below is tied to the current repository, benchmark suite, or local test run.
+                    Toonify is most useful when your token cost comes from structured data, generated output, or source files, not from normal chat.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">BENCHMARK SUITE</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">12 structured-data fixtures</h3>
+                    <div class="text-sm heading-mono mb-3 gradient-text">BEST FIT</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large structured payloads</h3>
                     <p style="color: var(--text-secondary);">
-                        Current local run: <strong style="color: var(--text-primary);">48.1% average savings</strong>, with a <strong style="color: var(--text-primary);">24.5-66.3% range</strong>.
+                        Teams reading large JSON, CSV, YAML, API responses, and generated data into Claude Code.
                     </p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">TEST EVIDENCE</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">196 tests passing</h3>
+                    <div class="text-sm heading-mono mb-3 gradient-text">ALSO USEFUL</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Code-heavy sessions</h3>
                     <p style="color: var(--text-secondary);">
-                        Full local test run passes on the current codebase, including pipeline, caching, multilingual, and server coverage.
+                        TypeScript, Python, and Go source files where comments and whitespace add token cost without helping the model much.
                     </p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">SHIPPED SURFACE</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">v0.6.0</h3>
+                    <div class="text-sm heading-mono mb-3 gradient-text">NOT IDEAL</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Small or prose-first tasks</h3>
                     <p style="color: var(--text-secondary);">
-                        Pipeline-based architecture, plugin mode, MCP server mode, and support for TypeScript, Python, and Go compression.
-                    </p>
-                </div>
-            </div>
-
-            <div class="mt-8 feature-card">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h3 class="text-xl font-bold heading-mono mb-2" style="color: var(--text-primary);">Reproduce the benchmark locally</h3>
-                        <p style="color: var(--text-secondary);">Use the same benchmark suite referenced in the README and landing page.</p>
-                    </div>
-                    <a href="benchmarks.html" class="btn-secondary" target="_blank">Open Benchmark Summary</a>
-                </div>
-                <div class="mt-4 code-block">
-                    <code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section - Bento Box Grid -->
-    <section id="features" class="py-16" style="background: var(--bg-secondary);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Key Features</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">Built for developers who care about efficiency</p>
-            </div>
-
-            <div class="bento-grid">
-                <div class="feature-card bento-large">
-                    <div class="text-3xl mb-4">🎯</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Automatic Optimization</h3>
-                    <p style="color: var(--text-secondary);">
-                        PostToolUse hook intercepts supported tool results and applies optimization automatically in plugin mode.
-                    </p>
-                    <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
-                        <code class="text-sm font-mono" style="color: var(--text-secondary);">
-                            claude plugin add toonify-mcp
-                        </code>
-                    </div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">⚡</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Structured Data Benchmarks</h3>
-                    <p style="color: var(--text-secondary);">
-                        The current benchmark suite in `tests/benchmarks/quick-stats.test.ts` produced 48.1% average savings across 12 structured-data fixtures.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🌍</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Code Compression Support</h3>
-                    <p style="color: var(--text-secondary);">
-                        Supports TypeScript, Python, and Go source-code compression through comment and whitespace reduction in the pipeline.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🔧</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Caching</h3>
-                    <p style="color: var(--text-secondary);">
-                        Includes LRU result caching with TTL expiration and optional disk persistence.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🔄</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Dual Mode</h3>
-                    <p style="color: var(--text-secondary);">
-                        Works as Plugin (automatic) or MCP Server (manual). Choose the mode that fits your workflow.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">📊</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Built-in Metrics</h3>
-                    <p style="color: var(--text-secondary);">
-                        Track token savings locally and inspect optimization statistics through MCP tools.
+                        If your context is mostly short prose or small files, the gains are usually limited and you may not notice much difference.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section id="how-it-works" class="py-16" style="background: var(--bg-secondary);">
+    <!-- Examples -->
+    <section id="examples" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">How It Works</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">Transparent optimization in Plugin mode</p>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">See the Difference in One Glance</h2>
+                <p class="text-xl" style="color: var(--text-secondary);">The goal is not different information. The goal is fewer tokens for the same working session.</p>
             </div>
 
-            <div class="feature-card p-8">
-                <div class="space-y-6">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">1</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">User reads large JSON file</h3>
-                            <p style="color: var(--text-secondary);">Claude Code calls Read tool to fetch file contents</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">2</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">PostToolUse hook intercepts result</h3>
-                            <p style="color: var(--text-secondary);">Hook automatically checks if content should be optimized</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">3</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">TOON format conversion</h3>
-                            <p style="color: var(--text-secondary);">JSON/CSV/YAML converted to compact TOON representation</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">4</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Optimized content sent to Claude API</h3>
-                            <p style="color: var(--text-secondary);">Structured data is compressed when estimated savings clear the configured threshold.</p>
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="feature-card p-6">
+                    <h3 class="text-xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Before Optimization (142 tokens)</h3>
+                    <div class="code-block">
+                        <code><span class="punctuation">{</span>
+  <span class="property">"products"</span><span class="punctuation">:</span> <span class="punctuation">[</span>
+    <span class="punctuation">{</span><span class="property">"id"</span><span class="punctuation">:</span> <span class="number">101</span><span class="punctuation">,</span> <span class="property">"name"</span><span class="punctuation">:</span> <span class="string">"Laptop Pro"</span><span class="punctuation">,</span> <span class="property">"price"</span><span class="punctuation">:</span> <span class="number">1299</span><span class="punctuation">},</span>
+    <span class="punctuation">{</span><span class="property">"id"</span><span class="punctuation">:</span> <span class="number">102</span><span class="punctuation">,</span> <span class="property">"name"</span><span class="punctuation">:</span> <span class="string">"Magic Mouse"</span><span class="punctuation">,</span> <span class="property">"price"</span><span class="punctuation">:</span> <span class="number">79</span><span class="punctuation">}</span>
+  <span class="punctuation">]</span>
+<span class="punctuation">}</span></code>
                     </div>
                 </div>
+
+                <div class="feature-card p-6">
+                    <h3 class="text-xl font-bold heading-mono mb-4" style="color: var(--text-primary);">After Optimization (57 tokens, <span class="gradient-text">-60%</span>)</h3>
+                    <div class="code-block">
+                        <code><span class="punctuation">[</span><span class="keyword">TOON-JSON</span><span class="punctuation">]</span>
+<span class="property">products</span><span class="punctuation">[</span><span class="number">2</span><span class="punctuation">]{</span><span class="property">id</span><span class="punctuation">,</span><span class="property">name</span><span class="punctuation">,</span><span class="property">price</span><span class="punctuation">}:</span>
+  <span class="number">101</span><span class="punctuation">,</span>Laptop Pro<span class="punctuation">,</span><span class="number">1299</span>
+  <span class="number">102</span><span class="punctuation">,</span>Magic Mouse<span class="punctuation">,</span><span class="number">79</span></code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center" style="color: var(--text-secondary);">
+                <strong style="color: var(--text-primary);">Automatically applied in Plugin mode</strong> - no manual calls needed.
             </div>
         </div>
     </section>
@@ -575,8 +463,8 @@
     <section id="installation" class="py-16" style="background: var(--bg-primary);">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Installation</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">Start with the default plugin path. Use MCP server mode only if you need manual control.</p>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Start With the Default Path</h2>
+                <p class="text-xl" style="color: var(--text-secondary);">Plugin mode is the fastest way to try Toonify. Use MCP server mode only when you need explicit control.</p>
             </div>
 
             <div class="space-y-8">
@@ -607,7 +495,7 @@ claude plugin list
 <span class="comment"># Should show: toonify-mcp ✓</span></code>
                     </div>
                     <p class="mt-4" style="color: var(--text-secondary);">
-                        <strong style="color: var(--text-primary);">Result:</strong> PostToolUse hook optimizes supported structured data and source-code results automatically.
+                        <strong style="color: var(--text-primary);">Result:</strong> supported structured data and source-code results are optimized automatically after tool use.
                     </p>
                 </div>
 
@@ -619,7 +507,7 @@ claude plugin list
                         Use this when you want explicit control or need to connect Toonify to another MCP client.
                     </p>
                     <div class="code-block">
-                        <code><span class="comment"># Prerequisite: complete Option A to install toonify-mcp</span>
+                        <code><span class="comment"># Prerequisite: complete plugin install so toonify-mcp is available</span>
 
 <span class="comment"># Register as MCP server</span>
 claude mcp add toonify -- toonify-mcp
@@ -636,40 +524,165 @@ claude mcp list
         </div>
     </section>
 
-    <!-- Examples -->
-    <section id="examples" class="py-16" style="background: var(--bg-secondary);">
+    <!-- Features Section - Bento Box Grid -->
+    <section id="features" class="py-16" style="background: var(--bg-secondary);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Why Teams Use Toonify</h2>
+                <p class="text-xl" style="color: var(--text-secondary);">The value is simple: less token-heavy output, with less workflow friction.</p>
+            </div>
+
+            <div class="bento-grid">
+                <div class="feature-card bento-large">
+                    <div class="text-3xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Automatic in Plugin Mode</h3>
+                    <p style="color: var(--text-secondary);">
+                        PostToolUse hook intercepts supported tool results and applies optimization automatically, so the default experience stays hands-off.
+                    </p>
+                    <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
+                        <code class="text-sm font-mono" style="color: var(--text-secondary);">
+                            claude plugin add toonify-mcp
+                        </code>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🧭</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Workflow Stays the Same</h3>
+                    <p style="color: var(--text-secondary);">
+                        The pitch is not a new interface. It is lower token overhead inside the workflow your team already uses.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">📦</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large Structured Payloads</h3>
+                    <p style="color: var(--text-secondary);">
+                        Built for large JSON, CSV, YAML, API responses, and generated records that would otherwise bloat context.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🌍</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Supported Code Compression</h3>
+                    <p style="color: var(--text-secondary);">
+                        Supports TypeScript, Python, and Go source-code compression through comment and whitespace reduction in the pipeline.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🔄</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Dual Mode</h3>
+                    <p style="color: var(--text-secondary);">
+                        Works as Plugin (automatic) or MCP Server (manual). Choose the mode that fits your workflow.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">⚖️</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Selective Optimization</h3>
+                    <p style="color: var(--text-secondary);">
+                        Structured data is compressed only when estimated savings clear the configured threshold.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Local Metrics and Safe Fallback</h3>
+                    <p style="color: var(--text-secondary);">
+                        Track savings locally, and if optimization is not worth it, Toonify falls back to the original content.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-16" style="background: var(--bg-primary);">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Examples</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">See the token reduction in action</p>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">How It Works</h2>
+                <p class="text-xl" style="color: var(--text-secondary);">A short version of the default plugin flow</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="feature-card p-6">
-                    <h3 class="text-xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Before Optimization (142 tokens)</h3>
-                    <div class="code-block">
-                        <code><span class="punctuation">{</span>
-  <span class="property">"products"</span><span class="punctuation">:</span> <span class="punctuation">[</span>
-    <span class="punctuation">{</span><span class="property">"id"</span><span class="punctuation">:</span> <span class="number">101</span><span class="punctuation">,</span> <span class="property">"name"</span><span class="punctuation">:</span> <span class="string">"Laptop Pro"</span><span class="punctuation">,</span> <span class="property">"price"</span><span class="punctuation">:</span> <span class="number">1299</span><span class="punctuation">},</span>
-    <span class="punctuation">{</span><span class="property">"id"</span><span class="punctuation">:</span> <span class="number">102</span><span class="punctuation">,</span> <span class="property">"name"</span><span class="punctuation">:</span> <span class="string">"Magic Mouse"</span><span class="punctuation">,</span> <span class="property">"price"</span><span class="punctuation">:</span> <span class="number">79</span><span class="punctuation">}</span>
-  <span class="punctuation">]</span>
-<span class="punctuation">}</span></code>
+            <div class="feature-card p-8">
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">1</div>
+                        <div>
+                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Read a large output</h3>
+                            <p style="color: var(--text-secondary);">Claude Code fetches a large JSON file, CSV, YAML response, or supported source file.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="feature-card p-6">
-                    <h3 class="text-xl font-bold heading-mono mb-4" style="color: var(--text-primary);">After Optimization (57 tokens, <span class="gradient-text">-60%</span>)</h3>
-                    <div class="code-block">
-                        <code><span class="punctuation">[</span><span class="keyword">TOON-JSON</span><span class="punctuation">]</span>
-<span class="property">products</span><span class="punctuation">[</span><span class="number">2</span><span class="punctuation">]{</span><span class="property">id</span><span class="punctuation">,</span><span class="property">name</span><span class="punctuation">,</span><span class="property">price</span><span class="punctuation">}:</span>
-  <span class="number">101</span><span class="punctuation">,</span>Laptop Pro<span class="punctuation">,</span><span class="number">1299</span>
-  <span class="number">102</span><span class="punctuation">,</span>Magic Mouse<span class="punctuation">,</span><span class="number">79</span></code>
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">2</div>
+                        <div>
+                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Intercept the tool result</h3>
+                            <p style="color: var(--text-secondary);">The PostToolUse hook checks whether the returned content is worth compressing.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">3</div>
+                        <div>
+                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Compress when it helps</h3>
+                            <p style="color: var(--text-secondary);">Structured data is converted to compact TOON format. Supported code is reduced through comment and whitespace compression.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">4</div>
+                        <div>
+                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Continue the same session</h3>
+                            <p style="color: var(--text-secondary);">Optimized content moves forward automatically when estimated savings clear the configured threshold.</p>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="mt-8 text-center" style="color: var(--text-secondary);">
-                <strong style="color: var(--text-primary);">Automatically applied in Plugin mode</strong> - no manual calls needed!
+    <!-- Proof Section -->
+    <section id="proof" class="py-16" style="background: var(--bg-secondary);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Current Benchmark Snapshot</h2>
+                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                    Current structured-data results from the checked-in benchmark suite.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">12</div>
+                    <div style="color: var(--text-secondary);">Fixtures</div>
+                </div>
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">48.1%</div>
+                    <div style="color: var(--text-secondary);">Average Savings</div>
+                </div>
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">24.5-66.3%</div>
+                    <div style="color: var(--text-secondary);">Observed Range</div>
+                </div>
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
+                    <div style="color: var(--text-secondary);">Tests Passing</div>
+                </div>
+            </div>
+
+            <div class="mt-8 feature-card">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold heading-mono mb-2" style="color: var(--text-primary);">Want the details?</h3>
+                        <p style="color: var(--text-secondary);">See the public benchmark summary and reproduction steps.</p>
+                    </div>
+                    <a href="benchmarks.html" class="btn-secondary" target="_blank">Open Benchmark Summary</a>
+                </div>
+                <div class="mt-4 code-block">
+                    <code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code>
+                </div>
             </div>
         </div>
     </section>
@@ -678,17 +691,17 @@ claude mcp list
     <section class="py-20" style="background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-4xl md:text-5xl font-bold heading-mono text-white mb-6">
-                Ready to Try the Default Path?
+                Try It on a Real Claude Code Session
             </h2>
             <p class="text-xl text-blue-100 mb-8">
-                Start with plugin mode, verify the benchmark method when needed, and keep the advanced MCP path as an option.
+                Start with plugin mode, see whether large outputs get lighter in your actual workflow, and keep the advanced MCP path as an option.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="#installation" class="btn-primary" style="background: white; color: #2563EB;">
-                    Open Install Steps
+                    Install Plugin
                 </a>
-                <a href="benchmarks.html" class="btn-secondary" style="border-color: white; color: white;">
-                    Open Benchmark Summary →
+                <a href="#examples" class="btn-secondary" style="border-color: white; color: white;">
+                    See Example →
                 </a>
             </div>
         </div>

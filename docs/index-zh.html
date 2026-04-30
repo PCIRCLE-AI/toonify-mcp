@@ -306,11 +306,12 @@
                 <div class="flex items-center space-x-8">
                     <a href="#" class="text-2xl font-bold heading-mono gradient-text">Toonify MCP</a>
                     <div class="hidden md:flex space-x-6">
-                        <a href="#proof" class="hover:text-blue-600 transition">實證依據</a>
-                        <a href="#features" class="hover:text-blue-600 transition">功能特色</a>
-                        <a href="#how-it-works" class="hover:text-blue-600 transition">運作原理</a>
-                        <a href="#installation" class="hover:text-blue-600 transition">安裝方式</a>
-                        <a href="#examples" class="hover:text-blue-600 transition">使用範例</a>
+                    <a href="#fit" class="hover:text-blue-600 transition">適合誰用</a>
+                    <a href="#examples" class="hover:text-blue-600 transition">實際範例</a>
+                    <a href="#installation" class="hover:text-blue-600 transition">安裝方式</a>
+                    <a href="#features" class="hover:text-blue-600 transition">功能特色</a>
+                    <a href="#how-it-works" class="hover:text-blue-600 transition">運作原理</a>
+                    <a href="#proof" class="hover:text-blue-600 transition">Benchmark</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -336,247 +337,62 @@
     <section class="pt-32 pb-20 px-4">
         <div class="max-w-7xl mx-auto text-center">
             <h1 class="text-5xl md:text-6xl font-bold heading-mono mb-6" style="color: var(--text-primary);">
-                降低 Claude Code<br>
-                <span class="gradient-text">大型工具輸出的 Context 成本</span>
+                讓大型 Claude Code 輸出<br>
+                <span class="gradient-text">在進入 Context 前先變小</span>
             </h1>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                在不改變工作流程的前提下，先壓縮大型 JSON、CSV、YAML 與支援的原始碼，再送入模型 context。
-                目前結構化資料 benchmark suite 的結果為 <strong style="color: var(--text-primary);">平均 48.1%</strong>，範圍 <strong style="color: var(--text-primary);">24.5-66.3%</strong>。
+                Toonify 會壓縮大型 JSON、CSV、YAML、API 回應與支援的原始碼，讓你維持原本 Claude Code 工作流程，同時降低 token 負擔。
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                 <a href="#installation" class="btn-primary">
-                    快速安裝
+                    安裝外掛
                 </a>
-                <a href="benchmarks-zh.html" target="_blank" class="btn-secondary">
-                    查看實證方法
+                <a href="#examples" class="btn-secondary">
+                    看實際範例
                 </a>
             </div>
 
-            <!-- 快速統計 -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                <div class="stat-item">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">12</div>
-                    <div style="color: var(--text-secondary);">基準測試案例</div>
-                </div>
-                <div class="stat-item" style="animation-delay: 0.1s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">48.1%</div>
-                    <div style="color: var(--text-secondary);">平均節省</div>
-                </div>
-                <div class="stat-item" style="animation-delay: 0.2s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">24.5-66.3%</div>
-                    <div style="color: var(--text-secondary);">節省範圍</div>
-                </div>
-                <div class="stat-item" style="animation-delay: 0.3s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
-                    <div style="color: var(--text-secondary);">測試通過</div>
-                </div>
+            <div class="text-sm" style="color: var(--text-tertiary);">
+                開源 • MIT 授權 • v0.6.0 • 196 項測試通過
             </div>
         </div>
     </section>
 
-    <!-- 實證區段 -->
-    <section id="proof" class="py-16" style="background: var(--bg-secondary);">
+    <!-- 適合誰用 -->
+    <section id="fit" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-6xl mx-auto px-4">
             <h2 class="section-title heading-mono">
-                <span class="gradient-text">我們能證明的內容</span>
+                <span class="gradient-text">最適合大型工具輸出情境</span>
             </h2>
             <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                以下內容都對應到目前的程式碼庫、benchmark suite 或本機測試結果。
+                如果你的 token 壓力主要來自結構化資料、產生出的內容或原始碼，而不是一般聊天內容，Toonify 才會比較有感。
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">BENCHMARK SUITE</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono">12 個結構化資料案例</h3>
+                    <div class="text-sm heading-mono mb-3 gradient-text">最適合</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono">大型結構化資料</h3>
                     <p style="color: var(--text-secondary);">
-                        目前本機執行結果：<strong style="color: var(--text-primary);">平均 48.1%</strong>，範圍 <strong style="color: var(--text-primary);">24.5-66.3%</strong>。
+                        常把大 JSON、CSV、YAML、API 回應或產生出的資料讀進 Claude Code 的團隊。
                     </p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">TEST EVIDENCE</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono">196 個測試通過</h3>
+                    <div class="text-sm heading-mono mb-3 gradient-text">也有幫助</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono">程式碼密集工作階段</h3>
                     <p style="color: var(--text-secondary);">
-                        目前程式碼庫的完整本機測試已通過，涵蓋 pipeline、cache、多語言與 server。
+                        TypeScript、Python、Go 原始碼很多，註解與空白會吃掉不少 token 的情境。
                     </p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">SHIPPED SURFACE</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono">v0.6.0</h3>
+                    <div class="text-sm heading-mono mb-3 gradient-text">不一定適合</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono">小檔案或純文字任務</h3>
                     <p style="color: var(--text-secondary);">
-                        已包含 Pipeline 架構、外掛模式、MCP 伺服器模式，以及 TypeScript / Python / Go 壓縮支援。
+                        如果你的內容大多是短文字或小檔案，通常不太會感受到明顯差異。
                     </p>
-                </div>
-            </div>
-
-            <div class="mt-8 feature-card">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h3 class="text-xl font-bold heading-mono mb-2">本機重跑 Benchmark</h3>
-                        <p style="color: var(--text-secondary);">使用與 README 和官網相同的 benchmark suite。</p>
-                    </div>
-                    <a href="benchmarks-zh.html" class="btn-secondary" target="_blank">開啟 Benchmark 摘要</a>
-                </div>
-                <div class="mt-4 code-block">
-                    <code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 功能特色 (Bento Grid) -->
-    <section id="features" style="background: var(--bg-primary);">
-        <div class="max-w-7xl mx-auto px-4">
-            <h2 class="section-title heading-mono">
-                為什麼選擇 <span class="gradient-text">Toonify MCP</span>
-            </h2>
-
-            <div class="bento-grid">
-                <!-- 主要功能：自動優化 -->
-                <div class="feature-card bento-large">
-                    <div class="text-3xl mb-4">🎯</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">全自動優化</h3>
-                    <p style="color: var(--text-secondary);">PostToolUse hook 會攔截工具結果並自動套用 TOON 格式轉換，完全透明化，無需手動呼叫。</p>
-                    <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
-                        <code class="text-sm font-mono">claude plugin add toonify-mcp</code>
-                    </div>
-                </div>
-
-                <!-- 增強快取 -->
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">⚡</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">結構化資料 Benchmark</h3>
-                    <p style="color: var(--text-secondary);">目前 `tests/benchmarks/quick-stats.test.ts` 的 benchmark suite 在 12 個 fixtures 上得到 48.1% 的平均節省。</p>
-                </div>
-
-                <!-- 多語言支援 -->
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🌏</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">程式碼壓縮支援</h3>
-                    <p style="color: var(--text-secondary);">支援 TypeScript、Python、Go 的註解與空白壓縮，整合於同一條 Pipeline。</p>
-                </div>
-
-                <!-- 零設定 -->
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🔧</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">快取機制</h3>
-                    <p style="color: var(--text-secondary);">包含 LRU result cache、TTL 過期與可選的磁碟持久化。</p>
-                </div>
-
-                <!-- 雙模式運作 -->
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🔄</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">雙模式運作</h3>
-                    <p style="color: var(--text-secondary);">支援外掛模式（自動）和 MCP 伺服器模式（手動），滿足不同使用需求。</p>
-                </div>
-
-                <!-- 內建統計 -->
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">📊</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">內建效能統計</h3>
-                    <p style="color: var(--text-secondary);">可透過 MCP 工具查看 token 節省量與優化統計。</p>
-                </div>
-
-                <!-- 靜默備援 -->
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🛡️</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">靜默備援機制</h3>
-                    <p style="color: var(--text-secondary);">遇到錯誤時自動降級到原始內容，絕不中斷您的工作流程。</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 運作原理 -->
-    <section id="how-it-works">
-        <div class="max-w-7xl mx-auto px-4">
-            <h2 class="section-title heading-mono">
-                <span class="gradient-text">運作原理</span>
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--trust-blue); color: white;">1</div>
-                    <h3 class="text-lg font-bold mb-2 heading-mono">讀取檔案</h3>
-                    <p style="color: var(--text-secondary);">Claude Code 呼叫 Read 工具讀取 JSON、CSV 或 YAML 檔案。</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--trust-blue); color: white;">2</div>
-                    <h3 class="text-lg font-bold mb-2 heading-mono">自動攔截</h3>
-                    <p style="color: var(--text-secondary);">PostToolUse hook 自動攔截工具結果。</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--trust-blue); color: white;">3</div>
-                    <h3 class="text-lg font-bold mb-2 heading-mono">格式轉換</h3>
-                    <p style="color: var(--text-secondary);">檢測資料類型並轉換為 TOON 格式。</p>
-                </div>
-
-                <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--success-green); color: white;">✓</div>
-                    <h3 class="text-lg font-bold mb-2 heading-mono">節省 Token</h3>
-                    <p style="color: var(--text-secondary);">當預估節省超過門檻時，工具會送出優化後的內容。</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 安裝方式 -->
-    <section id="installation" style="background: var(--bg-secondary);">
-        <div class="max-w-7xl mx-auto px-4">
-            <h2 class="section-title heading-mono">
-                <span class="gradient-text">安裝方式</span>
-            </h2>
-            <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                預設先走外掛模式。只有在需要手動控制時再使用 MCP 伺服器模式。
-            </p>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- 外掛模式（推薦） -->
-                <div class="feature-card">
-                    <div class="flex items-center mb-4">
-                        <div class="text-3xl mr-3">⭐</div>
-                        <h3 class="text-2xl font-bold heading-mono">推薦：外掛模式</h3>
-                    </div>
-                    <p class="mb-4" style="color: var(--text-secondary);">適合 Claude Code 用戶。安裝後自動優化，不需要手動呼叫工具。</p>
-                    <pre class="text-sm"><code># 1. 下載專案
-git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
-cd toonify-mcp
-
-# 2. 安裝依賴並建置
-npm install
-npm run build
-
-# 3. 從本機安裝
-npm install -g .
-
-# 4. 新增為外掛（自動模式）
-claude plugin add toonify-mcp
-
-# 5. 驗證安裝
-claude plugin list
-# 應顯示：toonify-mcp ✓</code></pre>
-                </div>
-
-                <!-- MCP 伺服器模式 -->
-                <div class="feature-card">
-                    <div class="flex items-center mb-4">
-                        <div class="text-3xl mr-3">🔧</div>
-                        <h3 class="text-2xl font-bold heading-mono">進階：MCP 伺服器模式</h3>
-                    </div>
-                    <p class="mb-4" style="color: var(--text-secondary);">適合需要明確控制或要接到其他 MCP 客戶端的情境。</p>
-                    <pre class="text-sm"><code># 1. 先完成外掛模式安裝，確保 toonify-mcp 可用
-
-# 2. 註冊為 MCP 伺服器
-claude mcp add toonify -- toonify-mcp
-
-# 3. 驗證
-claude mcp list
-# 應顯示：toonify: toonify-mcp - ✓ Connected</code></pre>
                 </div>
             </div>
         </div>
@@ -586,11 +402,13 @@ claude mcp list
     <section id="examples">
         <div class="max-w-7xl mx-auto px-4">
             <h2 class="section-title heading-mono">
-                實際<span class="gradient-text">優化範例</span>
+                一眼看懂<span class="gradient-text">差異</span>
             </h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
+                重點不是改變資訊，而是用更少 token 表達同樣重點。
+            </p>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- 優化前 -->
                 <div>
                     <div class="flex items-center mb-4">
                         <h3 class="text-2xl font-bold heading-mono">優化前</h3>
@@ -616,7 +434,6 @@ claude mcp list
 }</code></pre>
                 </div>
 
-                <!-- 優化後 -->
                 <div>
                     <div class="flex items-center mb-4">
                         <h3 class="text-2xl font-bold heading-mono">優化後</h3>
@@ -628,9 +445,205 @@ products[2]{id,name,price,category,inStock}:
   102,Magic Mouse,79,Accessories,false</code></pre>
                     <div class="mt-4 p-4 rounded-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-color);">
                         <p class="text-sm" style="color: var(--text-secondary);">
-                            <strong style="color: var(--success-green);">✓ 在外掛模式下自動套用</strong> - 無需手動呼叫！
+                            <strong style="color: var(--success-green);">✓ 外掛模式下自動套用</strong>，不需要手動呼叫工具。
                         </p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 安裝方式 -->
+    <section id="installation" style="background: var(--bg-secondary);">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="section-title heading-mono">
+                <span class="gradient-text">先走預設路徑</span>
+            </h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
+                外掛模式最適合大多數 Claude Code 使用者。只有在需要手動控制時，再改用 MCP 伺服器模式。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="feature-card">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">⭐</div>
+                        <h3 class="text-2xl font-bold heading-mono">推薦：外掛模式</h3>
+                    </div>
+                    <p class="mb-4" style="color: var(--text-secondary);">適合 Claude Code 用戶。安裝後自動優化，不需要手動呼叫工具。</p>
+                    <pre class="text-sm"><code># 1. 下載專案
+git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
+cd toonify-mcp
+
+# 2. 安裝依賴並建置
+npm install
+npm run build
+
+# 3. 從本機安裝
+npm install -g .
+
+# 4. 新增為外掛（自動模式）
+claude plugin add toonify-mcp
+
+# 5. 驗證安裝
+claude plugin list
+# 應顯示：toonify-mcp ✓</code></pre>
+                </div>
+
+                <div class="feature-card">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🔧</div>
+                        <h3 class="text-2xl font-bold heading-mono">進階：MCP 伺服器模式</h3>
+                    </div>
+                    <p class="mb-4" style="color: var(--text-secondary);">適合需要明確控制或要接到其他 MCP 客戶端的情境。</p>
+                    <pre class="text-sm"><code># 1. 先完成外掛模式安裝，確保 toonify-mcp 可用
+
+# 2. 註冊為 MCP 伺服器
+claude mcp add toonify -- toonify-mcp
+
+# 3. 驗證
+claude mcp list
+# 應顯示：toonify: toonify-mcp - ✓ Connected</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能特色 (Bento Grid) -->
+    <section id="features" style="background: var(--bg-secondary);">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="section-title heading-mono">
+                團隊為什麼會用 <span class="gradient-text">Toonify MCP</span>
+            </h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
+                價值很簡單：讓大型輸出更輕，同時降低導入摩擦。
+            </p>
+
+            <div class="bento-grid">
+                <div class="feature-card bento-large">
+                    <div class="text-3xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">外掛模式自動套用</h3>
+                    <p style="color: var(--text-secondary);">PostToolUse hook 會攔截支援的工具結果並自動套用優化，預設體驗保持低干擾。</p>
+                    <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
+                        <code class="text-sm font-mono">claude plugin add toonify-mcp</code>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🧭</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">不改變原本 Workflow</h3>
+                    <p style="color: var(--text-secondary);">重點不是多一套介面，而是在你已經使用的工作流程裡降低 token 負擔。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">📦</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">大型結構化輸出</h3>
+                    <p style="color: var(--text-secondary);">適合大 JSON、CSV、YAML、API 回應與產生出的資料，避免 context 被 payload 撐大。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🌏</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">支援部分原始碼壓縮</h3>
+                    <p style="color: var(--text-secondary);">支援 TypeScript、Python、Go 的註解與空白壓縮，整合於同一條 Pipeline。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🔄</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">雙模式運作</h3>
+                    <p style="color: var(--text-secondary);">支援外掛模式（自動）和 MCP 伺服器模式（手動），滿足不同使用需求。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">⚖️</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">值得時才壓縮</h3>
+                    <p style="color: var(--text-secondary);">只有當預估節省超過設定門檻時，結構化資料才會進行壓縮。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">本機統計與安全回退</h3>
+                    <p style="color: var(--text-secondary);">可查看本機節省統計；若優化不值得，Toonify 會回退到原始內容。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 運作原理 -->
+    <section id="how-it-works">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="section-title heading-mono">
+                <span class="gradient-text">運作原理</span>
+            </h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
+                預設外掛模式的精簡版本流程。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--trust-blue); color: white;">1</div>
+                    <h3 class="text-lg font-bold mb-2 heading-mono">讀取大型輸出</h3>
+                    <p style="color: var(--text-secondary);">Claude Code 讀取大型 JSON、CSV、YAML、API 回應或支援的原始碼。</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--trust-blue); color: white;">2</div>
+                    <h3 class="text-lg font-bold mb-2 heading-mono">攔截工具結果</h3>
+                    <p style="color: var(--text-secondary);">PostToolUse hook 判斷這份內容是否值得壓縮。</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--trust-blue); color: white;">3</div>
+                    <h3 class="text-lg font-bold mb-2 heading-mono">有幫助才壓縮</h3>
+                    <p style="color: var(--text-secondary);">結構化資料轉成 TOON 格式，支援的程式碼則壓縮註解與空白。</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl font-bold heading-mono" style="background: var(--success-green); color: white;">✓</div>
+                    <h3 class="text-lg font-bold mb-2 heading-mono">照常繼續工作</h3>
+                    <p style="color: var(--text-secondary);">當預估節省超過門檻時，系統會自動送出優化後的內容。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 實證區段 -->
+    <section id="proof" class="py-16" style="background: var(--bg-primary);">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="section-title heading-mono">
+                <span class="gradient-text">目前 Benchmark 摘要</span>
+            </h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
+                這裡整理的是目前版本結構化資料 benchmark suite 的結果。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">12</div>
+                    <div style="color: var(--text-secondary);">測試案例</div>
+                </div>
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">48.1%</div>
+                    <div style="color: var(--text-secondary);">平均節省</div>
+                </div>
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">24.5-66.3%</div>
+                    <div style="color: var(--text-secondary);">觀察範圍</div>
+                </div>
+                <div class="feature-card">
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
+                    <div style="color: var(--text-secondary);">測試通過</div>
+                </div>
+            </div>
+
+            <div class="mt-8 feature-card">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold heading-mono mb-2">想看細節？</h3>
+                        <p style="color: var(--text-secondary);">可查看公開 benchmark 摘要與本機重跑方式。</p>
+                    </div>
+                    <a href="benchmarks-zh.html" class="btn-secondary" target="_blank">開啟 Benchmark 摘要</a>
+                </div>
+                <div class="mt-4 code-block">
+                    <code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code>
                 </div>
             </div>
         </div>
@@ -640,17 +653,17 @@ products[2]{id,name,price,category,inStock}:
     <section style="background: linear-gradient(135deg, var(--trust-blue) 0%, #7C3AED 50%, var(--cta-orange) 100%); color: white;">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <h2 class="text-4xl md:text-5xl font-bold mb-6 heading-mono">
-                準備先走預設安裝路徑了嗎？
+                拿你的真實 Claude Code 工作流程試一次
             </h2>
             <p class="text-xl mb-8 opacity-90">
-                先用外掛模式上手，需要時再查看 benchmark 方法或切換到進階 MCP 模式。
+                先從外掛模式開始，看看大型輸出是否真的變輕，再決定要不要納入日常 workflow。
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="#installation" class="btn-cta" style="background: white; color: var(--trust-blue);">
-                    打開安裝步驟
+                    安裝外掛
                 </a>
-                <a href="benchmarks-zh.html" target="_blank" class="btn-cta" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
-                    查看 Benchmark 摘要
+                <a href="#examples" class="btn-cta" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                    看實際範例
                 </a>
             </div>
         </div>
