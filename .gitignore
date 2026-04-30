@@ -234,6 +234,8 @@ coverage/
 .nyc_output/
 *.lcov
 test-results/
+output/
+qa-*.png
 
 # 💾 Database & Data
 *.db
