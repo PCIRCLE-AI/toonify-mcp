@@ -30,9 +30,16 @@
             </div>
 
             <h1 class="text-4xl font-bold text-gray-900 mb-4 heading-mono">服務條款</h1>
-            <p class="text-gray-600 mb-8">最後更新：2026 年 1 月 3 日</p>
+            <p class="text-gray-600 mb-8">最後更新：2026 年 5 月 1 日</p>
 
             <div class="prose prose-lg max-w-none">
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">概述</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        這一頁說明的是公開網站與開源 Toonify MCP 專案的使用邊界。它的目的是補充說明，不會取代實際規範軟體授權的 <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/LICENSE" target="_blank" class="text-blue-600 hover:underline">MIT 授權</a>。
+                    </p>
+                </section>
+
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">1. MIT 授權</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
@@ -73,12 +80,13 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">4. 上下文壓縮</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        啟用時，Toonify 會自動壓縮支援的結構化資料與原始碼。您確認：
+                        啟用時，Toonify 會自動壓縮支援的結構化資料、debug 輸出與支援的原始碼。您確認：
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li>節省量會根據資料結構、原始碼與內容型態而異</li>
+                        <li>節省量會根據資料結構、debug 輸出、原始碼與內容型態而異</li>
                         <li>結構化資料可能會轉換為 TOON 格式</li>
-                        <li>只有在啟用時才會自動進行支援的壓縮</li>
+                        <li>支援的輸出可能會在工作流程往後傳遞前先被轉換</li>
+                        <li>只有在對應模式啟用時，才會自動進行支援的壓縮</li>
                         <li>您可以隨時停用優化</li>
                     </ul>
                 </section>
@@ -89,8 +97,9 @@
                         使用 Toonify 時，您同意：
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li>驗證 TOON 優化後的輸出符合您的需求</li>
-                        <li>使用 Claude API 時遵守 Anthropic 的可接受使用政策</li>
+                        <li>自行判斷優化後的輸出是否適合您的使用情境</li>
+                        <li>在 production、合規或其他敏感流程中使用前，先驗證重要結果</li>
+                        <li>遵守您搭配 Toonify 使用的 AI 供應商或 client 的條款、隱私政策與使用規範</li>
                         <li>修改或分發 Toonify 時尊重 MIT 授權條款</li>
                         <li>不將 Toonify 用於非法或有害目的</li>
                     </ul>
@@ -99,18 +108,19 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">6. 第三方服務</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        Toonify 整合：
+                        Toonify 可能會搭配下列第三方工具或服務一起使用：
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li><strong>Claude API：</strong> 受 <a href="https://www.anthropic.com/legal/terms" target="_blank" class="text-blue-600 hover:underline">Anthropic 條款</a> 約束</li>
-                        <li><strong>Claude Code：</strong> MCP 協議實作</li>
+                        <li><strong>Claude Code：</strong> 受 Anthropic 適用的 <a href="https://docs.anthropic.com/en/docs/claude-code/legal-and-compliance" target="_blank" class="text-blue-600 hover:underline">Claude Code 法務與合規條款</a> 約束</li>
+                        <li><strong>Anthropic 服務：</strong> 受 Anthropic 的 <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">隱私政策</a> 與對應的商業或消費者條款約束</li>
+                        <li><strong>其他 MCP client 或模型供應商：</strong> 受各自的條款、隱私政策與服務行為約束</li>
                     </ul>
                 </section>
 
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">7. 貢獻</h2>
                     <p class="text-gray-700 leading-relaxed">
-                        透過向 Toonify 貢獻程式碼、文件或 issue，您同意您的貢獻將根據 MIT 授權。請參閱我們的<a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" target="_blank" class="text-blue-600 hover:underline">貢獻指南</a>。
+                        一般情況下，對 repository 的程式碼與文件貢獻，會依照專案現有授權處理，除非 repository 另有說明。請參閱我們的 <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" target="_blank" class="text-blue-600 hover:underline">貢獻指南</a>。
                     </p>
                 </section>
 

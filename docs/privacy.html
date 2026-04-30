@@ -30,20 +30,20 @@
             </div>
 
             <h1 class="text-4xl font-bold text-gray-900 mb-4 heading-mono">Privacy Policy</h1>
-            <p class="text-gray-600 mb-8">Last updated: January 3, 2026</p>
+            <p class="text-gray-600 mb-8">Last updated: May 1, 2026</p>
 
             <div class="prose prose-lg max-w-none">
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">Overview</h2>
                     <p class="text-gray-700 leading-relaxed">
-                        Toonify MCP is an open-source MCP server and Claude Code plugin that runs locally. Your privacy is paramount, so the product is designed to keep supported processing under your control on your machine.
+                        Toonify MCP is open-source software that runs locally on your machine. This page explains what Toonify itself does locally, what the website does, and where third-party services may still be involved in your overall workflow.
                     </p>
                 </section>
 
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">Data Processing</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        <strong>100% Local Processing:</strong> Toonify operates entirely on your machine. Supported compression and related local features happen locally:
+                        <strong>Local processing by Toonify:</strong> Toonify's own compression and supporting local features run on your machine:
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2 mb-4">
                         <li>TOON format conversion for supported content</li>
@@ -51,10 +51,13 @@
                         <li>Local statistics tracking</li>
                     </ul>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        <strong>You own your data:</strong> Toonify never sends your data, prompts, or statistics to external servers. Everything stays on your computer.
+                        <strong>No Toonify-hosted service:</strong> Toonify does not operate its own remote API, telemetry pipeline, or hosted dashboard for this project. It does not separately upload your content or local statistics to PCIRCLE AI-operated servers.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>Your client and provider still matter:</strong> If you use Toonify with Claude Code or another MCP client, that client may still send prompts, files, tool output, or optimized output to the model provider or platform you use. Those network transfers are governed by that client and provider's terms and privacy practices, not by Toonify alone.
                     </p>
                     <p class="text-gray-700 leading-relaxed">
-                        <strong>Claude API:</strong> When Toonify optimizes tool responses, the optimized output is passed to Claude through your existing Claude Code subscription. This is governed by <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Anthropic's Privacy Policy</a>.
+                        <strong>Example:</strong> When you use Toonify with Claude Code, optimized output may still be passed to Anthropic through your existing Claude Code usage. See Anthropic's <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Privacy Policy</a>, <a href="https://docs.anthropic.com/en/docs/claude-code/data-usage" target="_blank" class="text-blue-600 hover:underline">Claude Code data usage</a>, and applicable terms for your Claude plan.
                     </p>
                 </section>
 
@@ -75,7 +78,7 @@
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
                         <li>Inspect all source code at <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">GitHub</a></li>
-                        <li>Verify that no data is sent externally</li>
+                        <li>Inspect what Toonify does locally and what external dependencies it uses</li>
                         <li>Modify the code to suit your needs</li>
                         <li>Use it freely in commercial or non-commercial projects</li>
                     </ul>
@@ -84,8 +87,10 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">Your Control</h2>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li>All processing happens on your machine</li>
-                        <li>No telemetry or usage tracking</li>
+                        <li>Toonify's compression, caching, and local stats remain on your machine</li>
+                        <li>No separate Toonify telemetry or usage tracking is enabled on this project website</li>
+                        <li>You control whether to use plugin mode, MCP mode, or neither</li>
+                        <li>You control which model client or provider receives downstream prompts and output</li>
                         <li>Complete source code transparency - <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">view on GitHub</a></li>
                     </ul>
                 </section>

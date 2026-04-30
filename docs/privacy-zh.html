@@ -30,20 +30,20 @@
             </div>
 
             <h1 class="text-4xl font-bold text-gray-900 mb-4 heading-mono">隱私權政策</h1>
-            <p class="text-gray-600 mb-8">最後更新：2026 年 1 月 3 日</p>
+            <p class="text-gray-600 mb-8">最後更新：2026 年 5 月 1 日</p>
 
             <div class="prose prose-lg max-w-none">
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">概述</h2>
                     <p class="text-gray-700 leading-relaxed">
-                        Toonify MCP 是一個在本機運行的開源 MCP 伺服器與 Claude Code 外掛。您的隱私至關重要，因此產品設計的原則是讓支援的處理流程都留在您的掌控之下。
+                        Toonify MCP 是在您電腦上執行的開源軟體。這一頁說明 Toonify 自己在本機做什麼、網站本身做什麼，以及在整體工作流程中哪些部分仍可能涉及第三方服務。
                     </p>
                 </section>
 
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">資料處理</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        <strong>100% 本機處理：</strong> Toonify 完全在您的電腦上運行。支援的壓縮流程與相關本機功能都在本機進行：
+                        <strong>Toonify 本身的本機處理：</strong> Toonify 自己的壓縮與相關本機功能都在您的電腦上執行：
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2 mb-4">
                         <li>支援內容的 TOON 格式轉換</li>
@@ -51,10 +51,13 @@
                         <li>本機統計追蹤</li>
                     </ul>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        <strong>您擁有您的資料：</strong> Toonify 從不將您的資料、提示或統計資訊傳送到外部伺服器。一切都保留在您的電腦上。
+                        <strong>沒有 Toonify 自己的託管服務：</strong> 這個專案沒有額外營運自己的遠端 API、遙測管線或託管後台，也不會另外把您的內容或本機統計上傳到 PCIRCLE AI 營運的伺服器。
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        <strong>但您使用的客戶端與模型供應商仍然重要：</strong> 如果您把 Toonify 接到 Claude Code 或其他 MCP client，該 client 仍可能把 prompts、檔案、工具輸出或優化後的內容送到您使用的模型供應商或平台。這些網路傳輸受該 client 與供應商自己的條款與隱私政策約束，不是 Toonify 單方面能決定的。
                     </p>
                     <p class="text-gray-700 leading-relaxed">
-                        <strong>Claude API：</strong> 當 Toonify 優化工具回應時，優化後的輸出會透過您現有的 Claude Code 訂閱傳遞給 Claude。這受 <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Anthropic 隱私權政策</a> 規範。
+                        <strong>例如：</strong> 當您透過 Claude Code 使用 Toonify 時，優化後的輸出仍可能會透過您既有的 Claude Code 使用流程傳給 Anthropic。請參閱 <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Anthropic 隱私權政策</a>、<a href="https://docs.anthropic.com/en/docs/claude-code/data-usage" target="_blank" class="text-blue-600 hover:underline">Claude Code data usage</a> 與您所使用方案的相關條款。
                     </p>
                 </section>
 
@@ -75,7 +78,7 @@
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
                         <li>在 <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">GitHub</a> 檢視所有原始碼</li>
-                        <li>驗證沒有資料被傳送到外部</li>
+                        <li>檢查 Toonify 在本機做了哪些事、依賴了哪些外部元件</li>
                         <li>修改程式碼以符合您的需求</li>
                         <li>在商業或非商業專案中自由使用</li>
                     </ul>
@@ -84,8 +87,10 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">您的控制權</h2>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li>所有處理都在您的電腦上進行</li>
-                        <li>無遙測或使用追蹤</li>
+                        <li>Toonify 的壓縮、快取與本機統計都留在您的電腦上</li>
+                        <li>這個專案本身沒有額外的 Toonify 遙測或使用追蹤</li>
+                        <li>您可以自己決定要不要使用外掛模式、MCP 模式，或完全不啟用</li>
+                        <li>您也可以自己決定下游要由哪個 client 或模型供應商接收 prompts 與輸出</li>
                         <li>完整的原始碼透明度 - <a href="https://github.com/PCIRCLE-AI/toonify-mcp" target="_blank" class="text-blue-600 hover:underline">在 GitHub 查看</a></li>
                     </ul>
                 </section>

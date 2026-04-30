@@ -30,9 +30,16 @@
             </div>
 
             <h1 class="text-4xl font-bold text-gray-900 mb-4 heading-mono">Terms of Service</h1>
-            <p class="text-gray-600 mb-8">Last updated: January 3, 2026</p>
+            <p class="text-gray-600 mb-8">Last updated: May 1, 2026</p>
 
             <div class="prose prose-lg max-w-none">
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Overview</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        These terms describe the public website and the open-source Toonify MCP project. They are intended to clarify usage boundaries around this project, but they do not replace the <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/LICENSE" target="_blank" class="text-blue-600 hover:underline">MIT License</a> that governs the software itself.
+                    </p>
+                </section>
+
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">1. MIT License</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
@@ -73,12 +80,13 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">4. Context Compression</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        Toonify automatically compresses supported structured data and source code when enabled. You acknowledge that:
+                        Toonify can automatically compress supported structured data, debug-heavy output, and supported source code when enabled. You acknowledge that:
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li>Observed savings vary based on data structure, source code, and content shape</li>
+                        <li>Observed savings vary based on data structure, debug output, source code, and content shape</li>
                         <li>Structured data may be converted to TOON format</li>
-                        <li>Supported compression happens automatically only when enabled</li>
+                        <li>Supported output may be transformed before it is passed onward in your workflow</li>
+                        <li>Automatic optimization happens only when the relevant mode is enabled</li>
                         <li>You can disable optimization at any time</li>
                     </ul>
                 </section>
@@ -89,8 +97,9 @@
                         When using Toonify, you agree to:
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li>Verify that TOON-optimized output meets your requirements</li>
-                        <li>Comply with Anthropic's Acceptable Use Policy when using Claude API</li>
+                        <li>Review whether optimized output is appropriate for your use case</li>
+                        <li>Validate important results before relying on them in production, compliance, or other sensitive workflows</li>
+                        <li>Comply with the terms, privacy policy, and usage policies of any AI provider or client you use with Toonify</li>
                         <li>Respect the MIT License terms when modifying or distributing Toonify</li>
                         <li>Not use Toonify for illegal or harmful purposes</li>
                     </ul>
@@ -99,18 +108,19 @@
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">6. Third-Party Services</h2>
                     <p class="text-gray-700 leading-relaxed mb-4">
-                        Toonify integrates with:
+                        Toonify may be used alongside third-party tools and services, including:
                     </p>
                     <ul class="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
-                        <li><strong>Claude API:</strong> Subject to <a href="https://www.anthropic.com/legal/terms" target="_blank" class="text-blue-600 hover:underline">Anthropic's Terms</a></li>
-                        <li><strong>Claude Code:</strong> MCP protocol implementation</li>
+                        <li><strong>Claude Code:</strong> subject to Anthropic's applicable <a href="https://docs.anthropic.com/en/docs/claude-code/legal-and-compliance" target="_blank" class="text-blue-600 hover:underline">Claude Code legal and compliance terms</a></li>
+                        <li><strong>Anthropic services:</strong> subject to Anthropic's <a href="https://www.anthropic.com/legal/privacy" target="_blank" class="text-blue-600 hover:underline">Privacy Policy</a> and applicable commercial or consumer terms</li>
+                        <li><strong>Other MCP clients or providers:</strong> subject to their own terms, privacy policies, and service behavior</li>
                     </ul>
                 </section>
 
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">7. Contributing</h2>
                     <p class="text-gray-700 leading-relaxed">
-                        By contributing code, documentation, or issues to Toonify, you agree that your contributions will be licensed under the MIT License. See our <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" target="_blank" class="text-blue-600 hover:underline">Contributing Guide</a>.
+                        Code and documentation contributions to the repository are expected to be made under the same project license unless stated otherwise in the repository. See our <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" target="_blank" class="text-blue-600 hover:underline">Contributing Guide</a>.
                     </p>
                 </section>
 

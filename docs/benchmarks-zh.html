@@ -41,7 +41,7 @@
         </div>
 
         <header class="mb-10">
-            <span class="pill">Structured Data</span>
+            <span class="pill">結構化資料</span>
             <h1 class="text-4xl md:text-5xl font-bold heading-mono mt-4 mb-4">Toonify MCP 結構化資料 Benchmark 摘要</h1>
             <p class="text-lg text-slate-700 max-w-3xl">
                 這一頁整理的是 Toonify 目前的結構化資料 benchmark 摘要，方便你快速看目前量測結果、如何重跑，以及它在整體產品中的位置。
@@ -50,17 +50,17 @@
 
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div class="card">
-                <div class="text-sm text-slate-500 heading-mono mb-2">STRUCTURED DATA SUITE</div>
+                <div class="text-sm text-slate-500 heading-mono mb-2">結構化資料測試組</div>
                 <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">12 個案例</div>
-                <p class="text-slate-700">包含 small、medium、large、nested、多語言、CSV-like 與 API-shaped payload。</p>
+                <p class="text-slate-700">包含小型、中型、大型、巢狀、多語言、類 CSV 與 API 型 payload。</p>
             </div>
             <div class="card">
-                <div class="text-sm text-slate-500 heading-mono mb-2">LOCAL VERIFICATION RUN</div>
+                <div class="text-sm text-slate-500 heading-mono mb-2">本機驗證執行</div>
                 <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">48.1%</div>
                 <p class="text-slate-700">來自 2026 年 4 月 30 日本機驗證執行的平均節省值。</p>
             </div>
             <div class="card">
-                <div class="text-sm text-slate-500 heading-mono mb-2">OBSERVED RANGE</div>
+                <div class="text-sm text-slate-500 heading-mono mb-2">觀察範圍</div>
                 <div class="text-3xl font-bold heading-mono text-blue-600 mb-2">24.5-66.3%</div>
                 <p class="text-slate-700">同一次執行中觀察到的最小到最大節省範圍。</p>
             </div>
@@ -74,8 +74,8 @@
             <div class="code-block mb-4"><code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code></div>
             <div class="flex flex-wrap gap-4 text-sm">
                 <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/quick-stats.test.ts" class="text-blue-600 hover:text-blue-700">打開 benchmark 測試套件</a>
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/token-savings.test.ts" class="text-blue-600 hover:text-blue-700">打開延伸 token benchmark</a>
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/code-compression-benchmark.ts" class="text-blue-600 hover:text-blue-700">打開 code compression benchmark 原始碼</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/token-savings.test.ts" class="text-blue-600 hover:text-blue-700">打開延伸 token 測試</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/code-compression-benchmark.ts" class="text-blue-600 hover:text-blue-700">打開原始碼壓縮 benchmark 原始碼</a>
             </div>
         </section>
 
@@ -91,13 +91,13 @@
                         </tr>
                     </thead>
                     <tbody class="text-slate-700">
-                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Small</td><td class="py-2 pr-4">48.1%</td><td class="py-2">2 個案例</td></tr>
-                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Medium</td><td class="py-2 pr-4">65.0%</td><td class="py-2">2 個案例</td></tr>
-                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Large</td><td class="py-2 pr-4">42.6%</td><td class="py-2">2 個案例</td></tr>
-                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">CSV-like</td><td class="py-2 pr-4">24.5%</td><td class="py-2">quick suite 中 1 個案例</td></tr>
-                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Nested</td><td class="py-2 pr-4">48.2%</td><td class="py-2">1 個案例</td></tr>
-                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">Multilingual</td><td class="py-2 pr-4">46.3%</td><td class="py-2">English + Chinese</td></tr>
-                        <tr><td class="py-2 pr-4">API-shaped</td><td class="py-2 pr-4">50.3%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">小型</td><td class="py-2 pr-4">48.1%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">中型</td><td class="py-2 pr-4">65.0%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">大型</td><td class="py-2 pr-4">42.6%</td><td class="py-2">2 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">類 CSV</td><td class="py-2 pr-4">24.5%</td><td class="py-2">quick suite 中 1 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">巢狀</td><td class="py-2 pr-4">48.2%</td><td class="py-2">1 個案例</td></tr>
+                        <tr class="border-b border-slate-100"><td class="py-2 pr-4">多語言</td><td class="py-2 pr-4">46.3%</td><td class="py-2">英文 + 中文</td></tr>
+                        <tr><td class="py-2 pr-4">API 型</td><td class="py-2 pr-4">50.3%</td><td class="py-2">2 個案例</td></tr>
                     </tbody>
                 </table>
             </div>
