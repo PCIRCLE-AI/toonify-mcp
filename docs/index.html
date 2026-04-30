@@ -392,43 +392,6 @@
                         "@type": "Organization",
                         "name": "PCIRCLE AI"
                     }
-                },
-                {
-                    "@type": "FAQPage",
-                    "mainEntity": [
-                        {
-                            "@type": "Question",
-                            "name": "What does Toonify compress?",
-                            "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "Toonify helps Claude Code stay lighter when large JSON, CSV, YAML, logs, test output, or supported source files would otherwise bloat the session."
-                            }
-                        },
-                        {
-                            "@type": "Question",
-                            "name": "When is Toonify not a good fit?",
-                            "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "It is usually less useful for short prose, very small files, or content where exact original formatting matters more than reducing context size."
-                            }
-                        },
-                        {
-                            "@type": "Question",
-                            "name": "Does Toonify change the Claude Code workflow?",
-                            "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "No. Plugin mode keeps the normal Claude Code workflow and applies optimization automatically after supported tool output is returned."
-                            }
-                        },
-                        {
-                            "@type": "Question",
-                            "name": "How do I verify installation and recent activity?",
-                            "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "Run toonify-mcp setup first, then use toonify-mcp doctor to validate the install and toonify-mcp status to inspect recent optimization activity."
-                            }
-                        }
-                    ]
                 }
             ]
         }
@@ -467,8 +430,7 @@
                     <a href="#fit" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Who It's For</a>
                     <a href="#examples" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Example</a>
                     <a href="#installation" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Install</a>
-                    <a href="#features" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Features</a>
-                    <a href="#how-it-works" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">How It Works</a>
+                    <a href="#features" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Why Use It</a>
                     <a href="#proof" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Benchmarks</a>
                     <a href="https://github.com/PCIRCLE-AI/toonify-mcp" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition" target="_blank">GitHub</a>
                 </div>
@@ -585,89 +547,6 @@
         </div>
     </section>
 
-    <!-- FAQ -->
-    <section id="faq" class="py-16" style="background: var(--bg-primary);">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Frequently Asked Questions</h2>
-                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    Quick answers before you try it.
-                </p>
-            </div>
-            <div class="space-y-4">
-                <details class="feature-card" open>
-                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">What does Toonify compress?</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">Large JSON, CSV, YAML, API responses, debug-heavy output such as test failures or stack traces, and supported TypeScript, Python, Go, and PHP source files.</p>
-                </details>
-                <details class="feature-card">
-                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">When should I skip it?</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">When your session is mostly short prose, tiny files, or formatting-sensitive content. In those cases the payoff is usually small, and Toonify often leaves the original content untouched anyway.</p>
-                </details>
-                <details class="feature-card">
-                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">Will it change how my team uses Claude Code?</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">Plugin mode keeps the same workflow. Supported output is optimized automatically after tool use, so teams do not need to introduce a new manual step.</p>
-                </details>
-                <details class="feature-card">
-                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">How do I verify install and recent activity?</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">Run <code>toonify-mcp setup</code> first, then use <code>toonify-mcp doctor</code> to validate the install and <code>toonify-mcp status</code> to inspect recent optimization activity.</p>
-                </details>
-                <details class="feature-card">
-                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">Does Toonify send my data to a remote server?</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">No. Toonify is local-first. Supported compression, caching, and metrics stay on your machine. The website also does not use analytics or cookies.</p>
-                </details>
-            </div>
-        </div>
-    </section>
-
-    <!-- Use Cases -->
-    <section id="use-cases" class="py-16" style="background: var(--bg-secondary);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Where Toonify Helps Most</h2>
-                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    The best fit is any workflow where large output feels heavy before you even start reasoning.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large API responses</h3>
-                    <p style="color: var(--text-secondary);">
-                        Inspecting big JSON payloads from APIs or tools without sending raw records forward every time.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Test failures and stack traces</h3>
-                    <p style="color: var(--text-secondary);">
-                        Reducing long debug output while keeping the lines developers need to fix the issue.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Record-heavy exports</h3>
-                    <p style="color: var(--text-secondary);">
-                        Reviewing CSV, YAML, or generated datasets where repeated fields dominate the token budget.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Whole source-file reads</h3>
-                    <p style="color: var(--text-secondary);">
-                        Reading larger TypeScript, Python, Go, or PHP files where comments and whitespace add weight but not much decision value.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Framework-heavy PHP files</h3>
-                    <p style="color: var(--text-secondary);">
-                        Reviewing Laravel or Symfony-style files that include namespaces, attributes, imports, and application structure.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Examples -->
     <section id="examples" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -771,55 +650,6 @@ claude mcp list
         </div>
     </section>
 
-    <!-- After Install -->
-    <section id="after-install" class="py-16" style="background: var(--bg-secondary);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">What You Should Notice After Install</h2>
-                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    You should not expect a new interface. You should notice lighter output inside the workflow you already use.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large supported output gets lighter</h3>
-                    <p style="color: var(--text-secondary);">
-                        Big JSON, CSV, YAML, logs, test output, and supported source files can be reduced before they move forward in the session.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Small or low-value content stays untouched</h3>
-                    <p style="color: var(--text-secondary);">
-                        If the content is too small or the estimated savings are not worth it, Toonify keeps the original result.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Plugin mode stays automatic</h3>
-                    <p style="color: var(--text-secondary);">
-                        You do not need to add a manual step to normal Claude Code sessions when plugin mode is installed.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Verification is simple</h3>
-                    <p style="color: var(--text-secondary);">
-                        `toonify-mcp doctor` should confirm the install, and `toonify-mcp status` should stay available for recent activity.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Built-in checks are available</h3>
-                    <p style="color: var(--text-secondary);">
-                        `toonify-mcp setup` handles install and upgrades, `toonify-mcp doctor` checks the install, and `toonify-mcp status` shows recent activity.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Features Section - Bento Box Grid -->
     <section id="features" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -901,116 +731,17 @@ claude mcp list
         </div>
     </section>
 
-    <!-- Supported Content -->
-    <section id="supported-content" class="py-16" style="background: var(--bg-primary);">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Supported Content and Boundaries</h2>
-                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    Toonify works best when large output is the problem. It is not meant to force every kind of content through the same rule.
-                </p>
-            </div>
-
-            <div class="feature-card p-0 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead style="background: var(--bg-tertiary); color: var(--text-primary);">
-                            <tr>
-                                <th class="py-4 px-5 heading-mono">Content Type</th>
-                                <th class="py-4 px-5 heading-mono">Current Handling</th>
-                                <th class="py-4 px-5 heading-mono">What Stays Intact</th>
-                            </tr>
-                        </thead>
-                        <tbody style="color: var(--text-secondary);">
-                            <tr style="border-top: 1px solid var(--border-color);">
-                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">JSON / CSV / YAML / API responses</td>
-                                <td class="py-4 px-5">Reduced into a more compact format when the savings are worth it.</td>
-                                <td class="py-4 px-5">Core fields, values, and structure needed for the session.</td>
-                            </tr>
-                            <tr style="border-top: 1px solid var(--border-color);">
-                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Test failures / stack traces / compiler output</td>
-                                <td class="py-4 px-5">Reduced conservatively by cutting repeated noise.</td>
-                                <td class="py-4 px-5">Error headlines, assertion text, stack frames, file paths, and line numbers.</td>
-                            </tr>
-                            <tr style="border-top: 1px solid var(--border-color);">
-                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Supported source code</td>
-                                <td class="py-4 px-5">Supported languages are made lighter by trimming comments and whitespace.</td>
-                                <td class="py-4 px-5">Code structure and syntax that should stay intact.</td>
-                            </tr>
-                            <tr style="border-top: 1px solid var(--border-color);">
-                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Small files or prose-heavy text</td>
-                                <td class="py-4 px-5">Usually skipped because the payoff is small.</td>
-                                <td class="py-4 px-5">Original wording and formatting.</td>
-                            </tr>
-                            <tr style="border-top: 1px solid var(--border-color);">
-                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Formatting-sensitive content</td>
-                                <td class="py-4 px-5">Not a strong fit for the default workflow.</td>
-                                <td class="py-4 px-5">Original layout when exact formatting matters more than shrinking context.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section id="how-it-works" class="py-16" style="background: var(--bg-primary);">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">How It Works</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">The short version of the default plugin flow.</p>
-            </div>
-
-            <div class="feature-card p-8">
-                <div class="space-y-6">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">1</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Read a large output</h3>
-                            <p style="color: var(--text-secondary);">Claude Code reads a large JSON file, log, test output, or supported source file.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">2</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Intercept the tool result</h3>
-                            <p style="color: var(--text-secondary);">Toonify checks whether the returned content is worth reducing.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">3</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Compress when it helps</h3>
-                            <p style="color: var(--text-secondary);">If the savings are worth it, Toonify makes the content lighter while keeping the useful signal.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">4</div>
-                        <div>
-                            <h3 class="font-bold mb-1" style="color: var(--text-primary);">Continue the same session</h3>
-                            <p style="color: var(--text-secondary);">The session keeps going as usual, just with less heavy output.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Proof Section -->
     <section id="proof" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Structured Data Benchmark Snapshot</h2>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Benchmark Snapshot</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    Current structured-data results from the checked-in benchmark suite.
+                    Enough proof to decide whether it is worth trying. Details live in the benchmark page and README.
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div class="feature-card">
                     <div class="text-4xl font-bold heading-mono gradient-text mb-2">12</div>
                     <div style="color: var(--text-secondary);">Fixtures</div>
@@ -1023,22 +754,19 @@ claude mcp list
                     <div class="text-4xl font-bold heading-mono gradient-text mb-2">24.5-66.3%</div>
                     <div style="color: var(--text-secondary);">Observed Range</div>
                 </div>
-                <div class="feature-card">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">231</div>
-                    <div style="color: var(--text-secondary);">Tests Passing</div>
-                </div>
             </div>
 
             <div class="mt-8 feature-card">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h3 class="text-xl font-bold heading-mono mb-2" style="color: var(--text-primary);">Want the details?</h3>
-                        <p style="color: var(--text-secondary);">See the public benchmark summary and reproduction steps.</p>
+                        <p style="color: var(--text-secondary);">Open the benchmark summary, README, or LLM summary when you need the longer explanation.</p>
                     </div>
-                    <a href="benchmarks.html" class="btn-secondary" target="_blank">Open Benchmark Summary</a>
-                </div>
-                <div class="mt-4 code-block">
-                    <code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="benchmarks.html" class="btn-secondary" target="_blank">Benchmark Summary</a>
+                        <a href="https://github.com/PCIRCLE-AI/toonify-mcp#readme" class="btn-secondary" target="_blank">README</a>
+                        <a href="llms.txt" class="btn-secondary" target="_blank">LLM Summary</a>
+                    </div>
                 </div>
             </div>
         </div>
