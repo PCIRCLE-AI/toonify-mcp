@@ -23,6 +23,15 @@ It is designed for teams that regularly send large JSON / CSV / YAML payloads, A
 - **Safe fallback** — if optimization is not worth it, Toonify keeps the original content
 - **Evidence-backed** — `204` tests passing locally, plus a checked-in structured-data benchmark suite
 
+## Supported Content and Boundaries
+
+| Content Type | Current Handling | What Stays Intact |
+| --- | --- | --- |
+| JSON / CSV / YAML / API responses | Converted into a more compact TOON representation | Core fields, structure, relationships, key values |
+| Supported source code | TypeScript / Python / Go / PHP comments and whitespace are reduced conservatively | Syntax structure, identifiers, and known protected language constructs |
+| Small files or prose-heavy text | Usually skipped because the payoff is low | Original wording and reading flow |
+| Formatting-sensitive content | Not treated as a primary fit | Avoids pretending layout-dependent content should be compressed the same way |
+
 ## Installation
 
 ### Default Path: Install the Plugin

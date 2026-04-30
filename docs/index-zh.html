@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Claude Code 大型輸出壓縮工具</title>
     <meta name="description" content="開源的 MCP 伺服器與 Claude Code 外掛，可在大型 JSON、CSV、YAML、API 回應與支援的原始碼進入上下文前先做本地壓縮。">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <meta name="keywords" content="Claude Code, 上下文壓縮, MCP 外掛, TOON 格式, 大型輸出壓縮">
 
     <!-- Open Graph / Facebook -->
@@ -562,6 +563,54 @@ claude mcp list
                     <div class="text-3xl mb-4">📊</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono">本機統計與安全回退</h3>
                     <p style="color: var(--text-secondary);">可查看本機節省統計；若優化不值得，Toonify 會回退到原始內容。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 支援內容與邊界 -->
+    <section id="supported-content" class="py-16" style="background: var(--bg-primary);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">支援內容與使用邊界</h2>
+                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                    Toonify 的目標是讓大型輸出更輕，不是假裝所有內容都應該用同一種方式壓縮。
+                </p>
+            </div>
+
+            <div class="feature-card p-0 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead style="background: var(--bg-tertiary); color: var(--text-primary);">
+                            <tr>
+                                <th class="py-4 px-5 heading-mono">內容類型</th>
+                                <th class="py-4 px-5 heading-mono">目前處理方式</th>
+                                <th class="py-4 px-5 heading-mono">保留的重點</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">JSON / CSV / YAML / API 回應</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">轉成較緊湊的 TOON 表示法，保留資料結構與主要欄位。</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">欄位名稱、資料關係、核心值與整體結構。</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">支援的原始碼</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">對 TypeScript、Python、Go、PHP 做註解與空白精簡。</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">語法結構、識別符與已知需要保護的語言特性。</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">小檔案或以敘述為主的文字</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">通常會略過，因為體感收益有限。</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">原始文字內容與閱讀節奏。</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">高度依賴排版的內容</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">不把排版保真當成主要承諾，這類內容不一定適合優化。</td>
+                                <td class="py-4 px-5" style="color: var(--text-secondary);">避免對必須靠原始格式閱讀的內容做過度壓縮。</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Local Context Compression for Claude Code</title>
     <meta name="description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="canonical" href="https://toonify.pcircle.ai/">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toonify.pcircle.ai/">
@@ -592,6 +593,54 @@ claude mcp list
                     <p style="color: var(--text-secondary);">
                         Track savings locally, and if optimization is not worth it, Toonify falls back to the original content.
                     </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Content -->
+    <section id="supported-content" class="py-16" style="background: var(--bg-primary);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Supported Content and Boundaries</h2>
+                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                    The goal is to make large outputs lighter without pretending every kind of content should be compressed the same way.
+                </p>
+            </div>
+
+            <div class="feature-card p-0 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead style="background: var(--bg-tertiary); color: var(--text-primary);">
+                            <tr>
+                                <th class="py-4 px-5 heading-mono">Content Type</th>
+                                <th class="py-4 px-5 heading-mono">Current Handling</th>
+                                <th class="py-4 px-5 heading-mono">What Stays Intact</th>
+                            </tr>
+                        </thead>
+                        <tbody style="color: var(--text-secondary);">
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">JSON / CSV / YAML / API responses</td>
+                                <td class="py-4 px-5">Compressed into a more compact TOON-oriented representation when estimated savings clear the threshold.</td>
+                                <td class="py-4 px-5">Core fields, values, and record structure needed for the working session.</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Supported source code</td>
+                                <td class="py-4 px-5">TypeScript, Python, Go, and PHP go through comment and whitespace reduction in the pipeline.</td>
+                                <td class="py-4 px-5">Executable code structure and language-specific syntax that should not be stripped.</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Small files or prose-heavy text</td>
+                                <td class="py-4 px-5">Usually skipped unless the content is large enough and savings are worth it.</td>
+                                <td class="py-4 px-5">Original wording and formatting when compression would add little value.</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Formatting-sensitive content</td>
+                                <td class="py-4 px-5">Not the best fit for the default value proposition.</td>
+                                <td class="py-4 px-5">Original layout when preserving exact formatting matters more than saving context.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
