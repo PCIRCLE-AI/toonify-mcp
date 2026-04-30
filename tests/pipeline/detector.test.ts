@@ -3,6 +3,16 @@
  */
 
 import { Detector } from '../../src/optimizer/pipeline/detector';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadFixture(name: string): string {
+  return readFileSync(path.join(__dirname, '..', 'fixtures', 'debug-output', name), 'utf-8');
+}
 
 describe('Detector', () => {
   let detector: Detector;
@@ -200,6 +210,42 @@ for (let i = 0; i < 10; i++) {
       const result = detector.detect(text);
       expect(result.type).toBe('unknown');
       expect(result.confidence).toBe(0);
+    });
+  });
+
+  describe('debug output detection', () => {
+    test('detects Jest failure output from fixture', () => {
+      const result = detector.detectDebugOutput(loadFixture('jest-failure.txt'));
+      expect(result).toEqual(
+        expect.objectContaining({
+          type: 'debug-output',
+        })
+      );
+      expect(result!.confidence).toBeGreaterThanOrEqual(0.7);
+    });
+
+    test('detects TypeScript compiler errors from fixture', () => {
+      const result = detector.detectDebugOutput(loadFixture('tsc-errors.txt'));
+      expect(result?.type).toBe('debug-output');
+      expect(result!.confidence).toBeGreaterThanOrEqual(0.7);
+    });
+
+    test('detects Python traceback from fixture', () => {
+      const result = detector.detectDebugOutput(loadFixture('python-traceback.txt'));
+      expect(result?.type).toBe('debug-output');
+    });
+
+    test('detects repeated lint diagnostics from fixture', () => {
+      const result = detector.detectDebugOutput(loadFixture('eslint-output.txt'));
+      expect(result?.type).toBe('debug-output');
+    });
+
+    test('does not misclassify ordinary prose as debug output', () => {
+      const text = `We completed the migration review this morning.
+The team discussed versioning, benchmarks, and rollout timing.
+Nothing failed, and there are no file paths or stack traces in this note.`;
+      const result = detector.detectDebugOutput(text);
+      expect(result).toBeNull();
     });
   });
 });

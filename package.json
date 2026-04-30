@@ -1,7 +1,7 @@
 {
   "name": "toonify-mcp",
-  "version": "0.6.0",
-  "description": "Automatic token optimization for Claude Code and MCP workflows, including structured data and source code compression.",
+  "version": "0.7.0",
+  "description": "Local context compression for Claude Code and MCP workflows, including structured data, debug output, and source code reduction.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -16,12 +16,13 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:docs:css": "mkdir -p ./docs/assets && tailwindcss -i ./docs/tailwind.input.css -o ./docs/assets/tailwind.css --minify",
     "dev": "tsc --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "prepare": "npm run build",
-    "postinstall": "node -e \"console.log('\\\\n📦 Toonify MCP installed!\\\\n\\\\n✅ MCP Server: Ready (use with claude mcp add)\\\\n✅ Plugin: Ready (use with claude plugin add)\\\\n\\\\nSee README.md for installation instructions.\\\\n')\""
+    "postinstall": "node -e \"console.log('\\\\n📦 Toonify MCP installed!\\\\n\\\\n✅ MCP Server: Ready (use with claude mcp add)\\\\n✅ Plugin: Ready (use with claude plugin install after marketplace setup)\\\\n\\\\nSee README.md for installation instructions.\\\\n')\""
   },
   "keywords": [
     "claude",
@@ -47,6 +48,10 @@
     "tiktoken": "^1.0.22",
     "yaml": "^2.8.2"
   },
+  "overrides": {
+    "hono": "4.12.14",
+    "@hono/node-server": "1.19.13"
+  },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
     "@swc/core": "^1.15.10",
@@ -54,6 +59,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.9",
     "jest": "^30.2.0",
+    "tailwindcss": "^3.4.17",
     "typescript": "^6.0.2"
   },
   "engines": {

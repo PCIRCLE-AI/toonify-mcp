@@ -29,13 +29,17 @@ export interface OptimizationMetric {
 export class MetricsCollector {
   private statsPath: string;
 
-  constructor() {
+  constructor(homeDir: string = os.homedir()) {
     // Store in user's home directory, not in project
     this.statsPath = path.join(
-      os.homedir(),
+      homeDir,
       '.claude',
       'token_stats.json'
     );
+  }
+
+  getStatsPath(): string {
+    return this.statsPath;
   }
 
   /**
@@ -49,11 +53,18 @@ export class MetricsCollector {
       stats.totalRequests++;
       if (metric.wasOptimized) {
         stats.optimizedRequests++;
+      } else {
+        stats.skippedRequests = (stats.skippedRequests || 0) + 1;
       }
 
       stats.tokensBeforeOptimization += metric.originalTokens;
       stats.tokensAfterOptimization += metric.optimizedTokens;
       stats.totalSavings += metric.savings;
+      stats.lastToolName = metric.toolName;
+      stats.lastFormat = metric.format;
+      stats.lastReason = metric.reason;
+      stats.lastWasOptimized = metric.wasOptimized;
+      stats.lastUpdatedAt = metric.timestamp;
 
       // v0.3.0: Track cache metrics
       if (metric.wasCached) {
@@ -106,6 +117,12 @@ export class MetricsCollector {
         tokensAfterOptimization: 0,
         totalSavings: 0,
         averageSavingsPercentage: 0,
+        skippedRequests: 0,
+        lastToolName: undefined,
+        lastFormat: undefined,
+        lastReason: undefined,
+        lastWasOptimized: undefined,
+        lastUpdatedAt: undefined,
         // v0.3.0: Cache stats
         cacheHits: 0,
         cacheMisses: 0,
@@ -168,5 +185,36 @@ Additional Cache Savings: ${(stats.estimatedCacheSavings || 0).toLocaleString()}
    $${costSavings} saved`;
 
     return dashboard.trim();
+  }
+
+  async formatStatus(): Promise<string> {
+    const stats = await this.getStats();
+    const optimizedRate = stats.totalRequests > 0
+      ? ((stats.optimizedRequests / stats.totalRequests) * 100).toFixed(1)
+      : '0.0';
+
+    const lines = [
+      `Toonify MCP status (v${version})`,
+      '',
+      `Requests: ${stats.totalRequests}`,
+      `Optimized: ${stats.optimizedRequests} (${optimizedRate}%)`,
+      `Skipped: ${stats.skippedRequests || 0}`,
+      `Tokens saved: ${stats.totalSavings.toLocaleString()}`,
+    ];
+
+    if (stats.lastUpdatedAt) {
+      const outcome = stats.lastWasOptimized ? 'optimized' : 'skipped';
+      const format = stats.lastFormat || 'unknown';
+      const toolName = stats.lastToolName || 'unknown';
+      const reason = stats.lastWasOptimized
+        ? `as ${format}`
+        : (stats.lastReason || 'no reason recorded');
+
+      lines.push('');
+      lines.push(`Last decision: ${outcome} ${toolName} ${reason}`);
+      lines.push(`Last update: ${stats.lastUpdatedAt}`);
+    }
+
+    return lines.join('\n');
   }
 }

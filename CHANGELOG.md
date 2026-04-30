@@ -7,14 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-04-30
+
 ### Added
+- Debug-output compression support for long test failures, stack traces, compiler diagnostics, and repetitive lint/build output
+- `toonify-mcp doctor` for local install validation
+- `toonify-mcp status` for recent optimization visibility
 - PHP source-code compression support in the pipeline and standalone PostToolUse hook
 
+### Changed
+- Public docs, landing pages, and install guidance now match the current Claude Code plugin workflow
+- Added machine-readable website surfaces (`llms.txt`, `llms-full.txt`, `robots.txt`, `sitemap.xml`) and FAQ/structured metadata for the public docs site
+- Replaced the docs-site Tailwind CDN dependency with a checked-in local CSS build for production-safe static hosting
+
 ### Fixed
+- Align plugin metadata and install flow with current Claude Code validation requirements
+- Fix landing-page FAQ interactions so disclosure items open and close correctly
 - Preserve PHP 8 attribute syntax (`#[...]`) during compression instead of treating it as a hash comment
 - Preserve PHP heredoc and nowdoc bodies during inline-comment stripping and comment-line removal
+- Patched transitive Hono dependencies to remove current moderate audit advisories from the release tree
 
 ### Tests
+- Added debug-output detector, compressor, CLI, and hook regression coverage
 - Added PHP detector, compressor, and hook regression coverage for attributes, heredoc/nowdoc handling, and inline hash comments
 
 ## [0.5.0] - 2026-01-21
@@ -72,8 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `cleanup_expired_cache` - Remove expired entries and return count
 - **Automatic optimization result caching**
   - TokenOptimizer now caches results to avoid re-processing identical content
-  - Cache hit returns result in ~0.1ms (vs 5-50ms for optimization)
-  - **50-500x performance improvement** on cache hits
+  - Cache hits return previously optimized results without re-processing identical content
 - **Comprehensive cache documentation**
   - New `docs/CACHE.md` with detailed usage, configuration, and best practices
   - Architecture diagrams and performance analysis

@@ -3,21 +3,37 @@
 /**
  * Claude Code Toonify MCP Server
  *
- * Optimizes token usage by converting structured data to TOON format
- * before sending to Claude API, achieving 30-65% token reduction
- * (typically 40-55% depending on data structure).
+ * Local-first context compression for structured data, debug-heavy output,
+ * and supported source files inside Claude Code and MCP workflows.
  */
 
 import { ToonifyMCPServer } from './server/mcp-server.js';
+import { runDoctor } from './cli/doctor.js';
+import { runStatus } from './cli/status.js';
 
-async function main() {
+export async function runCli(args: string[] = process.argv.slice(2)): Promise<number> {
+  if (args[0] === 'doctor') {
+    return await runDoctor();
+  }
+  if (args[0] === 'status') {
+    return await runStatus();
+  }
+
   const server = new ToonifyMCPServer();
 
   try {
     await server.start();
+    return 0;
   } catch (error) {
     console.error('Failed to start Toonify MCP server:', error);
-    process.exit(1);
+    return 1;
+  }
+}
+
+async function main() {
+  const exitCode = await runCli();
+  if (exitCode !== 0) {
+    process.exit(exitCode);
   }
 }
 

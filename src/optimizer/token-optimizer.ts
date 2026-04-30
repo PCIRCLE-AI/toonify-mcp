@@ -11,7 +11,7 @@ import type {
 import { CacheOptimizer, LRUCache, type LRUCacheConfig } from './caching/index.js';
 import { MultilingualTokenizer } from './multilingual/index.js';
 import { Pipeline } from './pipeline/index.js';
-import { ToonCompressor, CodeCompressor } from './compressors/index.js';
+import { ToonCompressor, CodeCompressor, DebugOutputCompressor } from './compressors/index.js';
 
 /** Maximum content size to process (10 MB) — prevents DoS via unbounded JSON.parse */
 const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
@@ -67,6 +67,7 @@ export class TokenOptimizer {
     this.pipeline = new Pipeline(this.tokenEncoder);
     this.pipeline.register(new ToonCompressor());
     this.pipeline.register(new CodeCompressor());
+    this.pipeline.register(new DebugOutputCompressor());
 
     // Initialize cache optimizer
     this.cacheOptimizer = new CacheOptimizer(this.config.caching);

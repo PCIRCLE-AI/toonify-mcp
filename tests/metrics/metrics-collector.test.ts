@@ -60,6 +60,7 @@ describe('MetricsCollector', () => {
       const stats = await collector.getStats();
       expect(stats.totalRequests).toBe(1);
       expect(stats.optimizedRequests).toBe(1);
+      expect(stats.skippedRequests).toBe(0);
       expect(stats.totalSavings).toBe(50);
     });
 
@@ -78,6 +79,8 @@ describe('MetricsCollector', () => {
       const stats = await collector.getStats();
       expect(stats.totalRequests).toBe(1);
       expect(stats.optimizedRequests).toBe(0);
+      expect(stats.skippedRequests).toBe(1);
+      expect(stats.lastReason).toBe('Not structured data');
     });
 
     test('accumulates multiple records', async () => {
@@ -104,6 +107,7 @@ describe('MetricsCollector', () => {
       const stats = await collector.getStats();
       expect(stats.totalRequests).toBe(2);
       expect(stats.optimizedRequests).toBe(2);
+      expect(stats.skippedRequests).toBe(0);
       expect(stats.totalSavings).toBe(250);
       expect(stats.tokensBeforeOptimization).toBe(500);
       expect(stats.tokensAfterOptimization).toBe(250);
@@ -134,6 +138,7 @@ describe('MetricsCollector', () => {
 
       expect(stats.totalRequests).toBe(0);
       expect(stats.optimizedRequests).toBe(0);
+      expect(stats.skippedRequests).toBe(0);
       expect(stats.totalSavings).toBe(0);
       expect(stats.averageSavingsPercentage).toBe(0);
     });
@@ -156,6 +161,29 @@ describe('MetricsCollector', () => {
       expect(dashboard).toContain('Token Optimization Stats');
       expect(dashboard).toContain('Total Requests: 1');
       expect(dashboard).toContain('Total Savings');
+    });
+  });
+
+  describe('formatStatus', () => {
+    test('generates a compact status summary', async () => {
+      await collector.record({
+        timestamp: new Date().toISOString(),
+        toolName: 'Read',
+        originalTokens: 200,
+        optimizedTokens: 120,
+        savings: 80,
+        savingsPercentage: 40,
+        wasOptimized: true,
+        format: 'json',
+      });
+
+      const status = await collector.formatStatus();
+
+      expect(status).toContain('Toonify MCP status');
+      expect(status).toContain('Requests: 1');
+      expect(status).toContain('Optimized: 1');
+      expect(status).toContain('Skipped: 0');
+      expect(status).toContain('Last decision: optimized Read as json');
     });
   });
 });

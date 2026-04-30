@@ -1,5 +1,6 @@
 {
   "name": "pcircle-ai",
+  "description": "PCIRCLE AI local marketplace for Claude Code plugin development and verification.",
   "owner": {
     "name": "PCIRCLE AI"
   },

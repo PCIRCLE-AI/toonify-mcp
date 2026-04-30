@@ -4,6 +4,7 @@
 
 export type ContentType =
   | 'json' | 'csv' | 'yaml'
+  | 'debug-output'
   | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic'
   | 'unknown';
 

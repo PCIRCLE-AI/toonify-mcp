@@ -1,277 +1,58 @@
-# 🎯 Toonify MCP
+# Toonify MCP
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-MCP サーバー + Claude Code プラグインによる構造化データ**およびソースコード**の自動トークン最適化。
-JSON/CSV/YAML で **25-66%**、TypeScript/Python/Go ソースコードで **20-48%** のトークン削減を Pipeline アーキテクチャで実現します。
+Toonify MCP は、大きな出力で Claude Code が重くなりがちな場面を楽にするためのツールです。
 
-## v0.6.0 の新機能
+## 何が楽になるか
 
-✨ **Pipeline アーキテクチャ + コード圧縮！**
-- ✅ **Pipeline エンジン** — モジュラー Detector → Router → Compressor → Evaluator アーキテクチャ
-- ✅ **コード圧縮** — TypeScript（37%）、Python（48%）、Go（32%）のヒューリスティックベース圧縮
-- ✅ **6 圧縮レイヤー** — 空行マージ、インラインコメント削除、importパス短縮、import要約、繰り返しパターン折りたたみ
-- ✅ **フック強化** — PostToolUse フックが構造化データに加えソースコードも圧縮
-- ✅ 拡張可能な設計 — `Compressor` インターフェースを実装するだけで新フォーマットに対応
-- ✅ 完全な後方互換性 — すべての外部 API は変更なし
-- ✅ 196 テスト（157 から増加）、包括的なコードレビュー合格
+- JSON、CSV、YAML、API レスポンスが軽くなる
+- 長いテスト失敗や stack trace を扱いやすくなる
+- 普段の Claude Code の流れを変えなくていい
 
-## 機能
+## まず試すとよい人
 
-- **25-66% のトークン削減**（通常 約48%）- JSON、CSV、YAML データに対応
-- **20-48% のコード圧縮** - TypeScript、Python、Go ソースコードに対応
-- **Pipeline アーキテクチャ** - 拡張可能な Detector → Compressor → Evaluator エンジン
-- **多言語サポート** - 15 以上の言語の正確なトークンカウント
-- **完全自動** - PostToolUse フックがツール結果を傍受
-- **設定不要** - 賢明なデフォルト設定で開箱即用
-- **デュアルモード** - プラグイン（自動）または MCP サーバー（手動）として動作
-- **組み込みメトリクス** - トークン節約をローカルで追跡
-- **サイレントフォールバック** - ワークフローを中断しません
+- 大きなツール出力をよく読む人
+- logs、traces、ソースコードをよく Claude Code に入れる人
+- ローカルで自動的に動くものがほしい人
 
-## インストール
+## あまり向いていないケース
 
-### オプション A：GitHub からダウンロード（推奨）🌟
+- 短い文章
+- とても小さいファイル
+- 元のレイアウトを厳密に保ちたい内容
 
-**GitHub リポジトリから直接インストール（npm 公開は不要）：**
+## かんたんインストール
 
 ```bash
-# 1. リポジトリをダウンロード
 git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
 cd toonify-mcp
-
-# 2. 依存関係をインストールしてビルド
 npm install
 npm run build
-
-# 3. ローカルからグローバルにインストール
 npm install -g .
-```
-
-### オプション B：Claude Marketplaces からインストール（利用可能な場合）🌟
-
-**ワンクリックインストール：**
-
-Claude Code で [Claude Marketplaces](https://claudemarketplaces.com) を開き、環境で marketplace distribution が利用可能な場合は `toonify-mcp` をワンクリックでインストールできます。
-
-### オプション C：Claude Code プラグイン（推奨）⭐
-
-**手動呼び出し不要の自動トークン最適化：**
-
-前提条件：オプション A または B を完了し、`toonify-mcp` バイナリを利用可能にしてください。
-
-```bash
-# 1. プラグインとして追加（自動モード）
-claude plugin add toonify-mcp
-
-# 2. インストールを確認
+claude plugin marketplace add ./.claude-plugin/marketplace.json
+claude plugin install toonify-mcp@pcircle-ai --scope local
 claude plugin list
-# 表示されるはず：toonify-mcp ✓
 ```
 
-**これで完了！** PostToolUse フックが Read、Grep、その他のファイルツールからの構造化データを自動的に傍受して最適化します。
+うまく入れば、`claude plugin list` に `toonify-mcp@pcircle-ai` と `enabled` が表示されます。
 
-### オプション D：MCP サーバー（手動モード）
-
-**明示的な制御または非 Claude Code MCP クライアント用：**
-
-前提条件：オプション A または B を完了し、`toonify-mcp` バイナリを利用可能にしてください。
+## すぐ確認する
 
 ```bash
-# 1. MCP サーバーとして登録
+toonify-mcp doctor
+toonify-mcp status
+```
+
+## MCP モード（必要なときだけ）
+
+```bash
 claude mcp add toonify -- toonify-mcp
-
-# 2. 確認
 claude mcp list
-# 表示されるはず：toonify: toonify-mcp - ✓ Connected
 ```
 
-次にツールを明示的に呼び出します：
-```bash
-claude mcp call toonify optimize_content '{"content": "..."}'
-claude mcp call toonify get_stats '{}'
-```
+## 最新情報を見る場所
 
-## 動作原理
-
-### プラグインモード（自動）
-
-```
-ユーザー：大きな JSON ファイルを読む
-  ↓
-Claude Code が Read ツールを呼び出す
-  ↓
-PostToolUse フックが結果を傍受
-  ↓
-フックが JSON を検出し、TOON に変換
-  ↓
-最適化されたコンテンツを Claude API に送信
-  ↓
-25-66%（通常 約48%）のトークン削減を達成 ✨
-```
-
-### MCP サーバーモード（手動）
-
-```
-ユーザー：mcp__toonify__optimize_content を明示的に呼び出す
-  ↓
-コンテンツを TOON フォーマットに変換
-  ↓
-最適化された結果を返す
-```
-
-## 設定
-
-`~/.claude/toonify-config.json` を作成（オプション）：
-
-```json
-{
-  "enabled": true,
-  "minTokensThreshold": 50,
-  "minSavingsThreshold": 30,
-  "skipToolPatterns": ["Bash", "Write", "Edit"]
-}
-```
-
-### オプション
-
-- **enabled**：自動最適化を有効/無効にする（デフォルト：`true`）
-- **minTokensThreshold**：最適化前の最小トークン数（デフォルト：`50`）
-- **minSavingsThreshold**：必要な最小節約率（デフォルト：`30%`）
-- **skipToolPatterns**：最適化しないツール（デフォルト：`["Bash", "Write", "Edit"]`）
-
-### 環境変数
-
-```bash
-export TOONIFY_ENABLED=true
-export TOONIFY_MIN_TOKENS=50
-export TOONIFY_MIN_SAVINGS=30
-export TOONIFY_SKIP_TOOLS="Bash,Write"
-export TOONIFY_SHOW_STATS=true  # 出力に最適化統計を表示
-```
-
-## 例
-
-### 最適化前（142 トークン）
-
-```json
-{
-  "products": [
-    {"id": 101, "name": "Laptop Pro", "price": 1299},
-    {"id": 102, "name": "Magic Mouse", "price": 79}
-  ]
-}
-```
-
-### 最適化後（57 トークン、-60%）
-
-```
-[TOON-JSON]
-products[2]{id,name,price}:
-  101,Laptop Pro,1299
-  102,Magic Mouse,79
-```
-
-**プラグインモードで自動的に適用 - 手動呼び出し不要！**
-
-## 使用のヒント
-
-### いつ自動最適化がトリガーされますか？
-
-PostToolUse フックは次の場合に自動的に最適化します：
-- ✅ コンテンツが有効な JSON、CSV、または YAML
-- ✅ コンテンツサイズ ≥ `minTokensThreshold`（デフォルト：50 トークン）
-- ✅ 推定節約 ≥ `minSavingsThreshold`（デフォルト：30%）
-- ✅ ツールが `skipToolPatterns` に含まれていない（例：Bash/Write/Edit ではない）
-
-### 最適化統計を表示
-
-```bash
-# プラグインモードで
-claude mcp call toonify get_stats '{}'
-
-# または Claude Code 出力の統計を確認（TOONIFY_SHOW_STATS=true の場合）
-```
-
-## トラブルシューティング
-
-### フックがトリガーされない
-
-```bash
-# 1. プラグインがインストールされているか確認
-claude plugin list | grep toonify
-
-# 2. 設定を確認
-cat ~/.claude/toonify-config.json
-
-# 3. 統計を有効にして最適化の試みを確認
-export TOONIFY_SHOW_STATS=true
-```
-
-### 最適化が適用されない
-
-- `minTokensThreshold` を確認 - コンテンツが小さすぎる可能性
-- `minSavingsThreshold` を確認 - 節約が 30% 未満の可能性
-- `skipToolPatterns` を確認 - ツールがスキップリストに含まれている可能性
-- コンテンツが有効な JSON/CSV/YAML であることを確認
-
-### パフォーマンスの問題
-
-- `minTokensThreshold` を下げてより積極的に最適化
-- `minSavingsThreshold` を上げて限界的な最適化をスキップ
-- 必要に応じて、より多くのツールを `skipToolPatterns` に追加
-
-## 比較：プラグイン vs MCP サーバー
-
-| 機能 | プラグインモード | MCP サーバーモード |
-|------|--------------|------------------|
-| **アクティベーション** | 自動（PostToolUse） | 手動（ツール呼び出し） |
-| **互換性** | Claude Code のみ | 任意の MCP クライアント |
-| **設定** | プラグイン設定ファイル | MCP ツール |
-| **パフォーマンス** | ゼロオーバーヘッド | 呼び出しオーバーヘッド |
-| **ユースケース** | 日常のワークフロー | 明示的な制御 |
-
-**推奨**：自動最適化にはプラグインモードを使用。明示的な制御または他の MCP クライアントには MCP サーバーモードを使用。
-
-## アンインストール
-
-### プラグインモード
-```bash
-claude plugin remove toonify-mcp
-rm ~/.claude/toonify-config.json
-```
-
-### MCP サーバーモード
-```bash
-claude mcp remove toonify
-```
-
-### パッケージ
-```bash
-npm uninstall -g toonify-mcp
-```
-
-## リンク
-
-- **Docs**：https://toonify.pcircle.ai/
-- **GitHub**：https://github.com/PCIRCLE-AI/toonify-mcp
-- **Issues**：https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **MCP ドキュメント**：https://code.claude.com/docs/mcp
-- **TOON フォーマット**：https://github.com/toon-format/toon
-
-## 貢献
-
-貢献を歓迎します！ガイドラインについては [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
-
-## サポート
-
-セットアップ支援、バグ報告、商用連絡先については [SUPPORT.md](SUPPORT.md) を参照してください。
-
-## セキュリティ
-
-脆弱性は [SECURITY.md](SECURITY.md) に記載された方法で非公開で報告してください。
-
-## ライセンス
-
-MIT ライセンス - 詳細は [LICENSE](LICENSE) を参照
-
-リリース履歴は [CHANGELOG.md](CHANGELOG.md) を参照してください。
+- メインの案内: [README.md](README.md)
+- 繁體中文版: [README.zh-TW.md](README.zh-TW.md)
+- 公開サイト: https://toonify.pcircle.ai/

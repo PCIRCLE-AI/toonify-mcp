@@ -83,6 +83,47 @@ HTML;
       expect(output.additionalContext as string).toContain('# also not a PHP comment');
       expect(output.additionalContext as string).not.toContain('remove trailing comment');
     });
+
+    test('optimizes debug-heavy output while preserving actionable lines', async () => {
+      const input = {
+        tool_name: 'Read',
+        tool_response: `FAIL tests/user-service.test.ts
+  UserService
+    × returns a fallback profile when the API request fails
+
+  ● UserService › returns a fallback profile when the API request fails
+
+    expect(received).toEqual(expected)
+
+      41 |     const profile = await service.loadProfile("demo-user");
+      42 |
+    > 43 |     expect(profile).toEqual({ status: "offline" });
+         |                     ^
+
+TypeError: Cannot read properties of undefined (reading 'id')
+    at renderUserCard (/workspace/src/render.ts:18:13)
+    at renderUserCard (/workspace/src/render.ts:18:13)
+    at renderUserList (/workspace/src/list.ts:42:5)
+    at renderUserList (/workspace/src/list.ts:42:5)
+    at processUsers (/workspace/src/process.ts:77:9)
+    at processUsers (/workspace/src/process.ts:77:9)
+    at async main (/workspace/src/index.ts:11:3)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total`,
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      expect(result.suppressOutput).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext as string).toContain('tests/user-service.test.ts');
+      expect(output.additionalContext as string).toContain('/workspace/src/index.ts:11:3');
+      expect(output.additionalContext as string).not.toContain('      41 |');
+      expect(output.additionalContext as string).toContain('[toonify]');
+    });
   });
 
   describe('passthrough cases', () => {

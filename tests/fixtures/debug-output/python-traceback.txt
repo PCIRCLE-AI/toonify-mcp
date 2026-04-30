@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/workspace/app.py", line 84, in <module>
+    main()
+  File "/workspace/app.py", line 63, in main
+    render_report(config)
+  File "/workspace/reporting.py", line 112, in render_report
+    raise RuntimeError("report template missing")
+RuntimeError: report template missing

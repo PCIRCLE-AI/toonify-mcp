@@ -172,6 +172,26 @@ function detectCode(content) {
   return null;
 }
 
+function detectDebugOutput(content) {
+  const lines = content.split('\n').filter(line => line.trim().length > 0);
+  if (lines.length < 4) return false;
+
+  let score = 0;
+
+  if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(content)) score += 2;
+  if (/\berror TS\d+:/m.test(content) || /^\s*error(\[[^\]]+\])?:/im.test(content)) score += 2;
+  if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(content) || /^\w+(Error|Exception):\s+/m.test(content)) score += 2;
+  if (/^\s*at\s+.+:\d+:\d+/m.test(content) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(content)) score += 2;
+  if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(content) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(content)) score += 2;
+  if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(content)) score += 1;
+  if (/^\s*[×✕]\s+/m.test(content) || /^\s*>\s+.+$/m.test(content)) score += 1;
+  if (/^\s*npm ERR!/m.test(content) || /^\s*error Command failed/m.test(content)) score += 1;
+  if (hasRepeatedDiagnosticLines(lines)) score += 1;
+  if (hasMultipleFileLocationDiagnostics(content)) score += 1;
+
+  return score >= 3;
+}
+
 // --- Code Compression (lightweight, safe layers only) ---
 
 function compressCode(content, codeType) {
@@ -310,6 +330,21 @@ function compressCode(content, codeType) {
   return result;
 }
 
+function compressDebugOutput(content) {
+  let result = content;
+
+  result = result.replace(/\n{3,}/g, '\n\n');
+  result = collapseSourceExcerptNoise(result);
+  result = result
+    .split('\n')
+    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(line))
+    .join('\n');
+  result = collapseDuplicateLines(result);
+  result = collapseLongStackTraces(result);
+
+  return result.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
 function findInlineDoubleSlash(line) {
   let inString = null;
   for (let i = 0; i < line.length; i++) {
@@ -359,6 +394,95 @@ function getPhpHeredocTerminator(line) {
 function isPhpHeredocEnd(line, terminator) {
   const escaped = terminator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`^\\s*${escaped};?\\s*$`).test(line);
+}
+
+function hasRepeatedDiagnosticLines(lines) {
+  const counts = new Map();
+
+  for (const line of lines) {
+    const normalized = line.trim().replace(/\d+/g, '#').replace(/\s+/g, ' ');
+    if (normalized.length < 12) continue;
+    counts.set(normalized, (counts.get(normalized) || 0) + 1);
+  }
+
+  for (const count of counts.values()) {
+    if (count >= 2) return true;
+  }
+
+  return false;
+}
+
+function hasMultipleFileLocationDiagnostics(content) {
+  const locationMatches = content.match(/\b[\w./-]+\.(ts|tsx|js|jsx|py|go|php):\d+:\d+\b/g) || [];
+  const tracebackMatches = content.match(/^\s*File\s+"[^"]+",\s+line\s+\d+/gm) || [];
+  return locationMatches.length >= 2 || tracebackMatches.length >= 2;
+}
+
+function collapseSourceExcerptNoise(content) {
+  return content
+    .split('\n')
+    .filter(line => !/^\s*\d+\s+\|/.test(line.trimStart()))
+    .join('\n');
+}
+
+function collapseDuplicateLines(content) {
+  const lines = content.split('\n');
+  const result = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    const current = lines[i];
+    let count = 1;
+
+    while (i + count < lines.length && lines[i + count] === current) {
+      count++;
+    }
+
+    result.push(current);
+    if (count > 1) {
+      result.push(`[toonify] repeated ${count - 1} more time${count > 2 ? 's' : ''}`);
+    }
+
+    i += count;
+  }
+
+  return result.join('\n');
+}
+
+function collapseLongStackTraces(content) {
+  const lines = content.split('\n');
+  const result = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    if (!isStackFrame(lines[i])) {
+      result.push(lines[i]);
+      i++;
+      continue;
+    }
+
+    const frames = [];
+    while (i < lines.length && isStackFrame(lines[i])) {
+      frames.push(lines[i]);
+      i++;
+    }
+
+    if (frames.length <= 5) {
+      result.push(...frames);
+      continue;
+    }
+
+    result.push(...frames.slice(0, 4));
+    result.push(`[toonify] ${frames.length - 5} more stack frame${frames.length - 5 > 1 ? 's' : ''} omitted`);
+    result.push(frames[frames.length - 1]);
+  }
+
+  return result.join('\n');
+}
+
+function isStackFrame(line) {
+  const trimmed = line.trimStart();
+  return /^at\s+.+/.test(trimmed) || /^File\s+"[^"]+",\s+line\s+\d+/.test(trimmed);
 }
 
 // --- Rough Token Estimation ---
@@ -431,24 +555,39 @@ async function main() {
       formatLabel = structured.type.toUpperCase();
       output = `[TOON-${formatLabel}]\n${toonContent}`;
     } else {
+      const isDebugOutput = detectDebugOutput(tool_response);
+      if (isDebugOutput) {
+        const compressed = compressDebugOutput(tool_response);
+        const originalLen = tool_response.length;
+        const compressedLen = compressed.length;
+        savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
+
+        if (savingsPercent < 10) {
+          return passthrough();
+        }
+
+        formatLabel = 'DEBUG';
+        output = compressed;
+      } else {
       // Try code detection + compression
-      const codeType = detectCode(tool_response);
-      if (!codeType) {
-        return passthrough();
+        const codeType = detectCode(tool_response);
+        if (!codeType) {
+          return passthrough();
+        }
+
+        const compressed = compressCode(tool_response, codeType);
+        const originalLen = tool_response.length;
+        const compressedLen = compressed.length;
+        savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
+
+        // Code compression typically has lower savings — use lower threshold (10%)
+        if (savingsPercent < 10) {
+          return passthrough();
+        }
+
+        formatLabel = codeType.replace('code-', '').toUpperCase();
+        output = compressed;
       }
-
-      const compressed = compressCode(tool_response, codeType);
-      const originalLen = tool_response.length;
-      const compressedLen = compressed.length;
-      savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
-
-      // Code compression typically has lower savings — use lower threshold (10%)
-      if (savingsPercent < 10) {
-        return passthrough();
-      }
-
-      formatLabel = codeType.replace('code-', '').toUpperCase();
-      output = compressed;
     }
 
     if (config.showStats) {

@@ -1,0 +1,43 @@
+Toonify MCP
+
+Primary URL: https://toonify.pcircle.ai/
+Repository: https://github.com/PCIRCLE-AI/toonify-mcp
+License: MIT
+
+Summary
+- Toonify MCP is a local-first Claude Code plugin and MCP server.
+- It compresses large JSON, CSV, YAML, API responses, debug-heavy output, and supported source files before they bloat context.
+- It is designed for teams that want lower context overhead without changing their normal Claude Code workflow.
+
+Best fit
+- Large structured payloads
+- Test failures, stack traces, compiler diagnostics, and repetitive build or lint output
+- Whole source-file reads for TypeScript, Python, Go, and PHP
+
+Less ideal
+- Short prose
+- Very small files
+- Content that depends heavily on exact original formatting
+
+Install
+- Plugin mode: clone repo, build, install locally, add marketplace, install `toonify-mcp@pcircle-ai`, verify with `claude plugin list`
+- MCP mode: register `toonify-mcp` with `claude mcp add toonify -- toonify-mcp`
+
+Verification
+- `toonify-mcp doctor` validates local install
+- `toonify-mcp status` shows recent optimization activity
+
+Public pages
+- Landing page: https://toonify.pcircle.ai/
+- Traditional Chinese landing page: https://toonify.pcircle.ai/index-zh.html
+- Benchmarks: https://toonify.pcircle.ai/benchmarks.html
+- Traditional Chinese benchmarks: https://toonify.pcircle.ai/benchmarks-zh.html
+- Privacy policy: https://toonify.pcircle.ai/privacy.html
+- Terms of service: https://toonify.pcircle.ai/terms.html
+
+Measured structured-data benchmark snapshot
+- 12 fixtures
+- 48.1% average savings
+- 24.5-66.3% observed range
+
+For a richer machine-readable summary, see: https://toonify.pcircle.ai/llms-full.txt

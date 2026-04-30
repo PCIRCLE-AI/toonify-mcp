@@ -15,7 +15,7 @@ export interface OptimizationResult {
     percentage: number;
     withCaching?: number; // Additional savings from caching
   };
-  format?: 'json' | 'csv' | 'yaml' | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic' | 'unknown';
+  format?: 'json' | 'csv' | 'yaml' | 'debug-output' | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic' | 'unknown';
   reason?: string; // Why optimization was skipped
   // v0.3.0: Cache-related fields
   cachedContent?: CachedContent;
@@ -54,10 +54,16 @@ export interface OptimizationConfig {
 export interface TokenStats {
   totalRequests: number;
   optimizedRequests: number;
+  skippedRequests?: number;
   tokensBeforeOptimization: number;
   tokensAfterOptimization: number;
   totalSavings: number;
   averageSavingsPercentage: number;
+  lastToolName?: string;
+  lastFormat?: string;
+  lastReason?: string;
+  lastWasOptimized?: boolean;
+  lastUpdatedAt?: string;
   // v0.3.0: Cache stats
   cacheHits?: number;
   cacheMisses?: number;

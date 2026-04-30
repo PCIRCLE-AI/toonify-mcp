@@ -1,15 +1,11 @@
 {
-  "name": "toonify",
-  "description": "Automatic token optimization for structured data and source code. Reduces Claude API token usage by 25-66% on JSON/CSV/YAML and 20-48% on TypeScript/Python/Go through pipeline architecture.",
+  "name": "toonify-mcp",
+  "description": "Local context compression for Claude Code workflows, including structured data, debug-heavy output, and supported source files.",
   "author": {
     "name": "PCIRCLE AI"
   },
-  "version": "0.6.0",
+  "version": "0.7.0",
   "homepage": "https://github.com/PCIRCLE-AI/toonify-mcp",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/PCIRCLE-AI/toonify-mcp.git"
-  },
-  "license": "MIT",
-  "hooks": "./hooks/hooks.json"
+  "repository": "https://github.com/PCIRCLE-AI/toonify-mcp.git",
+  "license": "MIT"
 }

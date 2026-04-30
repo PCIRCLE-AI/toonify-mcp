@@ -160,6 +160,41 @@ Nisi ut aliquip ex ea commodo consequat duis aute irure dolor.`;
       expect(result.optimized).toBe(false);
       expect(result.reason).toBe('Not structured data');
     });
+
+    test('can optimize debug-heavy output when savings are worth it', async () => {
+      const repeatedFrames = Array.from({ length: 8 }, () =>
+        '    at renderUserCard (/workspace/src/render.ts:18:13)'
+      ).join('\n');
+
+      const debugOutput = `FAIL tests/user-service.test.ts
+  UserService
+    × returns a fallback profile when the API request fails
+
+  ● UserService › returns a fallback profile when the API request fails
+
+    expect(received).toEqual(expected)
+
+      41 |     const profile = await service.loadProfile("demo-user");
+      42 |
+    > 43 |     expect(profile).toEqual({ status: "offline" });
+         |                     ^
+
+TypeError: Cannot read properties of undefined (reading 'id')
+${repeatedFrames}
+    at async main (/workspace/src/index.ts:11:3)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total`;
+
+      const result = await optimizer.optimize(debugOutput);
+
+      expect(result.originalTokens).toBeGreaterThan(0);
+      expect(result.format).toBe('debug-output');
+      if (result.optimized) {
+        expect(result.optimizedContent).toContain('tests/user-service.test.ts');
+        expect(result.optimizedContent).toContain('/workspace/src/index.ts:11:3');
+      }
+    });
   });
 
   describe('Savings threshold enforcement', () => {

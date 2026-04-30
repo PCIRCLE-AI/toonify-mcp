@@ -27,7 +27,69 @@ export class Detector {
     const codeResult = this.detectCode(content);
     if (codeResult) return codeResult;
 
+    // Try debug-heavy output after structured data and code detection.
+    const debugResult = this.detectDebugOutput(content);
+    if (debugResult) return debugResult;
+
     return { type: 'unknown', confidence: 0 };
+  }
+
+  /**
+   * Detect debug-heavy output such as test failures, stack traces,
+   * compiler diagnostics, and repetitive build/lint output.
+   *
+   * This is currently exposed for upcoming pipeline work and regression tests.
+   */
+  detectDebugOutput(content: string): DetectResult | null {
+    const lines = content.split('\n').filter(line => line.trim().length > 0);
+    if (lines.length < 4) return null;
+
+    let score = 0;
+
+    if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(content)) {
+      score += 2;
+    }
+
+    if (/\berror TS\d+:/m.test(content) || /^\s*error(\[[^\]]+\])?:/im.test(content)) {
+      score += 2;
+    }
+
+    if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(content) || /^\w+(Error|Exception):\s+/m.test(content)) {
+      score += 2;
+    }
+
+    if (/^\s*at\s+.+:\d+:\d+/m.test(content) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(content)) {
+      score += 2;
+    }
+
+    if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(content) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(content)) {
+      score += 2;
+    }
+
+    if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(content)) {
+      score += 1;
+    }
+
+    if (/^\s*[×✕]\s+/m.test(content) || /^\s*>\s+.+$/m.test(content)) {
+      score += 1;
+    }
+
+    if (/^\s*npm ERR!/m.test(content) || /^\s*error Command failed/m.test(content)) {
+      score += 1;
+    }
+
+    if (this.hasRepeatedDiagnosticLines(lines)) {
+      score += 1;
+    }
+
+    if (this.hasMultipleFileLocationDiagnostics(content)) {
+      score += 1;
+    }
+
+    if (score < 3) return null;
+
+    const confidence = Math.min(0.92, 0.55 + score * 0.05);
+    return { type: 'debug-output', confidence };
   }
 
   private tryJSON(content: string): DetectResult | null {
@@ -175,6 +237,32 @@ export class Detector {
       if (pattern.test(sample)) matches++;
     }
     return matches >= 3;
+  }
+
+  private hasRepeatedDiagnosticLines(lines: string[]): boolean {
+    const counts = new Map<string, number>();
+
+    for (const line of lines) {
+      const normalized = line
+        .trim()
+        .replace(/\d+/g, '#')
+        .replace(/\s+/g, ' ');
+
+      if (normalized.length < 12) continue;
+      counts.set(normalized, (counts.get(normalized) || 0) + 1);
+    }
+
+    for (const count of counts.values()) {
+      if (count >= 2) return true;
+    }
+
+    return false;
+  }
+
+  private hasMultipleFileLocationDiagnostics(content: string): boolean {
+    const locationMatches = content.match(/\b[\w./-]+\.(ts|tsx|js|jsx|py|go|php):\d+:\d+\b/g) || [];
+    const tracebackMatches = content.match(/^\s*File\s+"[^"]+",\s+line\s+\d+/gm) || [];
+    return locationMatches.length >= 2 || tracebackMatches.length >= 2;
   }
 
   // --- Structured data heuristics (extracted from token-optimizer.ts) ---

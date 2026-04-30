@@ -1,0 +1,31 @@
+FAIL tests/user-service.test.ts
+  UserService
+    × returns a fallback profile when the API request fails
+
+  ● UserService › returns a fallback profile when the API request fails
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "status": "offline",
+    +   "status": "degraded",
+      }
+
+      41 |     const profile = await service.loadProfile("demo-user");
+      42 |
+    > 43 |     expect(profile).toEqual({ status: "offline" });
+         |                     ^
+      44 |   });
+      45 | });
+
+      at Object.<anonymous> (tests/user-service.test.ts:43:21)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        0.742 s
+Ran all test suites matching tests/user-service.test.ts.

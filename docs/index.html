@@ -4,43 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Local Context Compression for Claude Code</title>
-    <meta name="description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
+    <meta name="description" content="Open-source Claude Code plugin and MCP server for locally compressing large JSON, CSV, YAML, API responses, debug-heavy output, and supported source files before they bloat context.">
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+    <meta name="author" content="PCIRCLE AI">
+    <meta name="application-name" content="Toonify MCP">
+    <meta name="theme-color" content="#2563EB">
+    <meta name="format-detection" content="telephone=no">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="canonical" href="https://toonify.pcircle.ai/">
+    <link rel="alternate" hreflang="en" href="https://toonify.pcircle.ai/">
+    <link rel="alternate" hreflang="zh-TW" href="https://toonify.pcircle.ai/index-zh.html">
+    <link rel="alternate" hreflang="x-default" href="https://toonify.pcircle.ai/">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toonify.pcircle.ai/">
+    <meta property="og:site_name" content="Toonify MCP">
+    <meta property="og:locale" content="en_US">
     <meta property="og:title" content="Toonify MCP - Local Context Compression for Claude Code">
-    <meta property="og:description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
-    <meta property="twitter:card" content="summary_large_image">
+    <meta property="og:description" content="Compress large JSON, debug output, and source files locally so Claude Code sessions stay lighter without changing workflow.">
+    <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/">
     <meta property="twitter:title" content="Toonify MCP - Local Context Compression for Claude Code">
-    <meta property="twitter:description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
+    <meta property="twitter:description" content="Compress large JSON, debug output, and source files locally so Claude Code sessions stay lighter without changing workflow.">
 
     <!-- Google Fonts: JetBrains Mono + IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'sans': ['IBM Plex Sans', 'system-ui', 'sans-serif'],
-                        'mono': ['JetBrains Mono', 'Monaco', 'Menlo', 'monospace']
-                    },
-                    colors: {
-                        'trust-blue': '#2563EB',
-                        'trust-blue-dark': '#1E40AF',
-                        'cta-orange': '#F97316',
-                        'cta-orange-dark': '#EA580C',
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="assets/tailwind.css">
     <style>
         /* Dark Mode Variables */
         :root {
@@ -70,6 +61,22 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             transition: background-color 300ms ease, color 300ms ease;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 1rem;
+            top: -3rem;
+            z-index: 100;
+            background: #2563EB;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: top 150ms ease;
+        }
+
+        .skip-link:focus {
+            top: 1rem;
         }
 
         /* Typography */
@@ -132,6 +139,7 @@
             background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%);
             opacity: 0;
             transition: opacity 250ms ease;
+            pointer-events: none;
         }
 
         .feature-card:hover::before {
@@ -147,6 +155,42 @@
         .dark .feature-card:hover {
             box-shadow: 0 12px 24px -8px rgba(96, 165, 250, 0.2);
             border-color: #3B82F6;
+        }
+
+        details.feature-card:hover {
+            transform: none;
+        }
+
+        details summary {
+            list-style: none;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details summary::after {
+            content: '+';
+            float: right;
+            font-size: 1.25rem;
+            line-height: 1;
+            color: #2563EB;
+        }
+
+        details[open] summary::after {
+            content: '−';
+        }
+
+        details[open] summary {
+            margin-bottom: 1rem;
+        }
+
+        details p {
+            position: relative;
+            z-index: 1;
         }
 
         /* Code Blocks */
@@ -287,6 +331,10 @@
             scroll-behavior: smooth;
         }
 
+        section[id] {
+            scroll-margin-top: 6rem;
+        }
+
         /* Loading State for Code Examples */
         .code-loading {
             position: relative;
@@ -308,8 +356,86 @@
             100% { transform: translateX(100%); }
         }
     </style>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "name": "Toonify MCP",
+                    "url": "https://toonify.pcircle.ai/",
+                    "inLanguage": "en",
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "PCIRCLE AI"
+                    }
+                },
+                {
+                    "@type": "SoftwareApplication",
+                    "name": "Toonify MCP",
+                    "applicationCategory": "DeveloperApplication",
+                    "operatingSystem": "macOS, Linux, Windows",
+                    "softwareRequirements": "Node.js 18+, Claude Code",
+                    "license": "https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/LICENSE",
+                    "url": "https://toonify.pcircle.ai/",
+                    "downloadUrl": "https://github.com/PCIRCLE-AI/toonify-mcp",
+                    "description": "A local-first Claude Code plugin and MCP server that compresses large structured payloads, debug-heavy output, and supported source files before they bloat context.",
+                    "featureList": [
+                        "Plugin mode for automatic post-tool optimization",
+                        "MCP server mode for explicit control",
+                        "Structured data compression for JSON, CSV, YAML, and API responses",
+                        "Conservative debug-output compression for test failures and stack traces",
+                        "Source-code compression for TypeScript, Python, Go, and PHP",
+                        "Built-in doctor and status commands for install verification"
+                    ],
+                    "author": {
+                        "@type": "Organization",
+                        "name": "PCIRCLE AI"
+                    }
+                },
+                {
+                    "@type": "FAQPage",
+                    "mainEntity": [
+                        {
+                            "@type": "Question",
+                            "name": "What does Toonify compress?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Toonify helps Claude Code stay lighter when large JSON, CSV, YAML, logs, test output, or supported source files would otherwise bloat the session."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "When is Toonify not a good fit?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "It is usually less useful for short prose, very small files, or content where exact original formatting matters more than reducing context size."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Does Toonify change the Claude Code workflow?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. Plugin mode keeps the normal Claude Code workflow and applies optimization automatically after supported tool output is returned."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "How do I verify installation and recent activity?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Use claude plugin list to confirm the plugin is enabled locally, toonify-mcp doctor to validate the install, and toonify-mcp status to inspect recent optimization activity."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    </script>
 </head>
 <body>
+    <a href="#content" class="skip-link">Skip to content</a>
     <!-- Dark Mode Toggle -->
     <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
         <svg class="sun-icon" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -329,7 +455,7 @@
     </button>
 
     <!-- Navigation -->
-    <nav id="mainNav" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; transition: box-shadow 200ms ease;">
+    <nav id="mainNav" aria-label="Primary" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 50; transition: box-shadow 200ms ease;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-3">
@@ -350,6 +476,7 @@
         </div>
     </nav>
 
+    <main id="content">
     <!-- Hero Section -->
     <section class="py-20" style="background: var(--bg-primary);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -361,12 +488,12 @@
             <!-- GitHub Badges -->
             <div class="flex justify-center flex-wrap gap-3 mb-6">
                 <img src="https://img.shields.io/github/stars/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub stars">
-                <img src="https://img.shields.io/badge/version-0.6.0-blue" alt="Version">
-                <img src="https://img.shields.io/badge/tests-204%20passing-brightgreen" alt="204 tests passing">
+                <img src="https://img.shields.io/badge/version-0.7.0-blue" alt="Version">
+                <img src="https://img.shields.io/badge/tests-220%20passing-brightgreen" alt="220 tests passing">
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Toonify compresses large JSON, CSV, YAML, API responses, and supported source files so Claude Code workflows stay the same while token overhead drops.
+                Toonify helps Claude Code stay lighter when large JSON, logs, test output, or source files would otherwise bloat the session.
             </p>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -379,8 +506,38 @@
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                Open source • Local-first • MIT licensed • v0.6.0 • 204 tests passing
+                Open source • Local-first • MIT licensed • v0.7.0 • 220 tests passing
             </div>
+        </div>
+    </section>
+
+    <!-- At a Glance -->
+    <section id="at-a-glance" class="py-12" style="background: var(--bg-secondary);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">At a Glance</h2>
+                <p class="text-lg max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                    The shortest way to see whether Toonify fits your workflow, how to install it, and how to check it is working.
+                </p>
+            </div>
+            <dl class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div class="feature-card">
+                    <dt class="text-sm heading-mono mb-2 gradient-text">BEST FOR</dt>
+                    <dd style="color: var(--text-secondary);">Large JSON, CSV, YAML, logs, test output, and supported source files.</dd>
+                </div>
+                <div class="feature-card">
+                    <dt class="text-sm heading-mono mb-2 gradient-text">DEFAULT PATH</dt>
+                    <dd style="color: var(--text-secondary);">Install plugin mode first and keep the normal Claude Code workflow.</dd>
+                </div>
+                <div class="feature-card">
+                    <dt class="text-sm heading-mono mb-2 gradient-text">HOW TO VERIFY</dt>
+                    <dd style="color: var(--text-secondary);"><code>claude plugin list</code>, <code>toonify-mcp doctor</code>, and <code>toonify-mcp status</code>.</dd>
+                </div>
+                <div class="feature-card">
+                    <dt class="text-sm heading-mono mb-2 gradient-text">LESS IDEAL</dt>
+                    <dd style="color: var(--text-secondary);">Short prose, tiny files, and formatting-sensitive content where exact layout matters more than token cost.</dd>
+                </div>
+            </dl>
         </div>
     </section>
 
@@ -390,7 +547,7 @@
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Best for Large Tool Output</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    Toonify is most useful when your token cost comes from structured data, generated output, or source files, not from normal chat.
+                    Toonify is most useful when the heavy part of your session comes from tool output or source files, not from normal chat.
                 </p>
             </div>
 
@@ -400,6 +557,14 @@
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large structured payloads</h3>
                     <p style="color: var(--text-secondary);">
                         Teams reading large JSON, CSV, YAML, API responses, and generated data into Claude Code.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-sm heading-mono mb-3 gradient-text">ALSO USEFUL</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Debug-heavy sessions</h3>
+                    <p style="color: var(--text-secondary);">
+                        Test failures, stack traces, compiler diagnostics, and repetitive lint/build output where the signal matters more than every repeated line.
                     </p>
                 </div>
 
@@ -422,13 +587,47 @@
         </div>
     </section>
 
+    <!-- FAQ -->
+    <section id="faq" class="py-16" style="background: var(--bg-primary);">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Frequently Asked Questions</h2>
+                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                    Quick answers before you try it.
+                </p>
+            </div>
+            <div class="space-y-4">
+                <details class="feature-card" open>
+                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">What does Toonify compress?</summary>
+                    <p class="mt-4" style="color: var(--text-secondary);">Large JSON, CSV, YAML, API responses, debug-heavy output such as test failures or stack traces, and supported TypeScript, Python, Go, and PHP source files.</p>
+                </details>
+                <details class="feature-card">
+                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">When should I skip it?</summary>
+                    <p class="mt-4" style="color: var(--text-secondary);">When your session is mostly short prose, tiny files, or formatting-sensitive content. In those cases the payoff is usually small, and Toonify often leaves the original content untouched anyway.</p>
+                </details>
+                <details class="feature-card">
+                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">Will it change how my team uses Claude Code?</summary>
+                    <p class="mt-4" style="color: var(--text-secondary);">Plugin mode keeps the same workflow. Supported output is optimized automatically after tool use, so teams do not need to introduce a new manual step.</p>
+                </details>
+                <details class="feature-card">
+                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">How do I verify install and recent activity?</summary>
+                    <p class="mt-4" style="color: var(--text-secondary);">Use <code>claude plugin list</code> to confirm the plugin is enabled locally, <code>toonify-mcp doctor</code> to validate the install, and <code>toonify-mcp status</code> to inspect recent optimization activity.</p>
+                </details>
+                <details class="feature-card">
+                    <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">Does Toonify send my data to a remote server?</summary>
+                    <p class="mt-4" style="color: var(--text-secondary);">No. Toonify is local-first. Supported compression, caching, and metrics stay on your machine. The website also does not use analytics or cookies.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
     <!-- Use Cases -->
     <section id="use-cases" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Where Toonify Helps Most</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    The best use cases are the ones that already make Claude Code sessions feel heavy before you even start reasoning.
+                    The best fit is any workflow where large output feels heavy before you even start reasoning.
                 </p>
             </div>
 
@@ -437,6 +636,13 @@
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large API responses</h3>
                     <p style="color: var(--text-secondary);">
                         Inspecting big JSON payloads from APIs or tools without sending raw records forward every time.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Test failures and stack traces</h3>
+                    <p style="color: var(--text-secondary);">
+                        Reducing long debug output while keeping the lines developers need to fix the issue.
                     </p>
                 </div>
 
@@ -469,7 +675,7 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">See the Difference in One Glance</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">The goal is not different information. The goal is fewer tokens for the same working session.</p>
+                <p class="text-xl" style="color: var(--text-secondary);">Same session, less weight.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -507,7 +713,7 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Start With the Default Path</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">Plugin mode is the fastest way to try Toonify. Use MCP server mode only when you need explicit control.</p>
+                <p class="text-xl" style="color: var(--text-secondary);">Plugin mode is the fastest way to start. Use MCP server mode only when you want manual control.</p>
             </div>
 
             <div class="space-y-8">
@@ -516,7 +722,7 @@
                         <span class="gradient-text">Recommended:</span> Plugin Mode
                     </h3>
                     <p class="mb-4" style="color: var(--text-secondary);">
-                        Best for Claude Code users who want automatic optimization with no manual tool calls.
+                        Best for most Claude Code users. Install once and supported output is handled automatically.
                     </p>
                     <div class="code-block">
                         <code><span class="comment"># Download the repository</span>
@@ -530,15 +736,21 @@ npm run build
 <span class="comment"># Install globally from local source</span>
 npm install -g .
 
-<span class="comment"># Add as plugin (automatic mode)</span>
-claude plugin add toonify-mcp
+<span class="comment"># Add the local marketplace</span>
+claude plugin marketplace add ./.claude-plugin/marketplace.json
+
+<span class="comment"># Install the plugin (automatic mode)</span>
+claude plugin install toonify-mcp@pcircle-ai --scope local
 
 <span class="comment"># Verify installation</span>
 claude plugin list
-<span class="comment"># Should show: toonify-mcp ✓</span></code>
+<span class="comment"># Should show: toonify-mcp@pcircle-ai ✓ enabled</span></code>
                     </div>
                     <p class="mt-4" style="color: var(--text-secondary);">
-                        <strong style="color: var(--text-primary);">Result:</strong> supported structured data and source-code results are optimized automatically after tool use.
+                        <strong style="color: var(--text-primary);">Result:</strong> supported large output is reduced automatically after tool use.
+                    </p>
+                    <p class="mt-3 text-sm" style="color: var(--text-tertiary);">
+                        Already on an older local version? Run <code>claude plugin update toonify-mcp@pcircle-ai --scope local</code>.
                     </p>
                 </div>
 
@@ -547,7 +759,7 @@ claude plugin list
                         <span class="gradient-text">Advanced:</span> MCP Server Mode
                     </h3>
                     <p class="mb-4" style="color: var(--text-secondary);">
-                        Use this when you want explicit control or need to connect Toonify to another MCP client.
+                        Use this when you want manual control or need to connect Toonify to another MCP client.
                     </p>
                     <div class="code-block">
                         <code><span class="comment"># Prerequisite: complete plugin install so toonify-mcp is available</span>
@@ -560,7 +772,7 @@ claude mcp list
 <span class="comment"># Should show: toonify: toonify-mcp - ✓ Connected</span></code>
                     </div>
                     <p class="mt-4" style="color: var(--text-secondary);">
-                        For explicit control or non-Claude Code MCP clients. Call tools manually when needed.
+                        Best for advanced setups or non-Claude Code MCP clients.
                     </p>
                 </div>
             </div>
@@ -573,7 +785,7 @@ claude mcp list
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">What You Should Notice After Install</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    The right expectation is not a new interface. It is lighter supported output inside the workflow you already use.
+                    You should not expect a new interface. You should notice lighter output inside the workflow you already use.
                 </p>
             </div>
 
@@ -581,7 +793,7 @@ claude mcp list
                 <div class="feature-card">
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large supported output gets lighter</h3>
                     <p style="color: var(--text-secondary);">
-                        Big JSON, CSV, YAML, API responses, and supported source files can be reduced before they move forward in the session.
+                        Big JSON, CSV, YAML, logs, test output, and supported source files can be reduced before they move forward in the session.
                     </p>
                 </div>
 
@@ -602,7 +814,14 @@ claude mcp list
                 <div class="feature-card">
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Verification is simple</h3>
                     <p style="color: var(--text-secondary);">
-                        `claude plugin list` should show `toonify-mcp ✓`, which confirms the plugin is registered locally.
+                        `claude plugin list` should show `toonify-mcp@pcircle-ai` with `enabled`, which confirms the plugin is registered locally.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Built-in checks are available</h3>
+                    <p style="color: var(--text-secondary);">
+                        `toonify-mcp doctor` checks the install, and `toonify-mcp status` shows recent activity.
                     </p>
                 </div>
             </div>
@@ -614,7 +833,7 @@ claude mcp list
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Why Teams Use Toonify</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">The value is simple: less token-heavy output, with less workflow friction.</p>
+                <p class="text-xl" style="color: var(--text-secondary);">The value is simple: lighter large output without adding workflow friction.</p>
             </div>
 
             <div class="bento-grid">
@@ -622,11 +841,11 @@ claude mcp list
                     <div class="text-3xl mb-4">🎯</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Automatic in Plugin Mode</h3>
                     <p style="color: var(--text-secondary);">
-                        PostToolUse hook intercepts supported tool results and applies optimization automatically, so the default experience stays hands-off.
+                        Install once and supported output is handled automatically in normal Claude Code use.
                     </p>
                     <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
                         <code class="text-sm font-mono" style="color: var(--text-secondary);">
-                            claude plugin add toonify-mcp
+                            claude plugin install toonify-mcp@pcircle-ai --scope local
                         </code>
                     </div>
                 </div>
@@ -635,7 +854,7 @@ claude mcp list
                     <div class="text-3xl mb-4">🧭</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Workflow Stays the Same</h3>
                     <p style="color: var(--text-secondary);">
-                        The pitch is not a new interface. It is lower token overhead inside the workflow your team already uses.
+                        Teams keep the same workflow instead of learning a new one.
                     </p>
                 </div>
 
@@ -648,10 +867,18 @@ claude mcp list
                 </div>
 
                 <div class="feature-card">
+                    <div class="text-3xl mb-4">🧪</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Debug Output Compression</h3>
+                    <p style="color: var(--text-secondary);">
+                        Helps with long test failures, stack traces, compiler diagnostics, and repetitive lint or build output.
+                    </p>
+                </div>
+
+                <div class="feature-card">
                     <div class="text-3xl mb-4">🌍</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Supported Code Compression</h3>
                     <p style="color: var(--text-secondary);">
-                        Supports TypeScript, Python, Go, and PHP source-code compression through comment and whitespace reduction in the pipeline.
+                        Makes supported TypeScript, Python, Go, and PHP files lighter when comments and whitespace add cost but not much value.
                     </p>
                 </div>
 
@@ -659,7 +886,7 @@ claude mcp list
                     <div class="text-3xl mb-4">🔄</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Dual Mode</h3>
                     <p style="color: var(--text-secondary);">
-                        Works as Plugin (automatic) or MCP Server (manual). Choose the mode that fits your workflow.
+                        Use plugin mode for automatic handling or MCP mode for manual control.
                     </p>
                 </div>
 
@@ -667,7 +894,7 @@ claude mcp list
                     <div class="text-3xl mb-4">⚖️</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Selective Optimization</h3>
                     <p style="color: var(--text-secondary);">
-                        Structured data is compressed only when estimated savings clear the configured threshold.
+                        Large content is only compressed when the estimated savings are worth it.
                     </p>
                 </div>
 
@@ -675,7 +902,7 @@ claude mcp list
                     <div class="text-3xl mb-4">📊</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Local Metrics and Safe Fallback</h3>
                     <p style="color: var(--text-secondary);">
-                        Track savings locally, and if optimization is not worth it, Toonify falls back to the original content.
+                        You can check local activity, and Toonify falls back to the original content when reduction is not worth it.
                     </p>
                 </div>
             </div>
@@ -688,7 +915,7 @@ claude mcp list
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Supported Content and Boundaries</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    The goal is to make large outputs lighter without pretending every kind of content should be compressed the same way.
+                    Toonify works best when large output is the problem. It is not meant to force every kind of content through the same rule.
                 </p>
             </div>
 
@@ -705,23 +932,28 @@ claude mcp list
                         <tbody style="color: var(--text-secondary);">
                             <tr style="border-top: 1px solid var(--border-color);">
                                 <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">JSON / CSV / YAML / API responses</td>
-                                <td class="py-4 px-5">Compressed into a more compact TOON-oriented representation when estimated savings clear the threshold.</td>
-                                <td class="py-4 px-5">Core fields, values, and record structure needed for the working session.</td>
+                                <td class="py-4 px-5">Reduced into a more compact format when the savings are worth it.</td>
+                                <td class="py-4 px-5">Core fields, values, and structure needed for the session.</td>
+                            </tr>
+                            <tr style="border-top: 1px solid var(--border-color);">
+                                <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Test failures / stack traces / compiler output</td>
+                                <td class="py-4 px-5">Reduced conservatively by cutting repeated noise.</td>
+                                <td class="py-4 px-5">Error headlines, assertion text, stack frames, file paths, and line numbers.</td>
                             </tr>
                             <tr style="border-top: 1px solid var(--border-color);">
                                 <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Supported source code</td>
-                                <td class="py-4 px-5">TypeScript, Python, Go, and PHP go through comment and whitespace reduction in the pipeline.</td>
-                                <td class="py-4 px-5">Executable code structure and language-specific syntax that should not be stripped.</td>
+                                <td class="py-4 px-5">Supported languages are made lighter by trimming comments and whitespace.</td>
+                                <td class="py-4 px-5">Code structure and syntax that should stay intact.</td>
                             </tr>
                             <tr style="border-top: 1px solid var(--border-color);">
                                 <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Small files or prose-heavy text</td>
-                                <td class="py-4 px-5">Usually skipped unless the content is large enough and savings are worth it.</td>
-                                <td class="py-4 px-5">Original wording and formatting when compression would add little value.</td>
+                                <td class="py-4 px-5">Usually skipped because the payoff is small.</td>
+                                <td class="py-4 px-5">Original wording and formatting.</td>
                             </tr>
                             <tr style="border-top: 1px solid var(--border-color);">
                                 <td class="py-4 px-5 font-semibold" style="color: var(--text-primary);">Formatting-sensitive content</td>
-                                <td class="py-4 px-5">Not the best fit for the default value proposition.</td>
-                                <td class="py-4 px-5">Original layout when preserving exact formatting matters more than saving context.</td>
+                                <td class="py-4 px-5">Not a strong fit for the default workflow.</td>
+                                <td class="py-4 px-5">Original layout when exact formatting matters more than shrinking context.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -735,7 +967,7 @@ claude mcp list
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">How It Works</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">A short version of the default plugin flow</p>
+                <p class="text-xl" style="color: var(--text-secondary);">The short version of the default plugin flow.</p>
             </div>
 
             <div class="feature-card p-8">
@@ -744,7 +976,7 @@ claude mcp list
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">1</div>
                         <div>
                             <h3 class="font-bold mb-1" style="color: var(--text-primary);">Read a large output</h3>
-                            <p style="color: var(--text-secondary);">Claude Code fetches a large JSON file, CSV, YAML response, or supported source file.</p>
+                            <p style="color: var(--text-secondary);">Claude Code reads a large JSON file, log, test output, or supported source file.</p>
                         </div>
                     </div>
 
@@ -752,7 +984,7 @@ claude mcp list
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">2</div>
                         <div>
                             <h3 class="font-bold mb-1" style="color: var(--text-primary);">Intercept the tool result</h3>
-                            <p style="color: var(--text-secondary);">The PostToolUse hook checks whether the returned content is worth compressing.</p>
+                            <p style="color: var(--text-secondary);">Toonify checks whether the returned content is worth reducing.</p>
                         </div>
                     </div>
 
@@ -760,7 +992,7 @@ claude mcp list
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">3</div>
                         <div>
                             <h3 class="font-bold mb-1" style="color: var(--text-primary);">Compress when it helps</h3>
-                            <p style="color: var(--text-secondary);">Structured data is converted to compact TOON format. Supported code is reduced through comment and whitespace compression.</p>
+                            <p style="color: var(--text-secondary);">If the savings are worth it, Toonify makes the content lighter while keeping the useful signal.</p>
                         </div>
                     </div>
 
@@ -768,7 +1000,7 @@ claude mcp list
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">4</div>
                         <div>
                             <h3 class="font-bold mb-1" style="color: var(--text-primary);">Continue the same session</h3>
-                            <p style="color: var(--text-secondary);">Optimized content moves forward automatically when estimated savings clear the configured threshold.</p>
+                            <p style="color: var(--text-secondary);">The session keeps going as usual, just with less heavy output.</p>
                         </div>
                     </div>
                 </div>
@@ -800,7 +1032,7 @@ claude mcp list
                     <div style="color: var(--text-secondary);">Observed Range</div>
                 </div>
                 <div class="feature-card">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">204</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">220</div>
                     <div style="color: var(--text-secondary);">Tests Passing</div>
                 </div>
             </div>
@@ -827,7 +1059,7 @@ claude mcp list
                 Try It on a Real Claude Code Session
             </h2>
             <p class="text-xl text-blue-100 mb-8">
-                Start with plugin mode, see whether large outputs get lighter in your actual workflow, and keep the advanced MCP path as an option.
+                Start with plugin mode, see whether your large outputs feel lighter, and keep MCP mode as an option for advanced setups.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="#installation" class="btn-primary" style="background: white; color: #2563EB;">
@@ -839,6 +1071,8 @@ claude mcp list
             </div>
         </div>
     </section>
+
+    </main>
 
     <!-- Footer -->
     <footer style="background: var(--bg-secondary); border-top: 1px solid var(--border-color);" class="py-12">
@@ -855,6 +1089,7 @@ claude mcp list
                     <ul class="space-y-2" style="color: var(--text-secondary);">
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp#readme" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Documentation</a></li>
                         <li><a href="benchmarks.html" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Benchmark Summary</a></li>
+                        <li><a href="llms.txt" class="hover:text-blue-600 dark:hover:text-blue-400 transition">LLM Summary</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Contributing Guide</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CHANGELOG.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Changelog</a></li>
                     </ul>
@@ -952,6 +1187,7 @@ claude mcp list
                         behavior: 'smooth',
                         block: 'start'
                     });
+                    history.replaceState(null, '', this.getAttribute('href'));
                 }
             });
         });

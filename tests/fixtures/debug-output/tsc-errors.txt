@@ -1,0 +1,16 @@
+src/components/ProfileCard.tsx:18:12 - error TS2322: Type 'number' is not assignable to type 'string'.
+
+18   title={42}
+              ~~
+
+src/components/ProfileCard.tsx:24:18 - error TS2339: Property 'avatarUrl' does not exist on type 'UserSummary'.
+
+24   const avatar = user.avatarUrl;
+                    ~~~~~~~~~~~~~~
+
+src/screens/UsersPage.tsx:57:9 - error TS2769: No overload matches this call.
+
+57         navigate(123);
+           ~~~~~~~~
+
+Found 3 errors in 2 files.

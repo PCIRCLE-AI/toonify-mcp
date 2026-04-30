@@ -1,0 +1,59 @@
+Toonify MCP
+==============
+
+What it is
+- Open-source Claude Code plugin and MCP server for local context compression.
+- Primary job: make large tool output lighter before it bloats the next Claude Code turn.
+
+What it compresses
+- Structured data: JSON, CSV, YAML, API responses
+- Debug-heavy output: test failures, stack traces, compiler diagnostics, repetitive lint/build output
+- Supported source code: TypeScript, Python, Go, PHP
+
+What stays the same
+- Claude Code workflow in plugin mode
+- Local-first processing model
+- Safe fallback when estimated savings are not worth it
+
+Who should evaluate it
+- Teams that regularly read large tool output into Claude Code
+- Developers debugging long test failures or stack traces
+- Teams reviewing larger source files during AI-assisted coding sessions
+
+Who may not need it
+- Users mostly working with short prose
+- Users dealing with tiny files
+- Tasks where preserving exact original formatting matters more than saving context
+
+How to install
+1. Clone the repo and build it locally
+2. Install `toonify-mcp` from the local checkout
+3. Add the local marketplace file
+4. Install `toonify-mcp@pcircle-ai` in Claude Code plugin mode
+5. Verify with `claude plugin list`
+
+How to verify
+- `toonify-mcp doctor`
+- `toonify-mcp status`
+- `claude plugin list`
+- `claude mcp list`
+
+Public proof
+- Repo: https://github.com/PCIRCLE-AI/toonify-mcp
+- Benchmarks: https://toonify.pcircle.ai/benchmarks.html
+- Benchmark suite source: https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/quick-stats.test.ts
+
+Current structured-data benchmark snapshot
+- 12 fixtures
+- 48.1% average savings
+- 24.5-66.3% observed range
+
+Primary pages
+- https://toonify.pcircle.ai/
+- https://toonify.pcircle.ai/index-zh.html
+- https://toonify.pcircle.ai/benchmarks.html
+- https://toonify.pcircle.ai/benchmarks-zh.html
+- https://toonify.pcircle.ai/privacy.html
+- https://toonify.pcircle.ai/privacy-zh.html
+- https://toonify.pcircle.ai/terms.html
+- https://toonify.pcircle.ai/terms-zh.html

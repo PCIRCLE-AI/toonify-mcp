@@ -1,0 +1,10 @@
+/workspace/src/app.ts
+  14:7   error  'unusedValue' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  14:7   error  'unusedValue' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  21:15  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/workspace/src/routes.ts
+  8:3    error  Expected a blank line before this statement       padding-line-between-statements
+  8:3    error  Expected a blank line before this statement       padding-line-between-statements
+
+✖ 5 problems (5 errors, 0 warnings)

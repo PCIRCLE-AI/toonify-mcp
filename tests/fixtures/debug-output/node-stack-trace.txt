@@ -1,0 +1,8 @@
+TypeError: Cannot read properties of undefined (reading 'id')
+    at renderUserCard (/workspace/src/render.ts:18:13)
+    at renderUserCard (/workspace/src/render.ts:18:13)
+    at renderUserList (/workspace/src/list.ts:42:5)
+    at renderUserList (/workspace/src/list.ts:42:5)
+    at processUsers (/workspace/src/process.ts:77:9)
+    at processUsers (/workspace/src/process.ts:77:9)
+    at async main (/workspace/src/index.ts:11:3)

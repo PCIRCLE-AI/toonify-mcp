@@ -1,277 +1,58 @@
-# 🎯 Toonify MCP
+# Toonify MCP
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Server MCP + Plugin Claude Code yang menyediakan optimasi token otomatis untuk data terstruktur **dan kode sumber**.
-Mengurangi penggunaan token Claude API sebesar **25-66%** untuk JSON/CSV/YAML dan **20-48%** untuk kode sumber TypeScript/Python/Go melalui arsitektur pipeline.
+Toonify MCP membantu saat Claude Code terasa berat karena output yang terlalu besar.
 
-## Fitur Baru di v0.6.0
+## Manfaat yang langsung terasa
 
-✨ **Arsitektur pipeline + kompresi kode!**
-- ✅ **Mesin pipeline** — arsitektur modular Detector → Router → Compressor → Evaluator
-- ✅ **Kompresi kode** — TypeScript (37%), Python (48%), Go (32%) penghematan melalui penghapusan komentar/spasi berbasis heuristik
-- ✅ **6 lapisan kompresi** — dari aman (baris kosong, komentar inline) hingga agresif (ringkasan import, pelipatan pola berulang)
-- ✅ **Hook ditingkatkan** — hook PostToolUse sekarang mengompresi kode sumber selain data terstruktur
-- ✅ Desain yang dapat diperluas — tambahkan format baru dengan mengimplementasikan satu antarmuka `Compressor`
-- ✅ Kompatibilitas mundur penuh — semua API eksternal tidak berubah
-- ✅ 196 pengujian (sebelumnya 157), tinjauan kode komprehensif lulus
+- JSON, CSV, YAML, dan respons API jadi lebih ringan
+- Kegagalan test yang panjang dan stack trace lebih mudah dibawa dalam satu sesi
+- Cara kerja Claude Code sehari-hari tidak perlu diubah
 
-## Fitur
+## Siapa yang paling cocok mencoba
 
-- **Pengurangan Token 25-66%** (biasanya ~48%) untuk data JSON, CSV, YAML
-- **Kompresi Kode 20-48%** untuk kode sumber TypeScript, Python, Go
-- **Arsitektur Pipeline** - Mesin yang dapat diperluas Detector → Compressor → Evaluator
-- **Dukungan Multibahasa** - Penghitungan token akurat untuk 15+ bahasa
-- **Sepenuhnya Otomatis** - Hook PostToolUse mencegat hasil tool
-- **Tanpa Konfigurasi** - Bekerja langsung dengan nilai default yang masuk akal
-- **Mode Ganda** - Bekerja sebagai plugin (otomatis) atau server MCP (manual)
-- **Metrik Bawaan** - Melacak penghematan token secara lokal
-- **Fallback Senyap** - Tidak pernah mengganggu alur kerja Anda
+- Orang yang sering membaca tool output besar
+- Orang yang sering memasukkan logs, traces, atau file source code ke Claude Code
+- Orang yang ingin solusi lokal dan otomatis
 
-## Instalasi
+## Kapan manfaatnya kecil
 
-### Opsi A: Unduh dari GitHub (Direkomendasikan) 🌟
+- Teks pendek
+- File yang sangat kecil
+- Konten yang lebih mementingkan format asli
 
-**Instalasi langsung dari repositori GitHub (tanpa perlu npm publish):**
+## Instalasi cepat
 
 ```bash
-# 1. Unduh repositori
 git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
 cd toonify-mcp
-
-# 2. Instal dependensi dan build
 npm install
 npm run build
-
-# 3. Instal global dari sumber lokal
 npm install -g .
-```
-
-### Opsi B: Instal dari Claude Marketplaces (jika tersedia) 🌟
-
-**Instalasi satu klik:**
-
-Buka [Claude Marketplaces](https://claudemarketplaces.com) di Claude Code dan instal `toonify-mcp` dengan satu klik ketika distribusi marketplace tersedia di lingkungan Anda.
-
-### Opsi C: Plugin Claude Code (Direkomendasikan) ⭐
-
-**Optimasi token otomatis tanpa panggilan manual:**
-
-Prasyarat: selesaikan opsi A atau B agar biner `toonify-mcp` tersedia.
-
-```bash
-# 1. Tambahkan sebagai plugin (mode otomatis)
-claude plugin add toonify-mcp
-
-# 2. Verifikasi instalasi
+claude plugin marketplace add ./.claude-plugin/marketplace.json
+claude plugin install toonify-mcp@pcircle-ai --scope local
 claude plugin list
-# Seharusnya menampilkan: toonify-mcp ✓
 ```
 
-**Selesai!** Hook PostToolUse sekarang akan secara otomatis mencegat dan mengoptimalkan data terstruktur dari Read, Grep, dan tool file lainnya.
+Kalau berhasil, `claude plugin list` seharusnya menampilkan `toonify-mcp@pcircle-ai` dengan `enabled`.
 
-### Opsi D: Server MCP (mode manual)
-
-**Untuk kontrol eksplisit atau klien MCP non-Claude Code:**
-
-Prasyarat: selesaikan opsi A atau B agar biner `toonify-mcp` tersedia.
+## Cek cepat
 
 ```bash
-# 1. Daftarkan sebagai server MCP
+toonify-mcp doctor
+toonify-mcp status
+```
+
+## Mode MCP (opsional)
+
+```bash
 claude mcp add toonify -- toonify-mcp
-
-# 2. Verifikasi
 claude mcp list
-# Seharusnya menampilkan: toonify: toonify-mcp - ✓ Connected
 ```
 
-Kemudian panggil tool secara eksplisit:
-```bash
-claude mcp call toonify optimize_content '{"content": "..."}'
-claude mcp call toonify get_stats '{}'
-```
+## Tempat melihat versi terbaru
 
-## Cara Kerja
-
-### Mode Plugin (otomatis)
-
-```
-Pengguna: Baca file JSON besar
-  ↓
-Claude Code memanggil tool Read
-  ↓
-Hook PostToolUse mencegat hasil
-  ↓
-Hook mendeteksi JSON, konversi ke TOON
-  ↓
-Konten yang dioptimalkan dikirim ke Claude API
-  ↓
-Pengurangan token 25-66% (biasanya ~48%) tercapai ✨
-```
-
-### Mode Server MCP (manual)
-
-```
-Pengguna: Panggil mcp__toonify__optimize_content secara eksplisit
-  ↓
-Konten dikonversi ke format TOON
-  ↓
-Mengembalikan hasil yang dioptimalkan
-```
-
-## Konfigurasi
-
-Buat `~/.claude/toonify-config.json` (opsional):
-
-```json
-{
-  "enabled": true,
-  "minTokensThreshold": 50,
-  "minSavingsThreshold": 30,
-  "skipToolPatterns": ["Bash", "Write", "Edit"]
-}
-```
-
-### Opsi
-
-- **enabled**: Aktifkan/nonaktifkan optimasi otomatis (default: `true`)
-- **minTokensThreshold**: Token minimum sebelum optimasi (default: `50`)
-- **minSavingsThreshold**: Persentase penghematan minimum yang diperlukan (default: `30%`)
-- **skipToolPatterns**: Tool yang tidak pernah dioptimalkan (default: `["Bash", "Write", "Edit"]`)
-
-### Variabel Lingkungan
-
-```bash
-export TOONIFY_ENABLED=true
-export TOONIFY_MIN_TOKENS=50
-export TOONIFY_MIN_SAVINGS=30
-export TOONIFY_SKIP_TOOLS="Bash,Write"
-export TOONIFY_SHOW_STATS=true  # Tampilkan statistik optimasi dalam output
-```
-
-## Contoh
-
-### Sebelum Optimasi (142 token)
-
-```json
-{
-  "products": [
-    {"id": 101, "name": "Laptop Pro", "price": 1299},
-    {"id": 102, "name": "Magic Mouse", "price": 79}
-  ]
-}
-```
-
-### Setelah Optimasi (57 token, -60%)
-
-```
-[TOON-JSON]
-products[2]{id,name,price}:
-  101,Laptop Pro,1299
-  102,Magic Mouse,79
-```
-
-**Diterapkan secara otomatis dalam mode plugin - tidak perlu panggilan manual!**
-
-## Tips Penggunaan
-
-### Kapan Optimasi Otomatis Dipicu?
-
-Hook PostToolUse secara otomatis mengoptimalkan ketika:
-- ✅ Konten adalah JSON, CSV, atau YAML yang valid
-- ✅ Ukuran konten ≥ `minTokensThreshold` (default: 50 token)
-- ✅ Perkiraan penghematan ≥ `minSavingsThreshold` (default: 30%)
-- ✅ Tool TIDAK ada dalam `skipToolPatterns` (misalnya, bukan Bash/Write/Edit)
-
-### Lihat Statistik Optimasi
-
-```bash
-# Dalam mode plugin
-claude mcp call toonify get_stats '{}'
-
-# Atau periksa output Claude Code untuk statistik (jika TOONIFY_SHOW_STATS=true)
-```
-
-## Pemecahan Masalah
-
-### Hook Tidak Terpicu
-
-```bash
-# 1. Periksa plugin sudah diinstal
-claude plugin list | grep toonify
-
-# 2. Periksa konfigurasi
-cat ~/.claude/toonify-config.json
-
-# 3. Aktifkan statistik untuk melihat percobaan optimasi
-export TOONIFY_SHOW_STATS=true
-```
-
-### Optimasi Tidak Diterapkan
-
-- Periksa `minTokensThreshold` - konten mungkin terlalu kecil
-- Periksa `minSavingsThreshold` - penghematan mungkin < 30%
-- Periksa `skipToolPatterns` - tool mungkin ada dalam daftar lewati
-- Verifikasi konten adalah JSON/CSV/YAML yang valid
-
-### Masalah Kinerja
-
-- Kurangi `minTokensThreshold` untuk mengoptimalkan lebih agresif
-- Tingkatkan `minSavingsThreshold` untuk melewati optimasi marginal
-- Tambahkan lebih banyak tool ke `skipToolPatterns` jika diperlukan
-
-## Perbandingan: Plugin vs Server MCP
-
-| Fitur | Mode Plugin | Mode Server MCP |
-|-------|------------|----------------|
-| **Aktivasi** | Otomatis (PostToolUse) | Manual (panggil tool) |
-| **Kompatibilitas** | Hanya Claude Code | Klien MCP apa pun |
-| **Konfigurasi** | File konfigurasi plugin | Tool MCP |
-| **Kinerja** | Tanpa overhead | Overhead panggilan |
-| **Use Case** | Alur kerja sehari-hari | Kontrol eksplisit |
-
-**Rekomendasi**: Gunakan mode plugin untuk optimasi otomatis. Gunakan mode server MCP untuk kontrol eksplisit atau klien MCP lainnya.
-
-## Uninstall
-
-### Mode Plugin
-```bash
-claude plugin remove toonify-mcp
-rm ~/.claude/toonify-config.json
-```
-
-### Mode Server MCP
-```bash
-claude mcp remove toonify
-```
-
-### Paket
-```bash
-npm uninstall -g toonify-mcp
-```
-
-## Tautan
-
-- **Docs**: https://toonify.pcircle.ai/
-- **GitHub**: https://github.com/PCIRCLE-AI/toonify-mcp
-- **Issues**: https://github.com/PCIRCLE-AI/toonify-mcp/issues
-- **Dokumentasi MCP**: https://code.claude.com/docs/mcp
-- **Format TOON**: https://github.com/toon-format/toon
-
-## Kontribusi
-
-Kontribusi sangat disambut! Silakan lihat [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan.
-
-## Dukungan
-
-Untuk bantuan instalasi, laporan bug, dan jalur kontak komersial, lihat [SUPPORT.md](SUPPORT.md).
-
-## Keamanan
-
-Laporkan kerentanan secara privat seperti dijelaskan di [SECURITY.md](SECURITY.md).
-
-## Lisensi
-
-Lisensi MIT - lihat [LICENSE](LICENSE)
-
-Untuk riwayat rilis, lihat [CHANGELOG.md](CHANGELOG.md).
+- Panduan utama: [README.md](README.md)
+- Versi Mandarin tradisional: [README.zh-TW.md](README.zh-TW.md)
+- Situs publik: https://toonify.pcircle.ai/
