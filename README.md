@@ -65,6 +65,13 @@ claude plugin list
 
 Plugin mode is the fastest way to try Toonify. Once installed, supported structured data and source-code results are optimized automatically after tool use.
 
+What you should notice after install:
+
+- **Large supported output gets lighter** — big structured payloads and supported source files can be reduced before they keep bloating the session
+- **Small or low-value content stays untouched** — Toonify keeps the original result when compression is not worth it
+- **Plugin mode stays automatic** — no extra manual step in the normal Claude Code workflow
+- **Verification is simple** — `claude plugin list` should show `toonify-mcp ✓`
+
 ### Advanced Path: MCP Server (Manual Mode)
 
 **For explicit control or non-Claude Code MCP clients:**
