@@ -70,6 +70,18 @@ class Banner {
       expect(result.compressed).not.toContain('remove this');
     });
 
+    test('preserves PHP hash characters inside backtick command strings', () => {
+      const input = `<?php
+class Runner {
+    public function cmd() {
+        return \`echo #notacomment\`; # remove this
+    }
+}`;
+      const result = compressor.compress(input, makeDetection('code-php'));
+      expect(result.compressed).toContain('return `echo #notacomment`;');
+      expect(result.compressed).not.toContain('remove this');
+    });
+
     test('preserves TODO/FIXME comments', () => {
       const input = 'const x = 42; // TODO: fix this later';
       const result = compressor.compress(input, makeDetection('code-ts'));

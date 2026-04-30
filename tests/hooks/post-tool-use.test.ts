@@ -84,6 +84,39 @@ HTML;
       expect(output.additionalContext as string).not.toContain('remove trailing comment');
     });
 
+    test('preserves PHP backtick command strings during code compression', async () => {
+      const input = {
+        tool_name: 'Read',
+        tool_response: `<?php
+
+use App\\Support\\Runner;
+use App\\Support\\Shell;
+
+class Runner {
+    // Remove this comment line
+    public function cmd() {
+        return \`echo #notacomment\`; # remove trailing comment
+    }
+
+    // Remove this comment line too
+    public function cmdTwo() {
+        return \`printf %s #still-not-a-comment\`; # remove trailing comment
+    }
+}
+`,
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      expect(result.suppressOutput).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext as string).toContain('return `echo #notacomment`;');
+      expect(output.additionalContext as string).toContain('return `printf %s #still-not-a-comment`;');
+      expect(output.additionalContext as string).not.toContain('remove trailing comment');
+    });
+
     test('optimizes debug-heavy output while preserving actionable lines', async () => {
       const input = {
         tool_name: 'Read',

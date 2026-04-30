@@ -183,7 +183,7 @@ export class CodeCompressor implements Compressor {
         continue;
       }
 
-      if (char === '"' || char === "'") {
+      if (char === '"' || char === "'" || (preservePhpAttributeSyntax && char === '`')) {
         // Check for triple quotes
         if (line.slice(i, i + 3) === '"""' || line.slice(i, i + 3) === "'''") {
           return line; // Don't mess with docstrings

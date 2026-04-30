@@ -371,7 +371,7 @@ function findInlineHash(line, preservePhpAttributeSyntax = false) {
       if (ch === inString && line[i - 1] !== '\\') inString = null;
       continue;
     }
-    if (ch === '"' || ch === "'") {
+    if (ch === '"' || ch === "'" || (preservePhpAttributeSyntax && ch === '`')) {
       if (line.slice(i, i + 3) === '"""' || line.slice(i, i + 3) === "'''") return -1;
       inString = ch;
       continue;
