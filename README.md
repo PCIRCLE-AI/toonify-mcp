@@ -32,6 +32,13 @@ It is designed for teams that regularly send large JSON / CSV / YAML payloads, A
 | Small files or prose-heavy text | Usually skipped because the payoff is low | Original wording and reading flow |
 | Formatting-sensitive content | Not treated as a primary fit | Avoids pretending layout-dependent content should be compressed the same way |
 
+## Practical Use Cases
+
+- **Large API responses** — inspect JSON payloads and repeated records without dragging every raw field into the next model turn
+- **CSV or generated exports** — reduce repetitive structure when the main job is understanding rows, columns, and anomalies
+- **Whole source-file reads** — lighten larger TypeScript / Python / Go / PHP files before they hit context
+- **Framework-heavy PHP files** — review Laravel / Symfony-style files with attributes, namespaces, and imports more efficiently
+
 ## Installation
 
 ### Default Path: Install the Plugin
