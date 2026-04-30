@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-05-01
+
+### Changed
+- Synced public docs, AI-readable site metadata, and localized pages with the current `toonify-mcp setup` / `doctor` workflow and the streamlined landing-page structure
+
+### Fixed
+- Preserve PHP backtick command strings during `#` inline-comment stripping in both the core code compressor and the standalone PostToolUse hook
+
+### Tests
+- Added PHP regression coverage for backtick command strings in both the pipeline compressor and the standalone hook path
+
 ## [0.7.0] - 2026-04-30
 
 ### Added

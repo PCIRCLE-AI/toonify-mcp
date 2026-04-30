@@ -1,6 +1,6 @@
 {
   "name": "toonify-mcp",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Local context compression for Claude Code and MCP workflows, including structured data, debug output, and source code reduction.",
   "type": "module",
   "main": "dist/index.js",
