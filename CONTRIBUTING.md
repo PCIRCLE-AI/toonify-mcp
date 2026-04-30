@@ -10,6 +10,7 @@ This project is a practical developer tool for Claude Code and MCP workflows. Co
 - compression safety improvements
 - token-counting accuracy and format detection
 - tests for edge cases and regressions
+- fixture-based language safety coverage for supported code formats
 - documentation improvements that match actual shipped behavior
 
 ## Before you open a pull request
@@ -39,6 +40,7 @@ npm run build
 - Do not commit local tooling artifacts such as `.codex/`, `.playwright-mcp/`, local plans, or personal notes.
 - If you change public behavior or installation guidance, update the relevant README or docs in the same pull request.
 - If you add or rename MCP tools, plugin behavior, or hooks, document the change clearly.
+- If you add support for a new language or content type, include regression tests that cover representative syntax and failure-prone edge cases.
 
 ## Documentation expectations
 

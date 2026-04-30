@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toonify MCP - Proof-Backed Token Optimization for Claude Code</title>
-    <meta name="description" content="Open-source MCP server and Claude Code plugin for local context compression. Current structured-data benchmark suite: 12 fixtures, 48.1% average savings, 24.5-66.3% range.">
+    <title>Toonify MCP - Local Context Compression for Claude Code</title>
+    <meta name="description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
     <link rel="canonical" href="https://toonify.pcircle.ai/">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toonify.pcircle.ai/">
-    <meta property="og:title" content="Toonify MCP - Proof-Backed Token Optimization for Claude Code">
-    <meta property="og:description" content="Open-source MCP server and Claude Code plugin for local context compression. Current structured-data benchmark suite: 12 fixtures, 48.1% average savings, 24.5-66.3% range.">
+    <meta property="og:title" content="Toonify MCP - Local Context Compression for Claude Code">
+    <meta property="og:description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/">
-    <meta property="twitter:title" content="Toonify MCP - Proof-Backed Token Optimization for Claude Code">
-    <meta property="twitter:description" content="Open-source MCP server and Claude Code plugin for local context compression. Current structured-data benchmark suite: 12 fixtures, 48.1% average savings, 24.5-66.3% range.">
+    <meta property="twitter:title" content="Toonify MCP - Local Context Compression for Claude Code">
+    <meta property="twitter:description" content="Open-source MCP server and Claude Code plugin for compressing large JSON, CSV, YAML, API responses, and supported source files before they bloat context.">
 
     <!-- Google Fonts: JetBrains Mono + IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -361,7 +361,7 @@
             <div class="flex justify-center flex-wrap gap-3 mb-6">
                 <img src="https://img.shields.io/github/stars/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub stars">
                 <img src="https://img.shields.io/badge/version-0.6.0-blue" alt="Version">
-                <img src="https://img.shields.io/badge/tests-196%20passing-brightgreen" alt="196 tests passing">
+                <img src="https://img.shields.io/badge/tests-204%20passing-brightgreen" alt="204 tests passing">
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
@@ -378,7 +378,7 @@
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                Open source • MIT licensed • v0.6.0 • 196 tests passing
+                Open source • Local-first • MIT licensed • v0.6.0 • 204 tests passing
             </div>
         </div>
     </section>
@@ -406,7 +406,7 @@
                     <div class="text-sm heading-mono mb-3 gradient-text">ALSO USEFUL</div>
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Code-heavy sessions</h3>
                     <p style="color: var(--text-secondary);">
-                        TypeScript, Python, and Go source files where comments and whitespace add token cost without helping the model much.
+                        TypeScript, Python, Go, and PHP source files where comments and whitespace add token cost without helping the model much.
                     </p>
                 </div>
 
@@ -414,7 +414,7 @@
                     <div class="text-sm heading-mono mb-3 gradient-text">NOT IDEAL</div>
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Small or prose-first tasks</h3>
                     <p style="color: var(--text-secondary);">
-                        If your context is mostly short prose or small files, the gains are usually limited and you may not notice much difference.
+                        If your context is mostly short prose, very small files, or content that depends heavily on original formatting, the gains are usually limited.
                     </p>
                 </div>
             </div>
@@ -558,7 +558,7 @@ claude mcp list
                     <div class="text-3xl mb-4">📦</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large Structured Payloads</h3>
                     <p style="color: var(--text-secondary);">
-                        Built for large JSON, CSV, YAML, API responses, and generated records that would otherwise bloat context.
+                        Built for large JSON, CSV, YAML, API responses, and generated output that would otherwise bloat context.
                     </p>
                 </div>
 
@@ -566,7 +566,7 @@ claude mcp list
                     <div class="text-3xl mb-4">🌍</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Supported Code Compression</h3>
                     <p style="color: var(--text-secondary);">
-                        Supports TypeScript, Python, and Go source-code compression through comment and whitespace reduction in the pipeline.
+                        Supports TypeScript, Python, Go, and PHP source-code compression through comment and whitespace reduction in the pipeline.
                     </p>
                 </div>
 
@@ -647,7 +647,7 @@ claude mcp list
     <section id="proof" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Current Benchmark Snapshot</h2>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Structured Data Benchmark Snapshot</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
                     Current structured-data results from the checked-in benchmark suite.
                 </p>
@@ -667,7 +667,7 @@ claude mcp list
                     <div style="color: var(--text-secondary);">Observed Range</div>
                 </div>
                 <div class="feature-card">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">204</div>
                     <div style="color: var(--text-secondary);">Tests Passing</div>
                 </div>
             </div>
@@ -714,7 +714,7 @@ claude mcp list
                 <div>
                     <h3 class="text-xl font-bold heading-mono mb-4 gradient-text">Toonify MCP</h3>
                     <p style="color: var(--text-secondary);">
-                        Open-source MCP server and Claude Code plugin for local context compression. MIT licensed.
+                        Open-source MCP server and Claude Code plugin for large-output compression. MIT licensed.
                     </p>
                 </div>
                 <div>

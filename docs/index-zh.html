@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toonify MCP - 以實證為基礎的 Claude Code Token 優化工具</title>
-    <meta name="description" content="開源的 MCP 伺服器與 Claude Code 外掛，用於本地 context compression。當前結構化資料 benchmark suite：12 個 fixtures、平均 48.1%、範圍 24.5-66.3%。">
-    <meta name="keywords" content="Claude Code, Token 優化, MCP 外掛, TOON 格式, API 成本降低">
+    <title>Toonify MCP - Claude Code 大型輸出壓縮工具</title>
+    <meta name="description" content="開源的 MCP 伺服器與 Claude Code 外掛，可在大型 JSON、CSV、YAML、API 回應與支援的原始碼進入上下文前先做本地壓縮。">
+    <meta name="keywords" content="Claude Code, 上下文壓縮, MCP 外掛, TOON 格式, 大型輸出壓縮">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://toonify.pcircle.ai/">
-    <meta property="og:title" content="Toonify MCP - 以實證為基礎的 Claude Code Token 優化工具">
-    <meta property="og:description" content="開源的 MCP 伺服器與 Claude Code 外掛。當前結構化資料 benchmark suite：12 個 fixtures、平均 48.1%、範圍 24.5-66.3%。">
+    <meta property="og:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
+    <meta property="og:description" content="開源的 MCP 伺服器與 Claude Code 外掛，可在大型 JSON、CSV、YAML、API 回應與支援的原始碼進入上下文前先做本地壓縮。">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/">
-    <meta property="twitter:title" content="Toonify MCP - 以實證為基礎的 Claude Code Token 優化工具">
-    <meta property="twitter:description" content="開源的 MCP 伺服器與 Claude Code 外掛。當前結構化資料 benchmark suite：12 個 fixtures、平均 48.1%、範圍 24.5-66.3%。">
+    <meta property="twitter:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
+    <meta property="twitter:description" content="開源的 MCP 伺服器與 Claude Code 外掛，可在大型 JSON、CSV、YAML、API 回應與支援的原始碼進入上下文前先做本地壓縮。">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -355,7 +355,7 @@
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                開源 • MIT 授權 • v0.6.0 • 196 項測試通過
+                開源 • 本地優先 • MIT 授權 • v0.6.0 • 204 項測試通過
             </div>
         </div>
     </section>
@@ -383,7 +383,7 @@
                     <div class="text-sm heading-mono mb-3 gradient-text">也有幫助</div>
                     <h3 class="text-2xl font-bold mb-3 heading-mono">程式碼密集工作階段</h3>
                     <p style="color: var(--text-secondary);">
-                        TypeScript、Python、Go 原始碼很多，註解與空白會吃掉不少 token 的情境。
+                        TypeScript、Python、Go、PHP 原始碼很多，註解與空白會吃掉不少 token 的情境。
                     </p>
                 </div>
 
@@ -391,7 +391,7 @@
                     <div class="text-sm heading-mono mb-3 gradient-text">不一定適合</div>
                     <h3 class="text-2xl font-bold mb-3 heading-mono">小檔案或純文字任務</h3>
                     <p style="color: var(--text-secondary);">
-                        如果你的內容大多是短文字或小檔案，通常不太會感受到明顯差異。
+                        如果你的內容大多是短文字、小檔案，或特別依賴原始排版，通常不太會感受到明顯差異。
                     </p>
                 </div>
             </div>
@@ -530,20 +530,20 @@ claude mcp list
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">🧭</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">不改變原本 Workflow</h3>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">不改變原本工作流程</h3>
                     <p style="color: var(--text-secondary);">重點不是多一套介面，而是在你已經使用的工作流程裡降低 token 負擔。</p>
                 </div>
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">📦</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono">大型結構化輸出</h3>
-                    <p style="color: var(--text-secondary);">適合大 JSON、CSV、YAML、API 回應與產生出的資料，避免 context 被 payload 撐大。</p>
+                    <p style="color: var(--text-secondary);">適合大 JSON、CSV、YAML、API 回應與產生出的資料，避免上下文被 payload 撐大。</p>
                 </div>
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">🌏</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono">支援部分原始碼壓縮</h3>
-                    <p style="color: var(--text-secondary);">支援 TypeScript、Python、Go 的註解與空白壓縮，整合於同一條 Pipeline。</p>
+                    <p style="color: var(--text-secondary);">支援 TypeScript、Python、Go、PHP 的註解與空白壓縮，整合於同一條 Pipeline。</p>
                 </div>
 
                 <div class="feature-card">
@@ -612,7 +612,7 @@ claude mcp list
                 <span class="gradient-text">目前 Benchmark 摘要</span>
             </h2>
             <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                這裡整理的是目前版本結構化資料 benchmark suite 的結果。
+                這裡整理的是目前版本結構化資料 benchmark 測試套件的結果。
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
@@ -629,7 +629,7 @@ claude mcp list
                     <div style="color: var(--text-secondary);">觀察範圍</div>
                 </div>
                 <div class="feature-card">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">204</div>
                     <div style="color: var(--text-secondary);">測試通過</div>
                 </div>
             </div>
@@ -656,7 +656,7 @@ claude mcp list
                 拿你的真實 Claude Code 工作流程試一次
             </h2>
             <p class="text-xl mb-8 opacity-90">
-                先從外掛模式開始，看看大型輸出是否真的變輕，再決定要不要納入日常 workflow。
+                先從外掛模式開始，看看大型輸出是否真的變輕，再決定要不要納入日常工作流程。
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="#installation" class="btn-cta" style="background: white; color: var(--trust-blue);">
@@ -677,7 +677,7 @@ claude mcp list
                 <div>
                     <h3 class="text-lg font-bold mb-4 heading-mono gradient-text">Toonify MCP</h3>
                     <p style="color: var(--text-secondary);">
-                        開源的 MCP 伺服器與 Claude Code 外掛，用於本地 context compression。
+                        開源的 MCP 伺服器與 Claude Code 外掛，用於本地大型輸出壓縮。
                     </p>
                 </div>
 

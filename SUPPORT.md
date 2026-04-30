@@ -2,7 +2,7 @@
 
 ## What this repo is for
 
-`toonify-mcp` is a public repository for the MCP server, Claude Code plugin, and supporting docs for automatic token optimization.
+`toonify-mcp` is a public repository for the MCP server, Claude Code plugin, and supporting docs for large-output compression in Claude Code and MCP workflows.
 
 ## Get help
 
@@ -14,6 +14,7 @@ Open a GitHub issue if you need help with:
 - plugin or MCP setup
 - configuration
 - expected optimization behavior
+- supported content types and boundaries
 - cache behavior
 
 ### Bug reports

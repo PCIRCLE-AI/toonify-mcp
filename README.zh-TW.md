@@ -1,102 +1,76 @@
-# 🎯 Toonify MCP
+# Toonify MCP
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Toonify MCP 是一個給 Claude Code 與 MCP 工作流程使用的自動 token 最佳化工具，能對結構化資料與部分原始碼做壓縮，在不改變日常使用方式的前提下降低上下文成本。
+Toonify MCP 是一個給 Claude Code 與 MCP 工作流程使用的本地壓縮工具，能在大型工具輸出進入上下文前，先對結構化資料與支援的原始碼做壓縮。
 
-- **結構化資料：** 目前 benchmark suite 在 12 個 fixtures 上得到 **24.5-66.3%** 的節省，平均 **48.1%**
-- **原始碼：** 支援 TypeScript / Python / Go 的壓縮流程
+- **結構化資料：** 目前 benchmark 測試套件在 12 個 fixtures 上得到 **24.5-66.3%** 的節省，平均 **48.1%**
+- **原始碼：** 支援 TypeScript / Python / Go / PHP 的壓縮流程
+- **最適合：** 大型工具輸出、產生出的資料，以及原始碼檔案檢視
+- **不一定適合：** 純文字、小檔案，或特別依賴原始排版的內容
 - **文件與安裝說明：** https://toonify.pcircle.ai/
 - **Benchmark 摘要：** https://toonify.pcircle.ai/benchmarks-zh.html
 
-## ✨ 最新版本亮點（v0.6.0）
+## 為什麼團隊會試 Toonify
 
-**Pipeline 架構 + 程式碼壓縮！**
-- ✅ **Pipeline 引擎** — 模組化 Detector → Router → Compressor → Evaluator 架構
-- ✅ **程式碼壓縮** — 支援 TypeScript、Python、Go 的註解與空白壓縮
-- ✅ **6 層壓縮** — 從安全（空行、行內註解）到積極（import 摘要、重複模式折疊）
-- ✅ **Hook 升級** — PostToolUse hook 現在也能壓縮程式碼
-- ✅ 可擴充設計 — 實作 `Compressor` 介面即可新增格式
-- ✅ 完全向後相容 — 所有外部 API 不變
-- ✅ 196 個測試（從 157 提升）
+- **就是為了大型輸出工作流程** — JSON、CSV、YAML、API 回應、產生出的記錄資料，以及支援的原始碼
+- **工作流程不用改** — 外掛模式會在工具執行後自動運作
+- **本地執行** — 支援的壓縮、快取與統計都留在你的電腦上
+- **值得時才壓縮** — 只有當預估節省超過門檻時才會動作
+- **雙模式** — 外掛模式適合日常使用，MCP Server 適合需要明確控制的情境
+- **安全回退** — 如果優化不值得，Toonify 會保留原始內容
+- **有驗證依據** — 本地 `204` 項測試通過，並有已提交的結構化資料 benchmark 測試套件
 
-## 🌟 為什麼要用？
+## 如何安裝
 
-- 💰 **省 token 成本** - 目前結構化資料 benchmark suite 的結果為 24.5-66.3%（平均 48.1%）
-- 💻 **程式碼也能壓** - 支援 TypeScript / Python / Go 壓縮
-- 🌏 **支援中文** - 完美支援繁體中文、簡體中文及 15+ 種語言
-- 🤖 **全自動** - 裝好就用，背景自動運作
-- 🎯 **零學習成本** - 不用看教學，不用改程式
-- 🔄 **兩種用法** - 可以全自動，也可以手動控制
-- 📊 **看得到省多少** - 隨時查看幫你省了多少錢
-- 🛡️ **安全可靠** - 出問題會自動退回，不影響工作
-- 🔒 **安全強化** - 輸入限制、路徑驗證、原子寫入
-
-## 📦 如何安裝？
-
-### 方法零：從 GitHub 下載（推薦）🌟
-
-**直接從 GitHub 安裝（不需要 npm publish）：**
+### 預設路徑：安裝外掛
 
 ```bash
-# 步驟 1：下載專案
+# 1. 下載專案
 git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
 cd toonify-mcp
 
-# 步驟 2：安裝依賴並建置
+# 2. 安裝依賴並建置
 npm install
 npm run build
 
-# 步驟 3：從本機安裝
+# 3. 從本機安裝
 npm install -g .
-```
 
-### 方法一：從 Claude Marketplaces 安裝（若可用）🌟
-
-**透過 Claude Marketplaces 一鍵安裝：**
-
-在 Claude Code 中瀏覽 [Claude Marketplaces](https://claudemarketplaces.com)，若你的環境已支援 marketplace distribution，可直接安裝 `toonify-mcp`。
-
-### 方法二：自動模式（推薦給所有人）⭐
-
-**兩個步驟，裝好就會自動省錢：**
-
-前置條件：先完成方法零或方法一，確保 `toonify-mcp` 已可使用。
-
-```bash
-# 步驟 1：加入 Claude Code
+# 4. 加入 Claude Code 外掛
 claude plugin add toonify-mcp
 
-# 步驟 2：確認安裝成功
+# 5. 確認安裝成功
 claude plugin list
 # 看到 toonify-mcp ✓ 就成功了！
 ```
 
-**完成！** 🎉 從現在開始，每次處理資料檔案都會自動幫你省錢，完全不用做任何事。
+外掛模式是最快感受到 Toonify 的方式。裝好後，支援的結構化資料與原始碼結果會在工具執行後自動壓縮。
 
-### 方法三：手動模式（給進階用戶）
+### 進階路徑：MCP Server 模式
 
-**想要自己控制何時優化？用這個方法：**
+**適合想自己控制何時優化，或要接到其他 MCP 客戶端的情境。**
 
-前置條件：先完成方法零或方法一，確保 `toonify-mcp` 已可使用。
+前置條件：先完成預設安裝路徑，確保 `toonify-mcp` 已可使用。
 
 ```bash
-# 步驟 1：註冊為手動工具
+# 1. 註冊為 MCP 工具
 claude mcp add toonify -- toonify-mcp
 
-# 步驟 2：檢查是否安裝成功
+# 2. 檢查是否安裝成功
 claude mcp list
 # 看到：toonify: toonify-mcp - ✓ Connected
 ```
 
-使用時需要手動執行指令：
+使用時可手動執行：
 ```bash
-# 手動優化資料
 claude mcp call toonify optimize_content '{"content": "..."}'
-
-# 查看省了多少錢
 claude mcp call toonify get_stats '{}'
 ```
+
+### Claude Marketplaces（若可用）
+
+如果你的環境已支援 marketplace 發布，也可以在 Claude Code 內透過 [Claude Marketplaces](https://claudemarketplaces.com) 安裝 `toonify-mcp`。
 
 ## 運作原理
 
@@ -113,7 +87,7 @@ Hook 偵測 JSON，轉換為 TOON
   ↓
 優化後的內容發送到 Claude API
   ↓
-在 benchmark suite 中，結構化資料可得到 24.5-66.3% 的節省 ✨
+結構化資料可在目前 benchmark 測試套件中得到 24.5-66.3% 的節省 ✨
 ```
 
 ### MCP 伺服器模式（手動）
@@ -146,8 +120,8 @@ Hook 偵測 JSON，轉換為 TOON
 - **enabled** (開關)：要不要自動優化（預設：開啟）
 - **minTokensThreshold** (最小檔案大小)：檔案要多大才優化（預設：50 tokens）
   - 太小的檔案優化效果不明顯，所以會跳過
-- **minSavingsThreshold** (省多少才優化)：要省超過 30% 才優化（預設：30%）
-  - 如果只能省 10%，就不優化了
+- **minSavingsThreshold** (最小節省門檻)：要省超過 30% 才優化（預設：30%）
+  - 如果預估節省太少，就不優化
 - **skipToolPatterns** (不要優化的類型)：哪些類型的檔案不要優化（預設：`["Bash", "Write", "Edit"]`）
   - 像是執行指令的內容就不適合優化
 
@@ -156,9 +130,9 @@ Hook 偵測 JSON，轉換為 TOON
 ```bash
 export TOONIFY_ENABLED=true           # 開關
 export TOONIFY_MIN_TOKENS=50          # 最小檔案大小
-export TOONIFY_MIN_SAVINGS=30         # 最小省錢比例
+export TOONIFY_MIN_SAVINGS=30         # 最小節省門檻
 export TOONIFY_SKIP_TOOLS="Bash,Write"  # 不要優化的類型
-export TOONIFY_SHOW_STATS=true        # 顯示省了多少錢
+export TOONIFY_SHOW_STATS=true        # 顯示優化統計
 ```
 
 ## 範例
@@ -187,11 +161,12 @@ products[2]{id,name,price}:
 
 ## Benchmark 摘要
 
-目前結構化資料 benchmark suite：[`tests/benchmarks/quick-stats.test.ts`](tests/benchmarks/quick-stats.test.ts)
+目前結構化資料 benchmark 測試套件：[`tests/benchmarks/quick-stats.test.ts`](tests/benchmarks/quick-stats.test.ts)
 
 - 測試案例：`12`
 - 平均節省：`48.1%`
 - 範圍：`24.5-66.3%`
+- 本地測試通過：`204`
 
 本機重跑方式：
 
@@ -204,21 +179,21 @@ NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.tes
 ### 什麼時候會自動優化？
 
 工具會自動判斷，滿足以下條件就會優化：
-- ✅ 檔案類型是 JSON、CSV 或 YAML（資料檔案）或程式碼（TS/Py/Go）
+- ✅ 檔案類型是 JSON、CSV 或 YAML（資料檔案）或程式碼（TS/Py/Go/PHP）
 - ✅ 檔案夠大（超過 50 tokens）
 - ✅ 能省超過 30%（太少就不值得優化）
 - ✅ 不是指令類型（像 Bash、Write、Edit 這類不適合優化）
 
-**總之：你讀取資料檔案，工具就會自動幫你省錢！**
+**總之：你讀取大型資料檔案或支援的原始碼時，工具會自動判斷是否值得壓縮。**
 
-### 如何查看省了多少錢？
+### 如何查看優化統計？
 
 ```bash
 # 方法一：用指令查看
 claude mcp call toonify get_stats '{}'
 
 # 方法二：設定自動顯示（在設定中加入 TOONIFY_SHOW_STATS=true）
-# 每次優化完都會告訴你省了多少
+# 每次優化完都會顯示統計資訊
 ```
 
 ## 遇到問題怎麼辦？
@@ -245,8 +220,8 @@ export TOONIFY_SHOW_STATS=true
 
 - 📄 檔案太小（少於 50 tokens）
   - 小檔案優化效果不明顯，所以會跳過
-- 💸 省不夠多（少於 30%）
-  - 如果只能省 10%，就不划算優化
+- 💸 預估節省不足（少於 30%）
+  - 如果預估節省太少，就不值得優化
 - 🚫 檔案類型不適合
   - 不是 JSON/CSV/YAML 資料檔案
   - 或者是指令類型（Bash/Write/Edit）
@@ -258,7 +233,7 @@ export TOONIFY_SHOW_STATS=true
 ```json
 {
   "minTokensThreshold": 20,    // 降低門檻，小檔案也優化
-  "minSavingsThreshold": 10    // 降低要求，省 10% 也優化
+  "minSavingsThreshold": 10    // 降低要求，節省 10% 也優化
 }
 ```
 

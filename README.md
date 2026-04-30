@@ -1,46 +1,31 @@
-# 🎯 Toonify MCP
+# Toonify MCP
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Toonify MCP is an MCP server and Claude Code plugin for automatic token optimization in structured-data and source-code workflows.
+Toonify MCP is an MCP server and Claude Code plugin for compressing large tool output before it bloats context.
 
-It is designed for teams that regularly send large JSON / CSV / YAML payloads or TypeScript / Python / Go / PHP source files into model context and want lower token usage without changing day-to-day workflow.
+It is designed for teams that regularly send large JSON / CSV / YAML payloads, API responses, generated output, or supported source files into Claude Code and want lower context overhead without changing day-to-day workflow.
 
 - **Structured data:** current benchmark suite yields **24.5-66.3%** savings across 12 fixtures, with **48.1% average**
 - **Source code:** supports TypeScript / Python / Go / PHP compression in the pipeline
+- **Best fit:** large tool output, generated output, and reviewing large source files
+- **Not ideal:** short prose tasks, very small files, or content that depends heavily on original formatting
 - **Docs and setup guides:** https://toonify.pcircle.ai/
 - **Benchmark summary:** https://toonify.pcircle.ai/benchmarks.html
 
-## What's New in v0.6.0
+## Why Teams Try Toonify
 
-✨ **Pipeline Architecture + Code Compression!**
-- ✅ **Pipeline engine** — modular Detector → Router → Compressor → Evaluator architecture
-- ✅ **Code compression** — supports TypeScript, Python, Go, and PHP via heuristic comment/whitespace removal
-- ✅ **6 compression layers** — from safe (blank lines, inline comments) to aggressive (import summarization, repetitive pattern collapse)
-- ✅ **Hook upgraded** — PostToolUse hook now compresses source code in addition to structured data
-- ✅ Extensible design — add new formats by implementing a single `Compressor` interface
-- ✅ Full backwards compatibility — all external APIs unchanged
-- ✅ 196 tests (up from 157), comprehensive code review passed
-
-## Features
-
-- **24.5-66.3% structured-data benchmark range** across the current 12-fixture suite
-- **Code compression support** for TypeScript, Python, Go, and PHP source code
-- **Pipeline Architecture** - Extensible Detector → Compressor → Evaluator engine
-- **Multilingual Support** - Accurate token counting for 15+ languages
-- **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
-- **Fully Automatic** - PostToolUse hook intercepts tool results
-- **Zero Configuration** - Works out of the box with sensible defaults
-- **Dual Mode** - Works as Plugin (auto) or MCP Server (manual)
-- **Built-in Metrics** - Track token savings locally
-- **Silent Fallback** - Never breaks your workflow
-- **Security Hardened** - Input size limits, path validation, safe regex, atomic writes
+- **Built for large output workflows** — JSON, CSV, YAML, API responses, generated output, and supported source files
+- **Workflow stays the same** — Plugin mode runs automatically after tool use
+- **Runs locally** — supported compression, caching, and metrics stay on your machine
+- **Selective by design** — content is optimized only when estimated savings clear the configured threshold
+- **Dual mode** — use Plugin mode for automatic behavior or MCP Server mode for explicit control
+- **Safe fallback** — if optimization is not worth it, Toonify keeps the original content
+- **Evidence-backed** — `204` tests passing locally, plus a checked-in structured-data benchmark suite
 
 ## Installation
 
-### Option A: Download from GitHub (Recommended) 🌟
-
-**Install directly from the GitHub repository (no npm publish required):**
+### Default Path: Install the Plugin
 
 ```bash
 # 1. Download the repository
@@ -53,36 +38,22 @@ npm run build
 
 # 3. Install globally from local source
 npm install -g .
-```
 
-### Option B: Install from Claude Marketplaces (if available) 🌟
-
-**One-click installation through Claude Marketplaces:**
-
-Browse to [Claude Marketplaces](https://claudemarketplaces.com) in Claude Code and install `toonify-mcp` with one click when marketplace distribution is available for your environment.
-
-### Option C: Claude Code Plugin (Recommended) ⭐
-
-**Automatic token optimization with zero manual calls:**
-
-Prerequisite: complete Option A or Option B so the `toonify-mcp` binary is available.
-
-```bash
-# 1. Add as plugin (automatic mode)
+# 4. Add as plugin (automatic mode)
 claude plugin add toonify-mcp
 
-# 2. Verify installation
+# 5. Verify installation
 claude plugin list
 # Should show: toonify-mcp ✓
 ```
 
-**That's it!** The PostToolUse hook will now automatically intercept and optimize structured data from Read, Grep, and other file tools.
+Plugin mode is the fastest way to try Toonify. Once installed, supported structured data and source-code results are optimized automatically after tool use.
 
-### Option D: MCP Server (Manual mode)
+### Advanced Path: MCP Server (Manual Mode)
 
 **For explicit control or non-Claude Code MCP clients:**
 
-Prerequisite: complete Option A or Option B so the `toonify-mcp` binary is available.
+Prerequisite: complete the default install path so the `toonify-mcp` binary is available.
 
 ```bash
 # 1. Register as MCP server
@@ -98,6 +69,10 @@ Then call tools explicitly:
 claude mcp call toonify optimize_content '{"content": "..."}'
 claude mcp call toonify get_stats '{}'
 ```
+
+### Marketplace Install (When Available)
+
+Browse to [Claude Marketplaces](https://claudemarketplaces.com) in Claude Code and install `toonify-mcp` with one click when marketplace distribution is available for your environment.
 
 ## How It Works
 
@@ -189,6 +164,7 @@ Current structured-data benchmark suite: [`tests/benchmarks/quick-stats.test.ts`
 - Fixtures: `12`
 - Average savings: `48.1%`
 - Range: `24.5-66.3%`
+- Tests passing locally: `204`
 
 To reproduce locally:
 
@@ -201,7 +177,7 @@ NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.tes
 ### When Does Auto-Optimization Trigger?
 
 The PostToolUse hook automatically optimizes when:
-- ✅ Content is valid JSON, CSV, YAML, **or source code** (TS/Py/Go)
+- ✅ Content is valid JSON, CSV, YAML, **or source code** (TS/Py/Go/PHP)
 - ✅ Content size ≥ `minTokensThreshold` (default: 50 tokens)
 - ✅ Estimated savings ≥ threshold (30% for structured data, 10% for code)
 - ✅ Tool is NOT in `skipToolPatterns` (e.g., not Bash/Write/Edit)

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toonify MCP Benchmark 摘要</title>
-    <meta name="description" content="Toonify MCP 的實證 benchmark 摘要頁，包含方法、量測結果與本機重跑方式。">
+    <title>Toonify MCP 結構化資料 Benchmark 摘要</title>
+    <meta name="description" content="Toonify MCP 的結構化資料 benchmark 摘要頁，包含目前量測結果與本機重跑方式。">
     <link rel="canonical" href="https://toonify.pcircle.ai/benchmarks-zh.html">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,10 +25,10 @@
         </div>
 
         <header class="mb-10">
-            <span class="pill">Proof-Backed</span>
-            <h1 class="text-4xl md:text-5xl font-bold heading-mono mt-4 mb-4">Toonify MCP Benchmark 摘要</h1>
+            <span class="pill">Structured Data</span>
+            <h1 class="text-4xl md:text-5xl font-bold heading-mono mt-4 mb-4">Toonify MCP 結構化資料 Benchmark 摘要</h1>
             <p class="text-lg text-slate-700 max-w-3xl">
-                這一頁只收錄目前可以追溯到程式碼庫、benchmark suite 或本機驗證結果的內容。任何無法重現的說法都不放在這裡。
+                這一頁整理的是 Toonify 目前的結構化資料 benchmark 摘要，方便你快速看目前量測結果、如何重跑，以及它在整體產品中的位置。
             </p>
         </header>
 
@@ -53,11 +53,11 @@
         <section class="card mb-10">
             <h2 class="text-2xl font-bold heading-mono mb-4">如何重現</h2>
             <p class="text-slate-700 mb-4">
-                上述數字來自以下這個已提交在 repo 中的 Jest benchmark suite。
+                上述數字來自以下這個已提交在 repo 中的 Jest benchmark 測試套件。
             </p>
             <div class="code-block mb-4"><code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code></div>
             <div class="flex flex-wrap gap-4 text-sm">
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/quick-stats.test.ts" class="text-blue-600 hover:text-blue-700">打開 benchmark suite</a>
+                <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/quick-stats.test.ts" class="text-blue-600 hover:text-blue-700">打開 benchmark 測試套件</a>
                 <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/token-savings.test.ts" class="text-blue-600 hover:text-blue-700">打開延伸 token benchmark</a>
                 <a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/tests/benchmarks/code-compression-benchmark.ts" class="text-blue-600 hover:text-blue-700">打開 code compression benchmark 原始碼</a>
             </div>
@@ -85,15 +85,6 @@
                     </tbody>
                 </table>
             </div>
-        </section>
-
-        <section class="card mb-10">
-            <h2 class="text-2xl font-bold heading-mono mb-4">這一頁沒有聲稱的事</h2>
-            <ul class="list-disc list-inside text-slate-700 space-y-2">
-                <li>這裡不宣稱任何 provider 成本節省金額。</li>
-                <li>這裡不宣稱 cache speedup，除非未來另有可重現的公開 benchmark。</li>
-                <li>這裡不宣稱各語言的 code compression 百分比，除非未來補上已提交的量測輸出。</li>
-            </ul>
         </section>
 
         <section class="card">
