@@ -30,24 +30,22 @@ cd toonify-mcp
 npm install
 npm run build
 npm install -g .
-claude plugin marketplace add ./.claude-plugin/marketplace.json
-claude plugin install toonify-mcp@pcircle-ai --scope local
-claude plugin list
+toonify-mcp setup
+toonify-mcp doctor
 ```
 
-Nếu cài đúng, `claude plugin list` nên hiển thị `toonify-mcp@pcircle-ai` với `enabled`.
+`toonify-mcp setup` sẽ tự thêm marketplace local rồi xử lý luôn việc cài, cập nhật hoặc bật lại plugin.
 
 ## Kiểm tra nhanh
 
 ```bash
-toonify-mcp doctor
 toonify-mcp status
 ```
 
 ## Chế độ MCP (tùy chọn)
 
 ```bash
-claude mcp add toonify -- toonify-mcp
+toonify-mcp setup mcp
 claude mcp list
 ```
 

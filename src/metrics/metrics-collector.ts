@@ -189,6 +189,16 @@ Additional Cache Savings: ${(stats.estimatedCacheSavings || 0).toLocaleString()}
 
   async formatStatus(): Promise<string> {
     const stats = await this.getStats();
+    if (stats.totalRequests === 0) {
+      return [
+        `Toonify MCP status (v${version})`,
+        '',
+        'No optimization activity yet.',
+        'Next: run a Claude Code session with large JSON, logs, test output, or source files.',
+        'Check install: `toonify-mcp doctor`',
+      ].join('\n');
+    }
+
     const optimizedRate = stats.totalRequests > 0
       ? ((stats.optimizedRequests / stats.totalRequests) * 100).toFixed(1)
       : '0.0';

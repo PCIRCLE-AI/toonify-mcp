@@ -30,30 +30,22 @@ cd toonify-mcp
 npm install
 npm run build
 npm install -g .
-claude plugin marketplace add ./.claude-plugin/marketplace.json
-claude plugin install toonify-mcp@pcircle-ai --scope local
-claude plugin list
+toonify-mcp setup
+toonify-mcp doctor
 ```
 
-如果安裝成功，`claude plugin list` 應該會看到 `toonify-mcp@pcircle-ai`，並顯示 `enabled`。
-
-如果你本機已經裝過舊版，請直接執行：
-
-```bash
-claude plugin update toonify-mcp@pcircle-ai --scope local
-```
+`toonify-mcp setup` 會自動處理本地 marketplace、安裝、更新，或重新啟用外掛。
 
 ## 怎麼快速確認有沒有正常運作
 
 ```bash
-toonify-mcp doctor
 toonify-mcp status
 ```
 
 ## 進階：MCP 模式
 
 ```bash
-claude mcp add toonify -- toonify-mcp
+toonify-mcp setup mcp
 claude mcp list
 ```
 

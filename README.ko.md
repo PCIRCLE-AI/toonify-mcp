@@ -30,24 +30,22 @@ cd toonify-mcp
 npm install
 npm run build
 npm install -g .
-claude plugin marketplace add ./.claude-plugin/marketplace.json
-claude plugin install toonify-mcp@pcircle-ai --scope local
-claude plugin list
+toonify-mcp setup
+toonify-mcp doctor
 ```
 
-정상 설치되면 `claude plugin list` 에 `toonify-mcp@pcircle-ai` 와 `enabled` 가 보입니다.
+`toonify-mcp setup` 이 로컬 marketplace 추가와 plugin 설치, 업데이트, 재활성화를 한 번에 처리합니다.
 
 ## 빠른 확인
 
 ```bash
-toonify-mcp doctor
 toonify-mcp status
 ```
 
 ## MCP 모드(선택)
 
 ```bash
-claude mcp add toonify -- toonify-mcp
+toonify-mcp setup mcp
 claude mcp list
 ```
 

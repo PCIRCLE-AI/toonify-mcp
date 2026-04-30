@@ -165,6 +165,13 @@ describe('MetricsCollector', () => {
   });
 
   describe('formatStatus', () => {
+    test('shows a guided empty state before activity starts', async () => {
+      const status = await collector.formatStatus();
+
+      expect(status).toContain('No optimization activity yet.');
+      expect(status).toContain('toonify-mcp doctor');
+    });
+
     test('generates a compact status summary', async () => {
       await collector.record({
         timestamp: new Date().toISOString(),

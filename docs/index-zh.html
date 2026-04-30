@@ -434,7 +434,7 @@
                             "name": "如何驗證安裝與最近活動？",
                             "acceptedAnswer": {
                                 "@type": "Answer",
-                                "text": "可用 claude plugin list 確認外掛是否啟用，再用 toonify-mcp doctor 檢查安裝狀態，toonify-mcp status 查看最近優化活動。"
+                                "text": "先執行 toonify-mcp setup，再用 toonify-mcp doctor 檢查安裝狀態，toonify-mcp status 查看最近優化活動。"
                             }
                         }
                     ]
@@ -502,7 +502,7 @@
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                開源 • 本地優先 • MIT 授權 • v0.7.0 • 220 項測試通過
+                開源 • 本地優先 • MIT 授權 • v0.7.0 • 231 項測試通過
             </div>
         </div>
     </section>
@@ -527,7 +527,7 @@
                 </div>
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">怎麼驗證</dt>
-                    <dd style="color: var(--text-secondary);"><code>claude plugin list</code>、<code>toonify-mcp doctor</code>、<code>toonify-mcp status</code>。</dd>
+                    <dd style="color: var(--text-secondary);"><code>toonify-mcp setup</code>、<code>toonify-mcp doctor</code>、<code>toonify-mcp status</code>。</dd>
                 </div>
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">不一定需要</dt>
@@ -607,7 +607,7 @@
                 </details>
                 <details class="feature-card">
                     <summary class="font-bold heading-mono cursor-pointer">怎麼確認真的有裝好、也有在工作？</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">先用 <code>claude plugin list</code> 看外掛是否已啟用，再用 <code>toonify-mcp doctor</code> 檢查安裝狀態，最後用 <code>toonify-mcp status</code> 看最近的優化活動。</p>
+                    <p class="mt-4" style="color: var(--text-secondary);">先執行 <code>toonify-mcp setup</code>，再用 <code>toonify-mcp doctor</code> 檢查安裝狀態，最後用 <code>toonify-mcp status</code> 看最近的優化活動。</p>
                 </details>
                 <details class="feature-card">
                     <summary class="font-bold heading-mono cursor-pointer">資料會送到遠端嗎？</summary>
@@ -749,17 +749,13 @@ npm run build
 # 3. 從本機安裝
 npm install -g .
 
-# 4. 加入本地 marketplace
-claude plugin marketplace add ./.claude-plugin/marketplace.json
+# 4. 讓 Toonify 自動處理 marketplace、安裝與更新
+toonify-mcp setup
 
-# 5. 安裝外掛（自動模式）
-claude plugin install toonify-mcp@pcircle-ai --scope local
-
-# 6. 驗證安裝
-claude plugin list
-# 應顯示：toonify-mcp@pcircle-ai ✓ enabled</code></pre>
+# 5. 驗證安裝
+toonify-mcp doctor</code></pre>
                     <p class="mt-3 text-sm" style="color: var(--text-tertiary);">
-                        如果你本機已經裝過舊版，請執行 <code>claude plugin update toonify-mcp@pcircle-ai --scope local</code>。
+                        如果你本機已經裝過舊版，重新執行 <code>toonify-mcp setup</code> 就會自動更新。
                     </p>
                 </div>
 
@@ -769,12 +765,10 @@ claude plugin list
                         <h3 class="text-2xl font-bold heading-mono">進階：MCP 伺服器模式</h3>
                     </div>
                     <p class="mb-4" style="color: var(--text-secondary);">適合需要手動控制，或想接到其他 MCP 客戶端的情境。</p>
-                    <pre class="text-sm"><code># 1. 先完成外掛模式安裝，確保 toonify-mcp 可用
+                    <pre class="text-sm"><code># 1. 註冊為 MCP 伺服器
+toonify-mcp setup mcp
 
-# 2. 註冊為 MCP 伺服器
-claude mcp add toonify -- toonify-mcp
-
-# 3. 驗證
+# 2. 驗證
 claude mcp list
 # 應顯示：toonify: toonify-mcp - ✓ Connected</code></pre>
                 </div>
@@ -817,14 +811,14 @@ claude mcp list
                 <div class="feature-card">
                     <h3 class="text-2xl font-bold mb-3 heading-mono">驗證方式很簡單</h3>
                     <p style="color: var(--text-secondary);">
-                        `claude plugin list` 應該會看到 `toonify-mcp@pcircle-ai` 並顯示 `enabled`，代表外掛已在本機註冊成功。
+                        `toonify-mcp doctor` 應該可以確認安裝正常，`toonify-mcp status` 則可以看最近活動。
                     </p>
                 </div>
 
                 <div class="feature-card">
                     <h3 class="text-2xl font-bold mb-3 heading-mono">內建檢查可直接使用</h3>
                     <p style="color: var(--text-secondary);">
-                        `toonify-mcp doctor` 可檢查安裝，`toonify-mcp status` 可查看最近活動。
+                        `toonify-mcp setup` 會處理安裝與更新，`toonify-mcp doctor` 可檢查安裝，`toonify-mcp status` 可查看最近活動。
                     </p>
                 </div>
             </div>
@@ -847,7 +841,7 @@ claude mcp list
                     <h3 class="text-xl font-bold mb-3 heading-mono">外掛模式自動套用</h3>
                     <p style="color: var(--text-secondary);">安裝一次後，支援的大型輸出就會在平常使用時自動處理。</p>
                     <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
-                        <code class="text-sm font-mono">claude plugin install toonify-mcp@pcircle-ai --scope local</code>
+                        <code class="text-sm font-mono">toonify-mcp setup</code>
                     </div>
                 </div>
 
@@ -1011,7 +1005,7 @@ claude mcp list
                     <div style="color: var(--text-secondary);">觀察範圍</div>
                 </div>
                 <div class="feature-card">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">220</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">231</div>
                     <div style="color: var(--text-secondary);">測試通過</div>
                 </div>
             </div>

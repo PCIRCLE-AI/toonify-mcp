@@ -46,4 +46,11 @@ describe('status output', () => {
     expect(output).toContain('Skipped: 1');
     expect(output).toContain('Last decision: skipped Grep Savings too low: 4.0%');
   });
+
+  test('shows a clear empty state before any optimization activity', async () => {
+    const output = await collector.formatStatus();
+
+    expect(output).toContain('No optimization activity yet.');
+    expect(output).toContain('toonify-mcp doctor');
+  });
 });

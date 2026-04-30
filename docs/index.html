@@ -425,7 +425,7 @@
                             "name": "How do I verify installation and recent activity?",
                             "acceptedAnswer": {
                                 "@type": "Answer",
-                                "text": "Use claude plugin list to confirm the plugin is enabled locally, toonify-mcp doctor to validate the install, and toonify-mcp status to inspect recent optimization activity."
+                                "text": "Run toonify-mcp setup first, then use toonify-mcp doctor to validate the install and toonify-mcp status to inspect recent optimization activity."
                             }
                         }
                     ]
@@ -489,7 +489,7 @@
             <div class="flex justify-center flex-wrap gap-3 mb-6">
                 <img src="https://img.shields.io/github/stars/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub stars">
                 <img src="https://img.shields.io/badge/version-0.7.0-blue" alt="Version">
-                <img src="https://img.shields.io/badge/tests-220%20passing-brightgreen" alt="220 tests passing">
+                <img src="https://img.shields.io/badge/tests-231%20passing-brightgreen" alt="231 tests passing">
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
@@ -506,7 +506,7 @@
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                Open source • Local-first • MIT licensed • v0.7.0 • 220 tests passing
+                Open source • Local-first • MIT licensed • v0.7.0 • 231 tests passing
             </div>
         </div>
     </section>
@@ -531,7 +531,7 @@
                 </div>
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">HOW TO VERIFY</dt>
-                    <dd style="color: var(--text-secondary);"><code>claude plugin list</code>, <code>toonify-mcp doctor</code>, and <code>toonify-mcp status</code>.</dd>
+                    <dd style="color: var(--text-secondary);"><code>toonify-mcp setup</code>, <code>toonify-mcp doctor</code>, and <code>toonify-mcp status</code>.</dd>
                 </div>
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">LESS IDEAL</dt>
@@ -611,7 +611,7 @@
                 </details>
                 <details class="feature-card">
                     <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">How do I verify install and recent activity?</summary>
-                    <p class="mt-4" style="color: var(--text-secondary);">Use <code>claude plugin list</code> to confirm the plugin is enabled locally, <code>toonify-mcp doctor</code> to validate the install, and <code>toonify-mcp status</code> to inspect recent optimization activity.</p>
+                    <p class="mt-4" style="color: var(--text-secondary);">Run <code>toonify-mcp setup</code> first, then use <code>toonify-mcp doctor</code> to validate the install and <code>toonify-mcp status</code> to inspect recent optimization activity.</p>
                 </details>
                 <details class="feature-card">
                     <summary class="font-bold heading-mono cursor-pointer" style="color: var(--text-primary);">Does Toonify send my data to a remote server?</summary>
@@ -736,21 +736,17 @@ npm run build
 <span class="comment"># Install globally from local source</span>
 npm install -g .
 
-<span class="comment"># Add the local marketplace</span>
-claude plugin marketplace add ./.claude-plugin/marketplace.json
-
-<span class="comment"># Install the plugin (automatic mode)</span>
-claude plugin install toonify-mcp@pcircle-ai --scope local
+<span class="comment"># Let Toonify handle marketplace + install or update</span>
+toonify-mcp setup
 
 <span class="comment"># Verify installation</span>
-claude plugin list
-<span class="comment"># Should show: toonify-mcp@pcircle-ai ✓ enabled</span></code>
+toonify-mcp doctor</code>
                     </div>
                     <p class="mt-4" style="color: var(--text-secondary);">
                         <strong style="color: var(--text-primary);">Result:</strong> supported large output is reduced automatically after tool use.
                     </p>
                     <p class="mt-3 text-sm" style="color: var(--text-tertiary);">
-                        Already on an older local version? Run <code>claude plugin update toonify-mcp@pcircle-ai --scope local</code>.
+                        If you already have an older local install, <code>toonify-mcp setup</code> updates it automatically.
                     </p>
                 </div>
 
@@ -762,10 +758,8 @@ claude plugin list
                         Use this when you want manual control or need to connect Toonify to another MCP client.
                     </p>
                     <div class="code-block">
-                        <code><span class="comment"># Prerequisite: complete plugin install so toonify-mcp is available</span>
-
-<span class="comment"># Register as MCP server</span>
-claude mcp add toonify -- toonify-mcp
+                        <code><span class="comment"># Register Toonify as an MCP server</span>
+toonify-mcp setup mcp
 
 <span class="comment"># Verify</span>
 claude mcp list
@@ -814,14 +808,14 @@ claude mcp list
                 <div class="feature-card">
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Verification is simple</h3>
                     <p style="color: var(--text-secondary);">
-                        `claude plugin list` should show `toonify-mcp@pcircle-ai` with `enabled`, which confirms the plugin is registered locally.
+                        `toonify-mcp doctor` should confirm the install, and `toonify-mcp status` should stay available for recent activity.
                     </p>
                 </div>
 
                 <div class="feature-card">
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Built-in checks are available</h3>
                     <p style="color: var(--text-secondary);">
-                        `toonify-mcp doctor` checks the install, and `toonify-mcp status` shows recent activity.
+                        `toonify-mcp setup` handles install and upgrades, `toonify-mcp doctor` checks the install, and `toonify-mcp status` shows recent activity.
                     </p>
                 </div>
             </div>
@@ -845,7 +839,7 @@ claude mcp list
                     </p>
                     <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
                         <code class="text-sm font-mono" style="color: var(--text-secondary);">
-                            claude plugin install toonify-mcp@pcircle-ai --scope local
+                            toonify-mcp setup
                         </code>
                     </div>
                 </div>
@@ -1032,7 +1026,7 @@ claude mcp list
                     <div style="color: var(--text-secondary);">Observed Range</div>
                 </div>
                 <div class="feature-card">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">220</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">231</div>
                     <div style="color: var(--text-secondary);">Tests Passing</div>
                 </div>
             </div>

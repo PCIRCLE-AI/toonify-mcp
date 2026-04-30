@@ -22,7 +22,7 @@
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "prepare": "npm run build",
-    "postinstall": "node -e \"console.log('\\\\n📦 Toonify MCP installed!\\\\n\\\\n✅ MCP Server: Ready (use with claude mcp add)\\\\n✅ Plugin: Ready (use with claude plugin install after marketplace setup)\\\\n\\\\nSee README.md for installation instructions.\\\\n')\""
+    "postinstall": "node -e \"console.log('\\\\n📦 Toonify MCP installed!\\\\n\\\\nIf you are installing from a local clone, finish with `npm install -g .` first.\\\\nThen run `toonify-mcp setup` for plugin mode, or `toonify-mcp setup mcp` for MCP mode.\\\\nThen verify with `toonify-mcp doctor`.\\\\n')\""
   },
   "keywords": [
     "claude",

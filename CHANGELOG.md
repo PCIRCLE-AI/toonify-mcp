@@ -11,12 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Debug-output compression support for long test failures, stack traces, compiler diagnostics, and repetitive lint/build output
+- `toonify-mcp setup` for one-command plugin install, update, and re-enable
+- `toonify-mcp setup mcp` for faster MCP server registration
 - `toonify-mcp doctor` for local install validation
 - `toonify-mcp status` for recent optimization visibility
 - PHP source-code compression support in the pipeline and standalone PostToolUse hook
 
 ### Changed
 - Public docs, landing pages, and install guidance now match the current Claude Code plugin workflow
+- Install guidance now prefers `toonify-mcp setup` over manual marketplace and plugin commands
 - Added machine-readable website surfaces (`llms.txt`, `llms-full.txt`, `robots.txt`, `sitemap.xml`) and FAQ/structured metadata for the public docs site
 - Replaced the docs-site Tailwind CDN dependency with a checked-in local CSS build for production-safe static hosting
 

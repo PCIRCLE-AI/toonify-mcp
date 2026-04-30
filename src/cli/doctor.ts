@@ -5,6 +5,16 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { TokenOptimizer } from '../optimizer/token-optimizer.js';
 import { MetricsCollector } from '../metrics/metrics-collector.js';
+import {
+  type CommandRunner,
+  CommandExecutionError,
+  TOONIFY_MARKETPLACE_NAME,
+  TOONIFY_PLUGIN_ID,
+  execCommand,
+  getClaudeVersion,
+  getInstalledToonifyPlugin,
+  hasMarketplace,
+} from './claude-cli.js';
 
 const require = createRequire(import.meta.url);
 const { version } = require('../../package.json') as { version: string };
@@ -20,19 +30,21 @@ export interface DoctorCheck {
 export interface DoctorReport {
   version: string;
   checks: DoctorCheck[];
-  verifyPluginCommand: string;
+  nextSteps: string[];
 }
 
 export interface DoctorOptions {
   homeDir?: string;
   packageRoot?: string;
   createOptimizer?: () => TokenOptimizer;
+  commandRunner?: CommandRunner;
 }
 
 export async function collectDoctorReport(options: DoctorOptions = {}): Promise<DoctorReport> {
   const homeDir = options.homeDir || os.homedir();
   const packageRoot = options.packageRoot || resolvePackageRoot();
   const createOptimizer = options.createOptimizer || (() => new TokenOptimizer());
+  const commandRunner = options.commandRunner || execCommand;
 
   const checks: DoctorCheck[] = [];
   const configPath = path.join(homeDir, '.claude', 'toonify-config.json');
@@ -54,14 +66,19 @@ export async function collectDoctorReport(options: DoctorOptions = {}): Promise<
     });
   }
 
+  checks.push(await checkClaudeCli(commandRunner));
+  checks.push(await checkMarketplace(commandRunner));
+  checks.push(await checkPluginInstall(commandRunner, packageRoot));
   checks.push(await checkConfig(configPath));
   checks.push(await checkPackageAssets(packageRoot));
   checks.push(await checkStatsPath(metrics.getStatsPath()));
 
+  const nextSteps = buildNextSteps(checks);
+
   return {
     version,
     checks,
-    verifyPluginCommand: 'claude plugin list',
+    nextSteps,
   };
 }
 
@@ -72,8 +89,14 @@ export function formatDoctorReport(report: DoctorReport): string {
     lines.push(`${statusIcon(check.status)} ${check.name}: ${check.message}`);
   }
 
-  lines.push('');
-  lines.push(`Next: run \`${report.verifyPluginCommand}\` to verify Claude Code plugin registration.`);
+  if (report.nextSteps.length > 0) {
+    lines.push('');
+    lines.push('Next steps:');
+    for (const step of report.nextSteps) {
+      lines.push(`- ${step}`);
+    }
+  }
+
   return lines.join('\n');
 }
 
@@ -110,6 +133,96 @@ async function checkConfig(configPath: string): Promise<DoctorCheck> {
       name: 'Config',
       status: 'warn',
       message: `Config file exists but could not be parsed at ${configPath}; fix JSON syntax or remove it to use defaults.`,
+    };
+  }
+}
+
+async function checkClaudeCli(commandRunner?: CommandRunner): Promise<DoctorCheck> {
+  try {
+    const claudeVersion = await getClaudeVersion(commandRunner);
+    return {
+      name: 'Claude CLI',
+      status: 'pass',
+      message: `Claude CLI is available (${claudeVersion}).`,
+    };
+  } catch (error) {
+    const commandError = error as CommandExecutionError;
+    return {
+      name: 'Claude CLI',
+      status: 'fail',
+      message: commandError.code === 'ENOENT'
+        ? 'Claude CLI is not available in PATH. Install Claude Code before setting up Toonify.'
+        : `Could not run Claude CLI: ${commandError.stderr || commandError.message}`,
+    };
+  }
+}
+
+async function checkMarketplace(commandRunner?: CommandRunner): Promise<DoctorCheck> {
+  try {
+    const configured = await hasMarketplace(TOONIFY_MARKETPLACE_NAME, commandRunner);
+    return configured
+      ? {
+          name: 'Marketplace',
+          status: 'pass',
+          message: `Marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is configured.`,
+        }
+      : {
+          name: 'Marketplace',
+          status: 'warn',
+          message: `Marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is not configured yet.`,
+        };
+  } catch (error) {
+    const commandError = error as CommandExecutionError;
+    return {
+      name: 'Marketplace',
+      status: 'warn',
+      message: `Could not inspect marketplaces: ${commandError.stderr || commandError.message}`,
+    };
+  }
+}
+
+async function checkPluginInstall(commandRunner: CommandRunner | undefined, packageRoot: string): Promise<DoctorCheck> {
+  try {
+    const plugin = await getInstalledToonifyPlugin(commandRunner, {
+      preferredScope: 'local',
+      projectPath: packageRoot,
+    });
+
+    if (!plugin) {
+      return {
+        name: 'Plugin install',
+        status: 'warn',
+        message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is not installed locally yet.`,
+      };
+    }
+
+    if (!plugin.enabled) {
+      return {
+        name: 'Plugin install',
+        status: 'warn',
+        message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is installed but disabled.`,
+      };
+    }
+
+    if (plugin.version !== version) {
+      return {
+        name: 'Plugin install',
+        status: 'warn',
+        message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is on ${plugin.version || 'unknown'}, current package is ${version}.`,
+      };
+    }
+
+    return {
+      name: 'Plugin install',
+      status: 'pass',
+      message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is enabled locally on ${plugin.version}.`,
+    };
+  } catch (error) {
+    const commandError = error as CommandExecutionError;
+    return {
+      name: 'Plugin install',
+      status: 'warn',
+      message: `Could not inspect plugin state: ${commandError.stderr || commandError.stdout || commandError.message}`,
     };
   }
 }
@@ -181,4 +294,37 @@ function statusIcon(status: DoctorStatus): string {
     case 'fail':
       return '✗';
   }
+}
+
+function buildNextSteps(checks: DoctorCheck[]): string[] {
+  const nextSteps: string[] = [];
+  const checkByName = new Map(checks.map(check => [check.name, check]));
+
+  const claudeCheck = checkByName.get('Claude CLI');
+  if (claudeCheck?.status === 'fail') {
+    nextSteps.push('Install Claude Code, then rerun `toonify-mcp setup`.');
+    return nextSteps;
+  }
+
+  const marketplaceCheck = checkByName.get('Marketplace');
+  const pluginCheck = checkByName.get('Plugin install');
+
+  if (marketplaceCheck?.status !== 'pass' || pluginCheck?.status !== 'pass') {
+    nextSteps.push('Run `toonify-mcp setup` to add the local marketplace and install or update the plugin.');
+  }
+
+  if (pluginCheck?.message.includes('disabled')) {
+    nextSteps.push(`Run \`claude plugin enable ${TOONIFY_PLUGIN_ID} --scope local\`.`);
+  }
+
+  if (pluginCheck?.message.includes('current package is')) {
+    nextSteps.push(`Run \`claude plugin update ${TOONIFY_PLUGIN_ID} --scope local\`.`);
+  }
+
+  const configCheck = checkByName.get('Config');
+  if (configCheck?.message.includes('could not be parsed')) {
+    nextSteps.push('Fix `~/.claude/toonify-config.json` or remove it to fall back to defaults.');
+  }
+
+  return nextSteps;
 }
