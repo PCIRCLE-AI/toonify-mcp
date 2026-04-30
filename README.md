@@ -2,19 +2,20 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Toonify MCP is an MCP server and Claude Code plugin for automatic token optimization in structured data and source-code workflows.
+Toonify MCP is an MCP server and Claude Code plugin for automatic token optimization in structured-data and source-code workflows.
 
 It is designed for teams that regularly send large JSON / CSV / YAML payloads or TypeScript / Python / Go source files into model context and want lower token usage without changing day-to-day workflow.
 
-- **Structured data:** 25-66% token reduction (typically ~48%)
-- **Source code:** 20-48% reduction on TypeScript / Python / Go
+- **Structured data:** current benchmark suite yields **24.5-66.3%** savings across 12 fixtures, with **48.1% average**
+- **Source code:** supports TypeScript / Python / Go compression in the pipeline
 - **Docs and setup guides:** https://toonify.pcircle.ai/
+- **Benchmark summary:** https://toonify.pcircle.ai/benchmarks.html
 
 ## What's New in v0.6.0
 
 ✨ **Pipeline Architecture + Code Compression!**
 - ✅ **Pipeline engine** — modular Detector → Router → Compressor → Evaluator architecture
-- ✅ **Code compression** — TypeScript (37%), Python (48%), Go (32%) savings via heuristic-based comment/whitespace removal
+- ✅ **Code compression** — supports TypeScript, Python, and Go via heuristic comment/whitespace removal
 - ✅ **6 compression layers** — from safe (blank lines, inline comments) to aggressive (import summarization, repetitive pattern collapse)
 - ✅ **Hook upgraded** — PostToolUse hook now compresses source code in addition to structured data
 - ✅ Extensible design — add new formats by implementing a single `Compressor` interface
@@ -23,8 +24,8 @@ It is designed for teams that regularly send large JSON / CSV / YAML payloads or
 
 ## Features
 
-- **25-66% Token Reduction** (typically ~48%) for JSON, CSV, YAML data
-- **20-48% Code Compression** for TypeScript, Python, Go source code
+- **24.5-66.3% structured-data benchmark range** across the current 12-fixture suite
+- **Code compression support** for TypeScript, Python, and Go source code
 - **Pipeline Architecture** - Extensible Detector → Compressor → Evaluator engine
 - **Multilingual Support** - Accurate token counting for 15+ languages
 - **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
@@ -111,8 +112,8 @@ PostToolUse hook intercepts result
   ↓
 Pipeline: Detect → Route → Compress → Evaluate
   ↓
-JSON/CSV/YAML → TOON format (25-66% savings)
-Source code → comment/whitespace removal (20-48% savings)
+JSON/CSV/YAML → TOON format
+Source code → comment/whitespace removal
   ↓
 Optimized content sent to Claude API ✨
 ```
@@ -181,6 +182,20 @@ products[2]{id,name,price}:
 
 **Automatically applied in Plugin mode - no manual calls needed!**
 
+## Benchmark Snapshot
+
+Current structured-data benchmark suite: [`tests/benchmarks/quick-stats.test.ts`](tests/benchmarks/quick-stats.test.ts)
+
+- Fixtures: `12`
+- Average savings: `48.1%`
+- Range: `24.5-66.3%`
+
+To reproduce locally:
+
+```bash
+NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand
+```
+
 ## Usage Tips
 
 ### When Does Auto-Optimization Trigger?
@@ -216,7 +231,6 @@ claude mcp call toonify cleanup_expired_cache '{}'
 ```
 
 **Cache benefits:**
-- ✅ **50-500x faster** on cache hits (0.1ms vs 5-50ms)
 - ✅ Avoids re-optimizing identical content
 - ✅ Optional disk persistence for cross-session reuse
 - ✅ Automatic LRU eviction when full

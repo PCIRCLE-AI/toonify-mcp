@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toonify MCP - Free & Open Source Token Optimization Plugin</title>
-    <meta name="description" content="Free & open-source MCP plugin for Claude Code. Automatically reduces token usage by 25-66% for structured data and 20-48% for source code (TS/Py/Go) through pipeline architecture.">
+    <title>Toonify MCP - Proof-Backed Token Optimization for Claude Code</title>
+    <meta name="description" content="Open-source MCP server and Claude Code plugin for local context compression. Current structured-data benchmark suite: 12 fixtures, 48.1% average savings, 24.5-66.3% range.">
+    <link rel="canonical" href="https://toonify.pcircle.ai/">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://toonify.pcircle.ai/">
+    <meta property="og:title" content="Toonify MCP - Proof-Backed Token Optimization for Claude Code">
+    <meta property="og:description" content="Open-source MCP server and Claude Code plugin for local context compression. Current structured-data benchmark suite: 12 fixtures, 48.1% average savings, 24.5-66.3% range.">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://toonify.pcircle.ai/">
+    <meta property="twitter:title" content="Toonify MCP - Proof-Backed Token Optimization for Claude Code">
+    <meta property="twitter:description" content="Open-source MCP server and Claude Code plugin for local context compression. Current structured-data benchmark suite: 12 fixtures, 48.1% average savings, 24.5-66.3% range.">
 
     <!-- Google Fonts: JetBrains Mono + IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -328,6 +337,7 @@
                     <a href="index-zh.html" class="text-sm" style="color: var(--text-tertiary);">中文</a>
                 </div>
                 <div class="hidden md:flex space-x-8">
+                    <a href="#proof" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Proof</a>
                     <a href="#features" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Features</a>
                     <a href="#how-it-works" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">How It Works</a>
                     <a href="#installation" style="color: var(--text-secondary);" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition">Installation</a>
@@ -342,8 +352,8 @@
     <section class="py-20" style="background: var(--bg-primary);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-5xl md:text-6xl font-bold heading-mono mb-6" style="color: var(--text-primary);">
-                Free & Open Source<br>
-                <span class="gradient-text">Token Optimization for Claude Code</span>
+                Cut Claude Code<br>
+                <span class="gradient-text">Context Cost on Large Tool Outputs</span>
             </h1>
 
             <!-- GitHub Badges -->
@@ -351,25 +361,26 @@
                 <img src="https://img.shields.io/github/stars/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub stars">
                 <img src="https://img.shields.io/github/forks/PCIRCLE-AI/toonify-mcp?style=social" alt="GitHub forks">
                 <img src="https://img.shields.io/github/license/PCIRCLE-AI/toonify-mcp" alt="License">
-                <img src="https://img.shields.io/badge/version-0.4.0-blue" alt="Version">
-                <img src="https://img.shields.io/npm/dm/toonify-mcp" alt="npm downloads">
+                <img src="https://img.shields.io/badge/version-0.6.0-blue" alt="Version">
+                <img src="https://img.shields.io/badge/tests-196%20passing-brightgreen" alt="196 tests passing">
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Automatically reduce Claude API token usage by <strong style="color: var(--text-primary);">25-66%</strong> for JSON/CSV/YAML and <strong style="color: var(--text-primary);">20-48%</strong> for TypeScript/Python/Go source code through pipeline architecture.
+                Compress large JSON, CSV, YAML, and supported source files before they enter model context, without changing your workflow.
+                The current structured-data benchmark suite shows <strong style="color: var(--text-primary);">48.1% average savings</strong> across 12 fixtures, with a <strong style="color: var(--text-primary);">24.5-66.3% range</strong>.
             </p>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="btn-primary">
-                    ⭐ Star on GitHub
+                <a href="#installation" class="btn-primary">
+                    Quick Install
                 </a>
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="btn-secondary" target="_blank">
-                    View on GitHub →
+                <a href="benchmarks.html" class="btn-secondary" target="_blank">
+                    Review Proof →
                 </a>
             </div>
 
             <div class="text-sm" style="color: var(--text-tertiary);">
-                MIT Licensed • Free Forever • Community Driven
+                MIT Licensed • v0.6.0 • 196 tests passing
             </div>
         </div>
     </section>
@@ -379,27 +390,78 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                 <div class="stat-item">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">25-66%</div>
-                    <div style="color: var(--text-secondary);">Token Reduction</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">12</div>
+                    <div style="color: var(--text-secondary);">Benchmark Fixtures</div>
                 </div>
                 <div class="stat-item" style="animation-delay: 0.1s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">50-500x</div>
-                    <div style="color: var(--text-secondary);">Cache Performance</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">48.1%</div>
+                    <div style="color: var(--text-secondary);">Average Savings</div>
                 </div>
                 <div class="stat-item" style="animation-delay: 0.2s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">15+</div>
-                    <div style="color: var(--text-secondary);">Languages Supported</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">24.5-66.3%</div>
+                    <div style="color: var(--text-secondary);">Savings Range</div>
                 </div>
                 <div class="stat-item" style="animation-delay: 0.3s;">
-                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">100%</div>
-                    <div style="color: var(--text-secondary);">Automatic</div>
+                    <div class="text-4xl font-bold heading-mono gradient-text mb-2">196</div>
+                    <div style="color: var(--text-secondary);">Tests Passing</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Proof Section -->
+    <section id="proof" class="py-16" style="background: var(--bg-primary);">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">What We Can Prove</h2>
+                <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
+                    Everything below is tied to the current repository, benchmark suite, or local test run.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="feature-card">
+                    <div class="text-sm heading-mono mb-3 gradient-text">BENCHMARK SUITE</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">12 structured-data fixtures</h3>
+                    <p style="color: var(--text-secondary);">
+                        Current local run: <strong style="color: var(--text-primary);">48.1% average savings</strong>, with a <strong style="color: var(--text-primary);">24.5-66.3% range</strong>.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-sm heading-mono mb-3 gradient-text">TEST EVIDENCE</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">196 tests passing</h3>
+                    <p style="color: var(--text-secondary);">
+                        Full local test run passes on the current codebase, including pipeline, caching, multilingual, and server coverage.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-sm heading-mono mb-3 gradient-text">SHIPPED SURFACE</div>
+                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">v0.6.0</h3>
+                    <p style="color: var(--text-secondary);">
+                        Pipeline-based architecture, plugin mode, MCP server mode, and support for TypeScript, Python, and Go compression.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 feature-card">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold heading-mono mb-2" style="color: var(--text-primary);">Reproduce the benchmark locally</h3>
+                        <p style="color: var(--text-secondary);">Use the same benchmark suite referenced in the README and landing page.</p>
+                    </div>
+                    <a href="benchmarks.html" class="btn-secondary" target="_blank">Open Benchmark Summary</a>
+                </div>
+                <div class="mt-4 code-block">
+                    <code>NODE_OPTIONS=--experimental-vm-modules npx jest tests/benchmarks/quick-stats.test.ts --runInBand</code>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section - Bento Box Grid -->
-    <section id="features" class="py-16" style="background: var(--bg-primary);">
+    <section id="features" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Key Features</h2>
@@ -411,7 +473,7 @@
                     <div class="text-3xl mb-4">🎯</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Automatic Optimization</h3>
                     <p style="color: var(--text-secondary);">
-                        PostToolUse hook intercepts tool results and applies TOON format conversion transparently. No manual calls needed.
+                        PostToolUse hook intercepts supported tool results and applies optimization automatically in plugin mode.
                     </p>
                     <div class="mt-4 p-3 rounded-lg" style="background: var(--bg-tertiary);">
                         <code class="text-sm font-mono" style="color: var(--text-secondary);">
@@ -422,25 +484,25 @@
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">⚡</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Enhanced Caching</h3>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Structured Data Benchmarks</h3>
                     <p style="color: var(--text-secondary);">
-                        LRU cache with TTL expiration achieves 50-500x performance improvement on cache hits (~0.1ms vs 5-50ms).
+                        The current benchmark suite in `tests/benchmarks/quick-stats.test.ts` produced 48.1% average savings across 12 structured-data fixtures.
                     </p>
                 </div>
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">🌍</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Multilingual Support</h3>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Code Compression Support</h3>
                     <p style="color: var(--text-secondary);">
-                        Accurate token counting for 15+ languages with language-aware multipliers (2x Chinese, 2.5x Japanese, 3x Arabic).
+                        Supports TypeScript, Python, and Go source-code compression through comment and whitespace reduction in the pipeline.
                     </p>
                 </div>
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">🔧</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Zero Configuration</h3>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Caching</h3>
                     <p style="color: var(--text-secondary);">
-                        Works out of the box with sensible defaults. Optional configuration file for advanced customization.
+                        Includes LRU result caching with TTL expiration and optional disk persistence.
                     </p>
                 </div>
 
@@ -456,7 +518,7 @@
                     <div class="text-3xl mb-4">📊</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Built-in Metrics</h3>
                     <p style="color: var(--text-secondary);">
-                        Track token savings locally with comprehensive statistics. Monitor cache hit rates and performance.
+                        Track token savings locally and inspect optimization statistics through MCP tools.
                     </p>
                 </div>
             </div>
@@ -501,7 +563,7 @@
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold mr-4">4</div>
                         <div>
                             <h3 class="font-bold mb-1" style="color: var(--text-primary);">Optimized content sent to Claude API</h3>
-                            <p style="color: var(--text-secondary);">25-66% structured data + 20-48% source code savings ✨</p>
+                            <p style="color: var(--text-secondary);">Structured data is compressed when estimated savings clear the configured threshold.</p>
                         </div>
                     </div>
                 </div>
@@ -514,15 +576,17 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Installation</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">Get started in minutes</p>
+                <p class="text-xl" style="color: var(--text-secondary);">Start with the default plugin path. Use MCP server mode only if you need manual control.</p>
             </div>
 
             <div class="space-y-8">
-                <!-- Option A -->
                 <div class="feature-card p-8">
                     <h3 class="text-2xl font-bold heading-mono mb-4" style="color: var(--text-primary);">
-                        <span class="gradient-text">Option A:</span> Download from GitHub
+                        <span class="gradient-text">Recommended:</span> Plugin Mode
                     </h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Best for Claude Code users who want automatic optimization with no manual tool calls.
+                    </p>
                     <div class="code-block">
                         <code><span class="comment"># Download the repository</span>
 git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
@@ -543,15 +607,17 @@ claude plugin list
 <span class="comment"># Should show: toonify-mcp ✓</span></code>
                     </div>
                     <p class="mt-4" style="color: var(--text-secondary);">
-                        <strong style="color: var(--text-primary);">That's it!</strong> The PostToolUse hook will now automatically intercept and optimize structured data and source code from Read, Grep, and other file tools.
+                        <strong style="color: var(--text-primary);">Result:</strong> PostToolUse hook optimizes supported structured data and source-code results automatically.
                     </p>
                 </div>
 
-                <!-- Option B -->
                 <div class="feature-card p-8">
                     <h3 class="text-2xl font-bold heading-mono mb-4" style="color: var(--text-primary);">
-                        <span class="gradient-text">Option B:</span> MCP Server Mode
+                        <span class="gradient-text">Advanced:</span> MCP Server Mode
                     </h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Use this when you want explicit control or need to connect Toonify to another MCP client.
+                    </p>
                     <div class="code-block">
                         <code><span class="comment"># Prerequisite: complete Option A to install toonify-mcp</span>
 
@@ -612,17 +678,17 @@ claude mcp list
     <section class="py-20" style="background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-4xl md:text-5xl font-bold heading-mono text-white mb-6">
-                Ready to Optimize Your Token Usage?
+                Ready to Try the Default Path?
             </h2>
             <p class="text-xl text-blue-100 mb-8">
-                Join developers who are saving 25-66% on Claude API token costs
+                Start with plugin mode, verify the benchmark method when needed, and keep the advanced MCP path as an option.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="btn-primary" style="background: white; color: #2563EB;">
-                    ⭐ Star on GitHub
+                <a href="#installation" class="btn-primary" style="background: white; color: #2563EB;">
+                    Open Install Steps
                 </a>
-                <a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="btn-secondary" style="border-color: white; color: white;">
-                    Download from GitHub →
+                <a href="benchmarks.html" class="btn-secondary" style="border-color: white; color: white;">
+                    Open Benchmark Summary →
                 </a>
             </div>
         </div>
@@ -635,16 +701,16 @@ claude mcp list
                 <div>
                     <h3 class="text-xl font-bold heading-mono mb-4 gradient-text">Toonify MCP</h3>
                     <p style="color: var(--text-secondary);">
-                        Free & open-source token optimization plugin for Claude Code. MIT Licensed.
+                        Open-source MCP server and Claude Code plugin for local context compression. MIT licensed.
                     </p>
                 </div>
                 <div>
                     <h4 class="font-bold mb-4" style="color: var(--text-primary);">Resources</h4>
                     <ul class="space-y-2" style="color: var(--text-secondary);">
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp#readme" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Documentation</a></li>
+                        <li><a href="benchmarks.html" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Benchmark Summary</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CONTRIBUTING.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Contributing Guide</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/CHANGELOG.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Changelog</a></li>
-                        <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="hover:text-blue-600 dark:hover:text-blue-400 transition">GitHub Repository</a></li>
                     </ul>
                 </div>
                 <div>
@@ -652,8 +718,8 @@ claude mcp list
                     <ul class="space-y-2" style="color: var(--text-secondary);">
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp" class="hover:text-blue-600 dark:hover:text-blue-400 transition">GitHub</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/issues" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Issues</a></li>
-                        <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/discussions" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Discussions</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/pulls" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Pull Requests</a></li>
+                        <li><a href="https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/SECURITY.md" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Security Policy</a></li>
                     </ul>
                 </div>
                 <div>
@@ -661,7 +727,7 @@ claude mcp list
                     <ul class="space-y-2" style="color: var(--text-secondary);">
                         <li><a href="https://pcircle.ai" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Organization Website</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI" class="hover:text-blue-600 dark:hover:text-blue-400 transition">GitHub Organization</a></li>
-                        <li><a href="https://xylonstud.io" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Xylon Studio</a></li>
+                        <li><a href="mailto:hello@pcircle.ai" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Contact</a></li>
                     </ul>
                 </div>
             </div>
@@ -670,7 +736,7 @@ claude mcp list
                     <strong style="color: var(--text-primary);">MIT License</strong> - Free to use, modify, and distribute
                 </p>
                 <p class="mb-4">
-                    Copyright © 2024-2025 PCIRCLE AI. Built with ❤️ by developers, for developers.
+                    Copyright © 2026 PCIRCLE AI.
                 </p>
                 <p class="mb-4">
                     <a href="privacy.html" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Privacy Policy</a>
