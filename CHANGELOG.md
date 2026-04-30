@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- PHP source-code compression support in the pipeline and standalone PostToolUse hook
+
+### Fixed
+- Preserve PHP 8 attribute syntax (`#[...]`) during compression instead of treating it as a hash comment
+- Preserve PHP heredoc and nowdoc bodies during inline-comment stripping and comment-line removal
+
+### Tests
+- Added PHP detector, compressor, and hook regression coverage for attributes, heredoc/nowdoc handling, and inline hash comments
+
 ## [0.5.0] - 2026-01-21
 
 ### Added

@@ -181,40 +181,120 @@ function compressCode(content, codeType) {
   result = result.replace(/\n{3,}/g, '\n\n');
 
   // Layer 2: Remove inline comments (not pure comment lines)
-  result = result.split('\n').map(line => {
-    if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) return line;
-    const trimmed = line.trimStart();
-    if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) return line;
-    if (/https?:\/\//.test(line)) return line;
+  if (codeType === 'code-php') {
+    const lines = [];
+    let heredocTerminator = null;
 
-    if (codeType === 'code-py') {
-      // Python inline # (simple: split on first # not in string)
-      const hashIdx = findInlineHash(line);
-      if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
-    } else if (codeType === 'code-php') {
-      // PHP supports both // and # inline comments
+    for (const line of result.split('\n')) {
+      if (heredocTerminator) {
+        lines.push(line);
+        if (isPhpHeredocEnd(line, heredocTerminator)) heredocTerminator = null;
+        continue;
+      }
+
+      const nextHeredocTerminator = getPhpHeredocTerminator(line);
+      if (nextHeredocTerminator) {
+        heredocTerminator = nextHeredocTerminator;
+        lines.push(line);
+        continue;
+      }
+
+      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) {
+        lines.push(line);
+        continue;
+      }
+
+      const trimmed = line.trimStart();
+      if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) {
+        lines.push(line);
+        continue;
+      }
+      if (/https?:\/\//.test(line)) {
+        lines.push(line);
+        continue;
+      }
+
       const slashIdx = findInlineDoubleSlash(line);
-      if (slashIdx > 0) return line.slice(0, slashIdx).trimEnd();
-      const hashIdx = findInlineHash(line);
-      if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
-    } else {
-      // C-style inline // (simple: split on // not in string or URL)
-      const slashIdx = findInlineDoubleSlash(line);
-      if (slashIdx > 0) return line.slice(0, slashIdx).trimEnd();
+      if (slashIdx > 0) {
+        lines.push(line.slice(0, slashIdx).trimEnd());
+        continue;
+      }
+
+      const hashIdx = findInlineHash(line, true);
+      if (hashIdx > 0) {
+        lines.push(line.slice(0, hashIdx).trimEnd());
+        continue;
+      }
+
+      lines.push(line);
     }
-    return line;
-  }).join('\n');
+
+    result = lines.join('\n');
+  } else {
+    result = result.split('\n').map(line => {
+      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) return line;
+      const trimmed = line.trimStart();
+      if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) return line;
+      if (/https?:\/\//.test(line)) return line;
+
+      if (codeType === 'code-py') {
+        // Python inline # (simple: split on first # not in string)
+        const hashIdx = findInlineHash(line);
+        if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
+      } else {
+        // C-style inline // (simple: split on // not in string or URL)
+        const slashIdx = findInlineDoubleSlash(line);
+        if (slashIdx > 0) return line.slice(0, slashIdx).trimEnd();
+      }
+      return line;
+    }).join('\n');
+  }
 
   // Layer 3: Remove comment-only lines (preserve TODO/FIXME and JSDoc first line)
-  result = result.split('\n').filter((line, idx, arr) => {
-    const trimmed = line.trimStart();
-    if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) return true;
-    if (trimmed.startsWith('/**')) return true; // JSDoc first line
-    if (codeType === 'code-py' && trimmed.startsWith('#')) return false;
-    if (codeType === 'code-php' && (trimmed.startsWith('//') || trimmed.startsWith('#'))) return false;
-    if (codeType !== 'code-py' && codeType !== 'code-php' && trimmed.startsWith('//')) return false;
-    return true;
-  }).join('\n');
+  if (codeType === 'code-php') {
+    const lines = [];
+    let heredocTerminator = null;
+
+    for (const line of result.split('\n')) {
+      const trimmed = line.trimStart();
+
+      if (heredocTerminator) {
+        lines.push(line);
+        if (isPhpHeredocEnd(line, heredocTerminator)) heredocTerminator = null;
+        continue;
+      }
+
+      const nextHeredocTerminator = getPhpHeredocTerminator(line);
+      if (nextHeredocTerminator) {
+        heredocTerminator = nextHeredocTerminator;
+        lines.push(line);
+        continue;
+      }
+
+      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) {
+        lines.push(line);
+        continue;
+      }
+      if (trimmed.startsWith('/**')) {
+        lines.push(line);
+        continue;
+      }
+      if (trimmed.startsWith('//')) continue;
+      if (trimmed.startsWith('#') && !trimmed.startsWith('#[')) continue;
+      lines.push(line);
+    }
+
+    result = lines.join('\n');
+  } else {
+    result = result.split('\n').filter((line, idx, arr) => {
+      const trimmed = line.trimStart();
+      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) return true;
+      if (trimmed.startsWith('/**')) return true; // JSDoc first line
+      if (codeType === 'code-py' && trimmed.startsWith('#')) return false;
+      if (codeType !== 'code-py' && codeType !== 'code-php' && trimmed.startsWith('//')) return false;
+      return true;
+    }).join('\n');
+  }
 
   // Layer 4: Shorten deep import paths
   if (codeType === 'code-ts' || codeType === 'code-generic') {
@@ -248,7 +328,7 @@ function findInlineDoubleSlash(line) {
   return -1;
 }
 
-function findInlineHash(line) {
+function findInlineHash(line, preservePhpAttributeSyntax = false) {
   let inString = null;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
@@ -262,12 +342,23 @@ function findInlineHash(line) {
       continue;
     }
     if (ch === '#') {
+      if (preservePhpAttributeSyntax && line[i + 1] === '[') continue;
       const before = line.slice(0, i).trimEnd();
       if (before.length === 0) return -1; // Pure comment line
       return i;
     }
   }
   return -1;
+}
+
+function getPhpHeredocTerminator(line) {
+  const match = line.match(/<<<[ \t]*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[ \t]*$/);
+  return match ? match[2] : null;
+}
+
+function isPhpHeredocEnd(line, terminator) {
+  const escaped = terminator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^\\s*${escaped};?\\s*$`).test(line);
 }
 
 // --- Rough Token Estimation ---

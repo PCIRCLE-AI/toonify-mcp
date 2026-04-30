@@ -4,10 +4,10 @@
 
 Toonify MCP is an MCP server and Claude Code plugin for automatic token optimization in structured-data and source-code workflows.
 
-It is designed for teams that regularly send large JSON / CSV / YAML payloads or TypeScript / Python / Go source files into model context and want lower token usage without changing day-to-day workflow.
+It is designed for teams that regularly send large JSON / CSV / YAML payloads or TypeScript / Python / Go / PHP source files into model context and want lower token usage without changing day-to-day workflow.
 
 - **Structured data:** current benchmark suite yields **24.5-66.3%** savings across 12 fixtures, with **48.1% average**
-- **Source code:** supports TypeScript / Python / Go compression in the pipeline
+- **Source code:** supports TypeScript / Python / Go / PHP compression in the pipeline
 - **Docs and setup guides:** https://toonify.pcircle.ai/
 - **Benchmark summary:** https://toonify.pcircle.ai/benchmarks.html
 
@@ -15,7 +15,7 @@ It is designed for teams that regularly send large JSON / CSV / YAML payloads or
 
 ✨ **Pipeline Architecture + Code Compression!**
 - ✅ **Pipeline engine** — modular Detector → Router → Compressor → Evaluator architecture
-- ✅ **Code compression** — supports TypeScript, Python, and Go via heuristic comment/whitespace removal
+- ✅ **Code compression** — supports TypeScript, Python, Go, and PHP via heuristic comment/whitespace removal
 - ✅ **6 compression layers** — from safe (blank lines, inline comments) to aggressive (import summarization, repetitive pattern collapse)
 - ✅ **Hook upgraded** — PostToolUse hook now compresses source code in addition to structured data
 - ✅ Extensible design — add new formats by implementing a single `Compressor` interface
@@ -25,7 +25,7 @@ It is designed for teams that regularly send large JSON / CSV / YAML payloads or
 ## Features
 
 - **24.5-66.3% structured-data benchmark range** across the current 12-fixture suite
-- **Code compression support** for TypeScript, Python, and Go source code
+- **Code compression support** for TypeScript, Python, Go, and PHP source code
 - **Pipeline Architecture** - Extensible Detector → Compressor → Evaluator engine
 - **Multilingual Support** - Accurate token counting for 15+ languages
 - **Enhanced Caching** - LRU cache with TTL expiration and optional disk persistence
