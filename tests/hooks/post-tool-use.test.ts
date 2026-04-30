@@ -48,6 +48,41 @@ describe('PostToolUse Hook', () => {
       expect(typeof output.additionalContext).toBe('string');
       expect(output.additionalContext as string).toContain('[TOON-JSON]');
     });
+
+    test('preserves PHP attributes and heredoc bodies during code compression', async () => {
+      const input = {
+        tool_name: 'Read',
+        tool_response: `<?php
+
+use Symfony\\Component\\Routing\\Attribute\\Route;
+
+class ApiController {
+    // Remove this comment line
+    #[Route('/api/users', methods: ['GET'])]
+    public function listUsers() {
+        $html = <<<HTML
+<h1>Users</h1>
+// This is HTML, not a PHP comment
+# also not a PHP comment
+HTML;
+        return $this->render($html); # remove trailing comment
+    }
+}
+`,
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      expect(result.suppressOutput).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.hookEventName).toBe('PostToolUse');
+      expect(output.additionalContext as string).toContain("#[Route('/api/users', methods: ['GET'])]");
+      expect(output.additionalContext as string).toContain('// This is HTML, not a PHP comment');
+      expect(output.additionalContext as string).toContain('# also not a PHP comment');
+      expect(output.additionalContext as string).not.toContain('remove trailing comment');
+    });
   });
 
   describe('passthrough cases', () => {

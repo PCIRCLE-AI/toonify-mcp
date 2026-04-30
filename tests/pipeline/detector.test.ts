@@ -124,6 +124,60 @@ func main() {
       expect(result.confidence).toBe(0.85);
     });
 
+    test('detects PHP with framework imports and methods', () => {
+      const php = `<?php
+
+namespace App\\Http\\Controllers;
+
+use Illuminate\\Http\\Request;
+
+class UserController
+{
+    public function index(Request $request)
+    {
+        return $this->users();
+    }
+}`;
+      const result = detector.detect(php);
+      expect(result.type).toBe('code-php');
+      expect(result.confidence).toBe(0.85);
+    });
+
+    test('detects PHP with attributes', () => {
+      const php = `<?php
+
+use Symfony\\Component\\Routing\\Attribute\\Route;
+
+class ApiController
+{
+    #[Route('/api/users', methods: ['GET'])]
+    public function listUsers()
+    {
+        return [];
+    }
+}`;
+      const result = detector.detect(php);
+      expect(result.type).toBe('code-php');
+      expect(result.confidence).toBe(0.85);
+    });
+
+    test('detects PHP without opening tag when other signals are present', () => {
+      const php = `namespace App\\Services;
+
+use Illuminate\\Support\\Collection;
+
+class UserService
+{
+    public function all()
+    {
+        return $this->users;
+    }
+}`;
+      const result = detector.detect(php);
+      expect(result.type).toBe('code-php');
+      expect(result.confidence).toBe(0.85);
+    });
+
     test('detects generic code', () => {
       const code = `function greet(name) {
   if (name) {

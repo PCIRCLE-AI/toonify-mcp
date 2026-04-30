@@ -12,7 +12,7 @@ describe('CodeCompressor', () => {
     compressor = new CodeCompressor();
   });
 
-  const makeDetection = (type: 'code-ts' | 'code-py' | 'code-go' | 'code-generic'): DetectResult => ({
+  const makeDetection = (type: 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic'): DetectResult => ({
     type,
     confidence: 0.85,
   });
@@ -42,6 +42,32 @@ describe('CodeCompressor', () => {
       const result = compressor.compress(input, makeDetection('code-py'));
       expect(result.compressed).toContain('x = 42');
       expect(result.compressed).not.toContain('the answer');
+    });
+
+    test('removes PHP inline comments but preserves attribute syntax', () => {
+      const input = `<?php
+class ApiController {
+    #[Route('/api/users')]
+    public function listUsers() {
+        return $this->users(); # trailing comment
+    }
+}`;
+      const result = compressor.compress(input, makeDetection('code-php'));
+      expect(result.compressed).toContain("#[Route('/api/users')]");
+      expect(result.compressed).toContain('return $this->users();');
+      expect(result.compressed).not.toContain('trailing comment');
+    });
+
+    test('preserves PHP hash characters inside strings', () => {
+      const input = `<?php
+class Banner {
+    public function text() {
+        return "# not a comment"; # remove this
+    }
+}`;
+      const result = compressor.compress(input, makeDetection('code-php'));
+      expect(result.compressed).toContain('return "# not a comment";');
+      expect(result.compressed).not.toContain('remove this');
     });
 
     test('preserves TODO/FIXME comments', () => {
@@ -99,6 +125,36 @@ function foo() {}`;
 function foo() {}`;
       const result = compressor.compress(input, makeDetection('code-ts'));
       expect(result.compressed).toContain('TODO: implement this');
+    });
+
+    test('preserves PHP 8 attribute lines', () => {
+      const input = `<?php
+class ApiController {
+    #[Route('/api/users', methods: ['GET'])]
+    public function listUsers() {
+        return $this->users();
+    }
+}`;
+      const result = compressor.compress(input, makeDetection('code-php'));
+      expect(result.compressed).toContain("#[Route('/api/users', methods: ['GET'])]");
+      expect(result.compressed).toContain('public function listUsers()');
+    });
+
+    test('preserves PHP heredoc bodies', () => {
+      const input = `<?php
+class TemplateBuilder {
+    public function html() {
+        return <<<HTML
+<h1>Title</h1>
+// This is HTML, not a comment
+# also not a comment
+HTML;
+    }
+}`;
+      const result = compressor.compress(input, makeDetection('code-php'));
+      expect(result.compressed).toContain('// This is HTML, not a comment');
+      expect(result.compressed).toContain('# also not a comment');
+      expect(result.compressed).toContain('HTML;');
     });
   });
 

@@ -23,7 +23,7 @@ const CHARS_PER_TOKEN = 4;
 
 export class CodeCompressor implements Compressor {
   readonly name = 'code';
-  readonly supportedTypes: ContentType[] = ['code-ts', 'code-py', 'code-go', 'code-generic'];
+  readonly supportedTypes: ContentType[] = ['code-ts', 'code-py', 'code-go', 'code-php', 'code-generic'];
 
   compress(content: string, detection: DetectResult): CompressResult {
     const layers: string[] = [];
@@ -80,6 +80,52 @@ export class CodeCompressor implements Compressor {
   // --- Layer 2: Remove inline comments ---
 
   private removeInlineComments(content: string, type: ContentType): string {
+    if (type === 'code-php') {
+      const result: string[] = [];
+      let heredocTerminator: string | null = null;
+
+      for (const line of content.split('\n')) {
+        if (heredocTerminator) {
+          result.push(line);
+          if (this.isPhpHeredocEnd(line, heredocTerminator)) {
+            heredocTerminator = null;
+          }
+          continue;
+        }
+
+        const nextHeredocTerminator = this.getPhpHeredocTerminator(line);
+        if (nextHeredocTerminator) {
+          heredocTerminator = nextHeredocTerminator;
+          result.push(line);
+          continue;
+        }
+
+        // Preserve TODO/FIXME comments
+        if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) {
+          result.push(line);
+          continue;
+        }
+
+        // Preserve lines that are ONLY comments (Layer 3 handles those)
+        const trimmed = line.trimStart();
+        if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) {
+          result.push(line);
+          continue;
+        }
+
+        if (/https?:\/\//.test(line)) {
+          result.push(line);
+          continue;
+        }
+
+        // PHP supports both // and # as inline comment styles.
+        const afterSlash = this.removeInlineCStyleComment(line);
+        result.push(afterSlash !== line ? afterSlash : this.removeInlinePythonComment(line, true));
+      }
+
+      return result.join('\n');
+    }
+
     return content.split('\n').map(line => {
       // Preserve TODO/FIXME comments
       if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) return line;
@@ -127,7 +173,7 @@ export class CodeCompressor implements Compressor {
     return line;
   }
 
-  private removeInlinePythonComment(line: string): string {
+  private removeInlinePythonComment(line: string, preservePhpAttributeSyntax = false): string {
     let inString: string | null = null;
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
@@ -147,6 +193,9 @@ export class CodeCompressor implements Compressor {
       }
 
       if (char === '#') {
+        if (preservePhpAttributeSyntax && line[i + 1] === '[') {
+          continue;
+        }
         const before = line.slice(0, i).trimEnd();
         if (before.length === 0) return line; // Pure comment line
         return before;
@@ -163,9 +212,27 @@ export class CodeCompressor implements Compressor {
     let inBlockComment = false;
     let inDocstring = false;
     let docstringFirstLine = false;
+    let phpHeredocTerminator: string | null = null;
 
     for (let i = 0; i < lines.length; i++) {
       const trimmed = lines[i].trimStart();
+
+      if (type === 'code-php') {
+        if (phpHeredocTerminator) {
+          result.push(lines[i]);
+          if (this.isPhpHeredocEnd(lines[i], phpHeredocTerminator)) {
+            phpHeredocTerminator = null;
+          }
+          continue;
+        }
+
+        const nextHeredocTerminator = this.getPhpHeredocTerminator(lines[i]);
+        if (nextHeredocTerminator) {
+          phpHeredocTerminator = nextHeredocTerminator;
+          result.push(lines[i]);
+          continue;
+        }
+      }
 
       // Preserve TODO/FIXME in any comment
       if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) {
@@ -219,6 +286,9 @@ export class CodeCompressor implements Compressor {
       if (type === 'code-py' && trimmed.startsWith('#')) {
         continue;
       }
+      if (type === 'code-php' && (trimmed.startsWith('//') || (trimmed.startsWith('#') && !trimmed.startsWith('#[')))) {
+        continue;
+      }
       if ((type === 'code-ts' || type === 'code-go' || type === 'code-generic') && trimmed.startsWith('//')) {
         continue;
       }
@@ -227,6 +297,16 @@ export class CodeCompressor implements Compressor {
     }
 
     return result.join('\n');
+  }
+
+  private getPhpHeredocTerminator(line: string): string | null {
+    const match = line.match(/<<<[ \t]*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[ \t]*$/);
+    return match ? match[2] : null;
+  }
+
+  private isPhpHeredocEnd(line: string, terminator: string): boolean {
+    const escaped = terminator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^\\s*${escaped};?\\s*$`).test(line);
   }
 
   // --- Layer 4: Shorten import paths ---
