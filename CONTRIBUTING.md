@@ -46,7 +46,7 @@ npm run build
 
 - Keep README examples accurate and runnable.
 - Prefer concise public docs over internal planning notes.
-- If you update the English README in a substantial way, consider whether the Traditional Chinese README should also be updated.
+- If you update the English README in a substantial way, consider whether the other localized READMEs (zh-TW, ja, ko, es, fr, de, ru, pt, vi, id) should also be updated.
 
 ## Security-sensitive changes
 

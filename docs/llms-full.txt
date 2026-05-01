@@ -3,7 +3,7 @@ Toonify MCP
 
 What it is
 - Open-source Claude Code plugin and MCP server for local context compression.
-- Primary job: make large tool output lighter before it bloats the next Claude Code turn.
+- Compresses large tool output before it enters the context window, reducing token cost without changing the Claude Code workflow.
 
 What it compresses
 - Structured data: JSON, CSV, YAML, API responses
@@ -15,14 +15,14 @@ What stays the same
 - Local-first processing model
 - Safe fallback when estimated savings are not worth it
 
-Who should evaluate it
-- Teams that regularly read large tool output into Claude Code
-- Developers debugging long test failures or stack traces
-- Teams reviewing larger source files during AI-assisted coding sessions
+Best for
+- Workflows with frequent large structured data or API response reads into Claude Code
+- Debugging sessions with long test failures, stack traces, or repetitive build output
+- Workflows with frequent large source-file reads during AI-assisted coding sessions
 
-Who may not need it
-- Users mostly working with short prose
-- Users dealing with tiny files
+Limitations
+- Short prose
+- Very small files
 - Tasks where preserving exact original formatting matters more than saving context
 
 How to install
