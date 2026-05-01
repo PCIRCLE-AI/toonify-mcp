@@ -42,6 +42,8 @@ toonify-mcp doctor
 toonify-mcp status
 ```
 
+`toonify-mcp status` shows the latest optimized or skipped outcome in plain language.
+
 ## Optional: MCP mode
 
 ```bash

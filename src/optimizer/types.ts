@@ -64,6 +64,8 @@ export interface TokenStats {
   lastReason?: string;
   lastWasOptimized?: boolean;
   lastUpdatedAt?: string;
+  lastSavingsTokens?: number;
+  lastSavingsPercentage?: number;
   // v0.3.0: Cache stats
   cacheHits?: number;
   cacheMisses?: number;

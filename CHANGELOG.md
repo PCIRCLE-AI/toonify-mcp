@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Made `toonify-mcp setup` more explicit about local marketplace state, plugin state, and what to do next
+- Made `toonify-mcp doctor` more recovery-oriented with clearer install, version, and config guidance
+- Made `toonify-mcp status` show the latest optimized or skipped outcome in plainer language
+- Synced README, landing pages, and AI-readable docs with the improved `setup` / `doctor` / `status` workflow
+
+### Tests
+- Added and updated CLI and metrics coverage for the new setup, doctor, and status wording
+
 ## [0.7.1] - 2026-05-01
 
 ### Changed

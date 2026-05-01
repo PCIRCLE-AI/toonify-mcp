@@ -41,10 +41,12 @@ describe('status output', () => {
 
     const output = await collector.formatStatus();
 
+    expect(output).toContain('Health: active');
     expect(output).toContain('Requests: 2');
     expect(output).toContain('Optimized: 1');
     expect(output).toContain('Skipped: 1');
-    expect(output).toContain('Last decision: skipped Grep Savings too low: 4.0%');
+    expect(output).toContain('Last skipped: Grep');
+    expect(output).toContain('Reason: Savings too low: 4.0%');
   });
 
   test('shows a clear empty state before any optimization activity', async () => {
@@ -52,5 +54,23 @@ describe('status output', () => {
 
     expect(output).toContain('No optimization activity yet.');
     expect(output).toContain('toonify-mcp doctor');
+  });
+
+  test('shows last optimization savings in plain language', async () => {
+    await collector.record({
+      timestamp: '2026-04-30T00:00:00.000Z',
+      toolName: 'Read',
+      originalTokens: 200,
+      optimizedTokens: 80,
+      savings: 120,
+      savingsPercentage: 60,
+      wasOptimized: true,
+      format: 'debug-output',
+    });
+
+    const output = await collector.formatStatus();
+
+    expect(output).toContain('Last optimized: Read as debug-output');
+    expect(output).toContain('Saved: 120 tokens (60.0%)');
   });
 });

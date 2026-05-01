@@ -147,6 +147,7 @@ describe('doctor', () => {
     const output = formatDoctorReport(report);
 
     expect(output).toContain('Toonify MCP doctor');
+    expect(output).toContain('Usable, with a few items worth checking.');
     expect(output).toContain('Core optimizer');
     expect(output).toContain('Run `toonify-mcp setup`');
   });

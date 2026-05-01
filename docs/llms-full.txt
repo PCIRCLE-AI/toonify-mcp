@@ -34,7 +34,7 @@ How to install
 How to verify
 - `toonify-mcp setup`
 - `toonify-mcp doctor`
-- `toonify-mcp status`
+- `toonify-mcp status` for the latest optimized or skipped outcome
 - `claude mcp list` when MCP mode is enabled
 
 Public proof

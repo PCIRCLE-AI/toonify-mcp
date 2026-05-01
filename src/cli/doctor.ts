@@ -84,6 +84,14 @@ export async function collectDoctorReport(options: DoctorOptions = {}): Promise<
 
 export function formatDoctorReport(report: DoctorReport): string {
   const lines = [`Toonify MCP doctor (v${report.version})`, ''];
+  const summary = report.checks.some(check => check.status === 'fail')
+    ? 'Attention needed before Toonify is fully ready.'
+    : report.checks.some(check => check.status === 'warn')
+      ? 'Usable, with a few items worth checking.'
+      : 'Ready: Toonify looks healthy in this checkout.';
+
+  lines.push(summary);
+  lines.push('');
 
   for (const check of report.checks) {
     lines.push(`${statusIcon(check.status)} ${check.name}: ${check.message}`);
@@ -125,7 +133,7 @@ async function checkConfig(configPath: string): Promise<DoctorCheck> {
       return {
         name: 'Config',
         status: 'warn',
-        message: `No config file found at ${configPath}; Toonify will use defaults.`,
+        message: `No config file found at ${configPath}; Toonify will use built-in defaults.`,
       };
     }
 
@@ -164,12 +172,12 @@ async function checkMarketplace(commandRunner?: CommandRunner): Promise<DoctorCh
       ? {
           name: 'Marketplace',
           status: 'pass',
-          message: `Marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is configured.`,
+          message: `Local marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is configured.`,
         }
       : {
           name: 'Marketplace',
           status: 'warn',
-          message: `Marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is not configured yet.`,
+          message: `Local marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is not configured yet.`,
         };
   } catch (error) {
     const commandError = error as CommandExecutionError;
@@ -192,7 +200,7 @@ async function checkPluginInstall(commandRunner: CommandRunner | undefined, pack
       return {
         name: 'Plugin install',
         status: 'warn',
-        message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is not installed locally yet.`,
+        message: `Local plugin \`${TOONIFY_PLUGIN_ID}\` is not installed yet.`,
       };
     }
 
@@ -200,7 +208,7 @@ async function checkPluginInstall(commandRunner: CommandRunner | undefined, pack
       return {
         name: 'Plugin install',
         status: 'warn',
-        message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is installed but disabled.`,
+        message: `Local plugin \`${TOONIFY_PLUGIN_ID}\` is installed but disabled.`,
       };
     }
 
@@ -208,14 +216,14 @@ async function checkPluginInstall(commandRunner: CommandRunner | undefined, pack
       return {
         name: 'Plugin install',
         status: 'warn',
-        message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is on ${plugin.version || 'unknown'}, current package is ${version}.`,
+        message: `Local plugin \`${TOONIFY_PLUGIN_ID}\` is on ${plugin.version || 'unknown'}, but this checkout is ${version}.`,
       };
     }
 
     return {
       name: 'Plugin install',
       status: 'pass',
-      message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is enabled locally on ${plugin.version}.`,
+      message: `Local plugin \`${TOONIFY_PLUGIN_ID}\` is enabled on ${plugin.version}.`,
     };
   } catch (error) {
     const commandError = error as CommandExecutionError;
@@ -310,15 +318,15 @@ function buildNextSteps(checks: DoctorCheck[]): string[] {
   const pluginCheck = checkByName.get('Plugin install');
 
   if (marketplaceCheck?.status !== 'pass' || pluginCheck?.status !== 'pass') {
-    nextSteps.push('Run `toonify-mcp setup` to add the local marketplace and install or update the plugin.');
+    nextSteps.push('Run `toonify-mcp setup` to configure the local marketplace and repair plugin mode.');
   }
 
   if (pluginCheck?.message.includes('disabled')) {
-    nextSteps.push(`Run \`claude plugin enable ${TOONIFY_PLUGIN_ID} --scope local\`.`);
+    nextSteps.push(`If you only need a quick recovery, run \`claude plugin enable ${TOONIFY_PLUGIN_ID} --scope local\`.`);
   }
 
-  if (pluginCheck?.message.includes('current package is')) {
-    nextSteps.push(`Run \`claude plugin update ${TOONIFY_PLUGIN_ID} --scope local\`.`);
+  if (pluginCheck?.message.includes('but this checkout is')) {
+    nextSteps.push(`If you want the current checkout version, run \`claude plugin update ${TOONIFY_PLUGIN_ID} --scope local\`.`);
   }
 
   const configCheck = checkByName.get('Config');

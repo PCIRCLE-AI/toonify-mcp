@@ -187,10 +187,12 @@ describe('MetricsCollector', () => {
       const status = await collector.formatStatus();
 
       expect(status).toContain('Toonify MCP status');
+      expect(status).toContain('Health: active');
       expect(status).toContain('Requests: 1');
       expect(status).toContain('Optimized: 1');
       expect(status).toContain('Skipped: 0');
-      expect(status).toContain('Last decision: optimized Read as json');
+      expect(status).toContain('Last optimized: Read as json');
+      expect(status).toContain('Saved: 80 tokens (40.0%)');
     });
   });
 });

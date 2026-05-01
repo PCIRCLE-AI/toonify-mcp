@@ -42,6 +42,8 @@ toonify-mcp doctor
 toonify-mcp status
 ```
 
+`toonify-mcp status` 會用比較直白的方式顯示最近一次是被優化還是被略過。
+
 ## 進階：MCP 模式
 
 ```bash

@@ -62,14 +62,14 @@ export async function performSetup(options: SetupOptions): Promise<SetupReport> 
       steps.push({
         name: 'Marketplace',
         status: 'pass',
-        message: `Marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is already configured.`,
+        message: `Local marketplace \`${TOONIFY_MARKETPLACE_NAME}\` is already configured for this checkout.`,
       });
     } else {
       await commandRunner('claude', ['plugin', 'marketplace', 'add', marketplacePath]);
       steps.push({
         name: 'Marketplace',
         status: 'changed',
-        message: `Added marketplace \`${TOONIFY_MARKETPLACE_NAME}\`.`,
+        message: `Added local marketplace \`${TOONIFY_MARKETPLACE_NAME}\` from this checkout.`,
       });
     }
 
@@ -84,7 +84,7 @@ export async function performSetup(options: SetupOptions): Promise<SetupReport> 
       steps.push({
         name: 'MCP server',
         status: 'pass',
-        message: `MCP server \`${TOONIFY_MCP_NAME}\` is already registered.`,
+        message: `MCP server \`${TOONIFY_MCP_NAME}\` is already registered and ready to reconnect.`,
       });
     } else {
       await commandRunner('claude', ['mcp', 'add', TOONIFY_MCP_NAME, '--', 'toonify-mcp']);
@@ -112,9 +112,13 @@ export function formatSetupReport(report: SetupReport): string {
 
   lines.push('');
   if (report.mode === 'plugin') {
-    lines.push('Next: run `toonify-mcp doctor` and then use Claude Code normally.');
+    lines.push('Ready next:');
+    lines.push('- Run `toonify-mcp doctor` to confirm the local install.');
+    lines.push('- Open Claude Code normally, then run `toonify-mcp status` after a real session.');
   } else {
-    lines.push('Next: run `claude mcp list` to confirm the server is connected.');
+    lines.push('Ready next:');
+    lines.push('- Run `claude mcp list` to confirm the server is connected.');
+    lines.push('- Use MCP mode only when you need an explicit MCP server instead of plugin mode.');
   }
 
   return lines.join('\n');
@@ -162,7 +166,7 @@ async function ensurePluginState(
     return {
       name: 'Plugin install',
       status: 'changed',
-      message: `Installed and enabled \`${TOONIFY_PLUGIN_ID}\` locally.`,
+      message: `Installed and enabled \`${TOONIFY_PLUGIN_ID}\` in local scope.`,
     };
   }
 
@@ -171,7 +175,7 @@ async function ensurePluginState(
     return {
       name: 'Plugin install',
       status: 'changed',
-      message: `Updated \`${TOONIFY_PLUGIN_ID}\` from ${plugin.version || 'unknown'} to ${version}.`,
+      message: `Updated local plugin \`${TOONIFY_PLUGIN_ID}\` from ${plugin.version || 'unknown'} to ${version}.`,
     };
   }
 
@@ -180,14 +184,14 @@ async function ensurePluginState(
     return {
       name: 'Plugin install',
       status: 'changed',
-      message: `Enabled \`${TOONIFY_PLUGIN_ID}\` locally.`,
+      message: `Enabled local plugin \`${TOONIFY_PLUGIN_ID}\`.`,
     };
   }
 
   return {
     name: 'Plugin install',
     status: 'pass',
-    message: `Plugin \`${TOONIFY_PLUGIN_ID}\` is already enabled on ${plugin.version}.`,
+    message: `Local plugin \`${TOONIFY_PLUGIN_ID}\` is already enabled on ${plugin.version}.`,
   };
 }
 

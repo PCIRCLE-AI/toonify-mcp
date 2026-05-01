@@ -188,5 +188,7 @@ describe('setup', () => {
     expect(output).toContain('Toonify MCP setup');
     expect(output).toContain('Installed plugin locally');
     expect(output).toContain('toonify-mcp doctor');
+    expect(output).toContain('toonify-mcp status');
+    expect(output).toContain('Ready next:');
   });
 });

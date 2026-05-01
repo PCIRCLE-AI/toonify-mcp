@@ -65,6 +65,8 @@ export class MetricsCollector {
       stats.lastReason = metric.reason;
       stats.lastWasOptimized = metric.wasOptimized;
       stats.lastUpdatedAt = metric.timestamp;
+      stats.lastSavingsTokens = metric.savings;
+      stats.lastSavingsPercentage = metric.savingsPercentage;
 
       // v0.3.0: Track cache metrics
       if (metric.wasCached) {
@@ -123,6 +125,8 @@ export class MetricsCollector {
         lastReason: undefined,
         lastWasOptimized: undefined,
         lastUpdatedAt: undefined,
+        lastSavingsTokens: undefined,
+        lastSavingsPercentage: undefined,
         // v0.3.0: Cache stats
         cacheHits: 0,
         cacheMisses: 0,
@@ -206,6 +210,7 @@ Additional Cache Savings: ${(stats.estimatedCacheSavings || 0).toLocaleString()}
     const lines = [
       `Toonify MCP status (v${version})`,
       '',
+      `Health: ${stats.optimizedRequests > 0 ? 'active' : 'waiting for a large payload'}`,
       `Requests: ${stats.totalRequests}`,
       `Optimized: ${stats.optimizedRequests} (${optimizedRate}%)`,
       `Skipped: ${stats.skippedRequests || 0}`,
@@ -213,15 +218,19 @@ Additional Cache Savings: ${(stats.estimatedCacheSavings || 0).toLocaleString()}
     ];
 
     if (stats.lastUpdatedAt) {
-      const outcome = stats.lastWasOptimized ? 'optimized' : 'skipped';
       const format = stats.lastFormat || 'unknown';
       const toolName = stats.lastToolName || 'unknown';
-      const reason = stats.lastWasOptimized
-        ? `as ${format}`
-        : (stats.lastReason || 'no reason recorded');
 
       lines.push('');
-      lines.push(`Last decision: ${outcome} ${toolName} ${reason}`);
+      if (stats.lastWasOptimized) {
+        const saved = stats.lastSavingsTokens ?? 0;
+        const percentage = (stats.lastSavingsPercentage ?? 0).toFixed(1);
+        lines.push(`Last optimized: ${toolName} as ${format}`);
+        lines.push(`Saved: ${saved.toLocaleString()} tokens (${percentage}%)`);
+      } else {
+        lines.push(`Last skipped: ${toolName}`);
+        lines.push(`Reason: ${stats.lastReason || 'no reason recorded'}`);
+      }
       lines.push(`Last update: ${stats.lastUpdatedAt}`);
     }
 

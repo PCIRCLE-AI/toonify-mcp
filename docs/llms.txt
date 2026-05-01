@@ -26,7 +26,7 @@ Install
 Verification
 - `toonify-mcp setup` handles local marketplace setup plus install, update, or re-enable
 - `toonify-mcp doctor` validates local install
-- `toonify-mcp status` shows recent optimization activity
+- `toonify-mcp status` shows the latest optimized or skipped outcome in plain language
 - `claude mcp list` can confirm MCP connectivity when you use MCP mode
 
 Public pages
