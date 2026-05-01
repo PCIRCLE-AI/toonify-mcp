@@ -10,38 +10,15 @@ import os from 'os';
 
 describe('MetricsCollector', () => {
   let collector: MetricsCollector;
-  const statsPath = path.join(os.homedir(), '.claude', 'token_stats.json');
-  let originalStats: string | null = null;
+  let tempDir: string;
 
   beforeEach(async () => {
-    // Back up existing stats file
-    try {
-      originalStats = await fs.readFile(statsPath, 'utf-8');
-    } catch {
-      originalStats = null;
-    }
-
-    // Remove stats file for clean test
-    try {
-      await fs.unlink(statsPath);
-    } catch {
-      // File doesn't exist
-    }
-
-    collector = new MetricsCollector();
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'toonify-test-'));
+    collector = new MetricsCollector(tempDir);
   });
 
   afterEach(async () => {
-    // Restore original stats
-    if (originalStats) {
-      await fs.writeFile(statsPath, originalStats, 'utf-8');
-    } else {
-      try {
-        await fs.unlink(statsPath);
-      } catch {
-        // Ignore
-      }
-    }
+    await fs.rm(tempDir, { recursive: true, force: true });
   });
 
   describe('record', () => {
