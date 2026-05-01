@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Local Context Compression for Claude Code</title>
-    <meta name="description" content="Open-source Claude Code plugin and MCP server for locally compressing large JSON, CSV, YAML, API responses, debug-heavy output, and supported source files before they bloat context.">
+    <meta name="description" content="Open-source context compression plugin for Claude Code. Automatically trims large JSON, CSV, YAML, stack traces, and logs before they enter the context window. 48% average token savings.">
     <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
     <meta name="author" content="PCIRCLE AI">
     <meta name="application-name" content="Toonify MCP">
@@ -20,11 +20,11 @@
     <meta property="og:site_name" content="Toonify MCP">
     <meta property="og:locale" content="en_US">
     <meta property="og:title" content="Toonify MCP - Local Context Compression for Claude Code">
-    <meta property="og:description" content="Compress large JSON, debug output, and source files locally so Claude Code sessions stay lighter without changing workflow.">
+    <meta property="og:description" content="Compresses large JSON, logs, stack traces, and source files before they enter the context window. 48% average token savings. Zero workflow changes.">
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/">
     <meta property="twitter:title" content="Toonify MCP - Local Context Compression for Claude Code">
-    <meta property="twitter:description" content="Compress large JSON, debug output, and source files locally so Claude Code sessions stay lighter without changing workflow.">
+    <meta property="twitter:description" content="Compresses large JSON, logs, stack traces, and source files before they enter the context window. 48% average token savings. Zero workflow changes.">
 
     <!-- Google Fonts: JetBrains Mono + IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -379,7 +379,7 @@
                     "license": "https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/LICENSE",
                     "url": "https://toonify.pcircle.ai/",
                     "downloadUrl": "https://github.com/PCIRCLE-AI/toonify-mcp",
-                    "description": "A local-first Claude Code plugin and MCP server that compresses large structured payloads, debug-heavy output, and supported source files before they bloat context.",
+                    "description": "A local-first Claude Code plugin and MCP server that automatically compresses large JSON, CSV, YAML, debug output, and source files before they enter the context window.",
                     "featureList": [
                         "Plugin mode for automatic post-tool optimization",
                         "MCP server mode for explicit control",
@@ -453,7 +453,7 @@
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Toonify helps Claude Code stay lighter when large JSON, logs, test output, or source files would otherwise bloat the session.
+                Compresses large JSON, logs, stack traces, and source files before they enter the context window. 48% average token savings across structured data, debug output, and source files.
             </p>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -654,8 +654,8 @@ claude mcp list
     <section id="features" class="py-16" style="background: var(--bg-secondary);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Why Teams Use Toonify</h2>
-                <p class="text-xl" style="color: var(--text-secondary);">The value is simple: lighter large output without adding workflow friction.</p>
+                <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Features</h2>
+                <p class="text-xl" style="color: var(--text-secondary);">Install once. Runs automatically. Zero workflow changes.</p>
             </div>
 
             <div class="bento-grid">
@@ -779,7 +779,7 @@ claude mcp list
                 Try It on a Real Claude Code Session
             </h2>
             <p class="text-xl text-blue-100 mb-8">
-                Start with plugin mode, see whether your large outputs feel lighter, and keep MCP mode as an option for advanced setups.
+                Install plugin mode in under a minute. Use MCP server mode when you need manual control.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <a href="#installation" class="btn-primary" style="background: white; color: #2563EB;">

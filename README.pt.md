@@ -2,27 +2,21 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Toonify MCP ajuda quando o Claude Code começa a ficar pesado por causa de saídas muito grandes.
+Plugin de compressão de contexto para Claude Code. Reduz automaticamente saídas grandes de ferramentas—JSON, CSV, YAML, stack traces e logs—antes de entrarem na janela de contexto.
 
-## O que melhora para o usuário
+Funciona como plugin do Claude Code (automático, sem configuração) ou como servidor MCP (sob demanda).
 
-- JSON, CSV, YAML e respostas de API ficam mais leves
-- Falhas longas de teste e stack traces ficam mais fáceis de levar na sessão
-- Você continua usando o Claude Code do mesmo jeito
+## Funcionalidades
 
-## Para quem faz sentido
+- Comprime respostas grandes de JSON, CSV, YAML e APIs
+- Reduz falhas de testes longas e stack traces
+- Executa automaticamente em segundo plano—sem alterações no fluxo de trabalho
 
-- Quem lê tool output grande com frequência
-- Quem costuma jogar logs, traces ou arquivos de código no Claude Code
-- Quem quer algo local e automático
+## Limitações
 
-## Quando ajuda menos
+Ignorado para textos curtos, arquivos muito pequenos e conteúdo onde o formato original deve ser preservado exatamente.
 
-- Texto curto
-- Arquivos muito pequenos
-- Conteúdo em que o formato original importa mais do que economizar contexto
-
-## Instalação rápida
+## Instalação
 
 ```bash
 git clone https://github.com/PCIRCLE-AI/toonify-mcp.git
@@ -34,9 +28,9 @@ toonify-mcp setup
 toonify-mcp doctor
 ```
 
-`toonify-mcp setup` cuida do marketplace local e também instala, atualiza ou reativa o plugin automaticamente.
+`toonify-mcp setup` adiciona o marketplace local e instala, atualiza ou reativa o plugin automaticamente.
 
-## Verificação rápida
+## Verificação
 
 ```bash
 toonify-mcp status
@@ -49,8 +43,12 @@ toonify-mcp setup mcp
 claude mcp list
 ```
 
-## Onde ver a versão mais atual
+`claude mcp list` deve mostrar `toonify: toonify-mcp - ✓ Connected`.
 
-- Guia principal: [README.md](README.md)
-- Versão em chinês tradicional: [README.zh-TW.md](README.zh-TW.md)
-- Site público: https://toonify.pcircle.ai/
+## Documentação
+
+- Site: https://toonify.pcircle.ai/
+- Benchmarks: https://toonify.pcircle.ai/benchmarks.html
+- Privacidade: https://toonify.pcircle.ai/privacy.html
+- Termos: https://toonify.pcircle.ai/terms.html
+- [CHANGELOG.md](CHANGELOG.md)

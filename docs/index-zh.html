@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Claude Code 大型輸出壓縮工具</title>
-    <meta name="description" content="開源的 Claude Code 外掛與 MCP 伺服器，可在大型 JSON、CSV、YAML、API 回應、debug 輸出與支援的原始碼進入上下文前先做本地壓縮。">
+    <meta name="description" content="開源的 Claude Code context 壓縮外掛。在大型 JSON、CSV、YAML、stack trace、log 進入 context window 前自動壓縮。平均節省 48% token。">
     <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
     <meta name="author" content="PCIRCLE AI">
     <meta name="application-name" content="Toonify MCP">
@@ -23,13 +23,13 @@
     <meta property="og:site_name" content="Toonify MCP">
     <meta property="og:locale" content="zh_TW">
     <meta property="og:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
-    <meta property="og:description" content="本地壓縮大型 JSON、debug 輸出與原始碼，讓 Claude Code 工作流程不變但上下文更輕。">
+    <meta property="og:description" content="在大型 JSON、log、stack trace、原始碼進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/index-zh.html">
     <meta property="twitter:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
-    <meta property="twitter:description" content="本地壓縮大型 JSON、debug 輸出與原始碼，讓 Claude Code 工作流程不變但上下文更輕。">
+    <meta property="twitter:description" content="在大型 JSON、log、stack trace、原始碼進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
 
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="assets/tailwind.css">
@@ -451,7 +451,7 @@
             </h1>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Toonify 讓 Claude Code 在面對大型 JSON、log 輸出、測試輸出或原始碼時，不會那麼容易把整個工作流程拖重。
+                在大型 JSON、log、stack trace、原始碼進入 context window 前先自動壓縮。結構化資料、debug 輸出與原始碼平均節省 48% token。
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -476,7 +476,7 @@
                 <span class="gradient-text">一頁看懂</span>
             </h2>
             <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                先用最短的方式回答：適不適合你、怎麼安裝、怎麼確認、什麼情況不一定需要。
+                快速了解 Toonify 做什麼、怎麼安裝、以及如何確認運作正常。
             </p>
             <dl class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 <div class="feature-card">
@@ -506,7 +506,7 @@
                 <span class="gradient-text">最適合大型工具輸出情境</span>
             </h2>
             <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                如果你覺得重的是工具輸出或原始碼，而不是一般聊天內容，Toonify 才會比較有感。
+                當 context 的主要負擔來自工具輸出或原始碼（而非一般對話）時，效果最佳。
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -659,10 +659,10 @@ claude mcp list
     <section id="features" style="background: var(--bg-secondary);">
         <div class="max-w-7xl mx-auto px-4">
             <h2 class="section-title heading-mono">
-                團隊為什麼會用 <span class="gradient-text">Toonify MCP</span>
+                <span class="gradient-text">功能特色</span>
             </h2>
             <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                價值很簡單：讓大型輸出更輕，而且不用改變原本習慣。
+                安裝一次，自動運作，工作流程完全不變。
             </p>
 
             <div class="bento-grid">
@@ -765,10 +765,10 @@ claude mcp list
     <section style="background: linear-gradient(135deg, var(--trust-blue) 0%, #7C3AED 50%, var(--cta-orange) 100%); color: white;">
         <div class="max-w-4xl mx-auto px-4 text-center">
             <h2 class="text-4xl md:text-5xl font-bold mb-6 heading-mono">
-                拿你的真實 Claude Code 工作流程試一次
+                一分鐘內開始使用
             </h2>
             <p class="text-xl mb-8 opacity-90">
-                先從外掛模式開始，看看大型輸出是不是真的變輕，再決定要不要納入日常工作流程。
+                先裝外掛模式，支援的大型輸出會自動處理。需要手動控制時再改用 MCP 伺服器模式。
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="#installation" class="btn-cta" style="background: white; color: var(--trust-blue);">
