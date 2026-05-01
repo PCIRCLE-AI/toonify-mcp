@@ -28,6 +28,9 @@ export class DebugOutputCompressor implements Compressor {
     const afterPointers = this.removePointerOnlyLines(result);
     if (afterPointers !== result) { layers.push('remove-pointer-lines'); result = afterPointers; }
 
+    const afterSimilarDiagnostics = this.collapseSimilarDiagnosticLines(result);
+    if (afterSimilarDiagnostics !== result) { layers.push('collapse-similar-diagnostics'); result = afterSimilarDiagnostics; }
+
     const afterDuplicates = this.collapseDuplicateLines(result);
     if (afterDuplicates !== result) { layers.push('collapse-duplicate-lines'); result = afterDuplicates; }
 
@@ -63,14 +66,71 @@ export class DebugOutputCompressor implements Compressor {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const trimmed = line.trimStart();
+      const nextTrimmed = lines[i + 1]?.trimStart() || '';
 
       if (/^\d+\s+\|/.test(trimmed)) {
         // Drop unhighlighted numbered context lines from excerpt blocks.
         continue;
       }
 
+      // Drop TypeScript-style excerpt lines when the diagnostic header already
+      // includes the file and line number, and the next line is only a pointer.
+      if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) {
+        continue;
+      }
+
       // Keep highlighted lines like `> 43 | expect(...)`
       result.push(line);
+    }
+
+    return result.join('\n');
+  }
+
+  private collapseSimilarDiagnosticLines(content: string): string {
+    const lines = content.split('\n');
+    const result: string[] = [];
+
+    let i = 0;
+    while (i < lines.length) {
+      const key = this.getNormalizedDiagnosticKey(lines[i]);
+      if (!key) {
+        result.push(lines[i]);
+        i++;
+        continue;
+      }
+
+      let repeatCount = 1;
+      let j = i + 1;
+      let separatorCount = 0;
+
+      while (j < lines.length) {
+        if (lines[j].trim() === '') {
+          separatorCount++;
+          j++;
+          continue;
+        }
+
+        const nextKey = this.getNormalizedDiagnosticKey(lines[j]);
+        if (nextKey === key && separatorCount <= 2) {
+          repeatCount++;
+          separatorCount = 0;
+          j++;
+          continue;
+        }
+
+        break;
+      }
+
+      result.push(lines[i]);
+      if (repeatCount > 1) {
+        result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}`);
+      }
+
+      if (j < lines.length && result[result.length - 1] !== '' && lines[j - 1]?.trim() === '') {
+        result.push('');
+      }
+
+      i = j;
     }
 
     return result.join('\n');
@@ -143,5 +203,21 @@ export class DebugOutputCompressor implements Compressor {
   private isStackFrame(line: string): boolean {
     const trimmed = line.trimStart();
     return /^at\s+.+/.test(trimmed) || /^File\s+"[^"]+",\s+line\s+\d+/.test(trimmed);
+  }
+
+  private getNormalizedDiagnosticKey(line: string): string | null {
+    const trimmed = line.trim();
+
+    const tscMatch = trimmed.match(/^[\w./-]+\.[A-Za-z0-9]+:\d+:\d+\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
+    if (tscMatch) {
+      return `tsc:${tscMatch[1]}:${tscMatch[2]}:${tscMatch[3].replace(/\s+/g, ' ')}`;
+    }
+
+    const eslintMatch = trimmed.match(/^\d+:\d+\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
+    if (eslintMatch) {
+      return `lint:${eslintMatch[1]}:${eslintMatch[2].replace(/\s+/g, ' ')}:${eslintMatch[3]}`;
+    }
+
+    return null;
   }
 }

@@ -11,10 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made `toonify-mcp setup` more explicit about local marketplace state, plugin state, and what to do next
 - Made `toonify-mcp doctor` more recovery-oriented with clearer install, version, and config guidance
 - Made `toonify-mcp status` show the latest optimized or skipped outcome in plainer language
+- Made debug-output compression slimmer for repeated TypeScript and lint diagnostics by collapsing similar repeats instead of only exact duplicate lines
 - Synced README, landing pages, and AI-readable docs with the improved `setup` / `doctor` / `status` workflow
+
+### Fixed
+- Removed TypeScript-style source excerpt noise from debug-output compression when the diagnostic header already carries file and line context
+- Kept hook-mode and core debug-output compression aligned for similar repeated diagnostic collapsing
 
 ### Tests
 - Added and updated CLI and metrics coverage for the new setup, doctor, and status wording
+- Added debug-output regression coverage for repeated TypeScript diagnostics and hook/pipeline parity
 
 ## [0.7.1] - 2026-05-01
 

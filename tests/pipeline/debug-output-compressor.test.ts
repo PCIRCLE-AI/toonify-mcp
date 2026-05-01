@@ -42,7 +42,7 @@ describe('DebugOutputCompressor', () => {
 
     expect(result.compressed.length).toBeLessThan(input.length);
     expect(result.compressed).toContain("@typescript-eslint/no-unused-vars");
-    expect(result.compressed).toContain('[toonify] repeated 1 more time');
+    expect(result.compressed).toContain('[toonify] similar diagnostic repeated 1 more time');
   });
 
   test('collapses duplicate stack frames while preserving headline and final frame', () => {
@@ -63,5 +63,25 @@ describe('DebugOutputCompressor', () => {
     expect(result.compressed).toContain('Traceback (most recent call last):');
     expect(result.compressed).toContain('File "/workspace/reporting.py", line 112, in render_report');
     expect(result.compressed).toContain('RuntimeError: report template missing');
+  });
+
+  test('drops TypeScript excerpt noise when the header already carries file and line context', () => {
+    const input = loadFixture('tsc-errors.txt');
+    const result = compressor.compress(input, detection);
+
+    expect(result.compressed).toContain("src/components/ProfileCard.tsx:18:12 - error TS2322");
+    expect(result.compressed).not.toContain('18   title={42}');
+    expect(result.compressed).not.toContain('24   const avatar = user.avatarUrl;');
+    expect(result.compressed).toContain('Found 3 errors in 2 files.');
+  });
+
+  test('collapses similar repeated TypeScript diagnostics while preserving distinct ones', () => {
+    const input = loadFixture('tsc-repeated-errors.txt');
+    const result = compressor.compress(input, detection);
+
+    expect(result.compressed).toContain("src/components/ProfileCard.tsx:18:12 - error TS2322");
+    expect(result.compressed).toContain('[toonify] similar diagnostic repeated 1 more time');
+    expect(result.compressed).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
+    expect(result.compressed).not.toContain('22   title={99}');
   });
 });

@@ -157,6 +157,39 @@ Tests:       1 failed, 1 total`,
       expect(output.additionalContext as string).not.toContain('      41 |');
       expect(output.additionalContext as string).toContain('[toonify]');
     });
+
+    test('collapses repeated TypeScript diagnostics in hook mode', async () => {
+      const input = {
+        tool_name: 'Read',
+        tool_response: `src/components/ProfileCard.tsx:18:12 - error TS2322: Type 'number' is not assignable to type 'string'.
+
+18   title={42}
+              ~~
+
+src/components/ProfileCard.tsx:22:12 - error TS2322: Type 'number' is not assignable to type 'string'.
+
+22   title={99}
+              ~~
+
+src/screens/UsersPage.tsx:57:9 - error TS2769: No overload matches this call.
+
+57         navigate(123);
+           ~~~~~~~~
+
+Found 3 errors in 2 files.`,
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      expect(result.suppressOutput).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext as string).toContain('[toonify] similar diagnostic repeated 1 more time');
+      expect(output.additionalContext as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
+      expect(output.additionalContext as string).not.toContain('18   title={42}');
+      expect(output.additionalContext as string).not.toContain('22   title={99}');
+    });
   });
 
   describe('passthrough cases', () => {

@@ -339,6 +339,7 @@ function compressDebugOutput(content) {
     .split('\n')
     .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(line))
     .join('\n');
+  result = collapseSimilarDiagnosticLines(result);
   result = collapseDuplicateLines(result);
   result = collapseLongStackTraces(result);
 
@@ -419,10 +420,70 @@ function hasMultipleFileLocationDiagnostics(content) {
 }
 
 function collapseSourceExcerptNoise(content) {
-  return content
-    .split('\n')
-    .filter(line => !/^\s*\d+\s+\|/.test(line.trimStart()))
-    .join('\n');
+  const lines = content.split('\n');
+  const result = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trimStart();
+    const nextTrimmed = lines[i + 1]?.trimStart() || '';
+
+    if (/^\s*\d+\s+\|/.test(trimmed)) continue;
+    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) continue;
+
+    result.push(lines[i]);
+  }
+
+  return result.join('\n');
+}
+
+function collapseSimilarDiagnosticLines(content) {
+  const lines = content.split('\n');
+  const result = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    const key = getNormalizedDiagnosticKey(lines[i]);
+    if (!key) {
+      result.push(lines[i]);
+      i++;
+      continue;
+    }
+
+    let repeatCount = 1;
+    let j = i + 1;
+    let separatorCount = 0;
+
+    while (j < lines.length) {
+      if (lines[j].trim() === '') {
+        separatorCount++;
+        j++;
+        continue;
+      }
+
+      const nextKey = getNormalizedDiagnosticKey(lines[j]);
+      if (nextKey === key && separatorCount <= 2) {
+        repeatCount++;
+        separatorCount = 0;
+        j++;
+        continue;
+      }
+
+      break;
+    }
+
+    result.push(lines[i]);
+    if (repeatCount > 1) {
+      result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}`);
+    }
+
+    if (j < lines.length && result[result.length - 1] !== '' && lines[j - 1]?.trim() === '') {
+      result.push('');
+    }
+
+    i = j;
+  }
+
+  return result.join('\n');
 }
 
 function collapseDuplicateLines(content) {
@@ -483,6 +544,22 @@ function collapseLongStackTraces(content) {
 function isStackFrame(line) {
   const trimmed = line.trimStart();
   return /^at\s+.+/.test(trimmed) || /^File\s+"[^"]+",\s+line\s+\d+/.test(trimmed);
+}
+
+function getNormalizedDiagnosticKey(line) {
+  const trimmed = line.trim();
+
+  const tscMatch = trimmed.match(/^[\w./-]+\.[A-Za-z0-9]+:\d+:\d+\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
+  if (tscMatch) {
+    return `tsc:${tscMatch[1]}:${tscMatch[2]}:${tscMatch[3].replace(/\s+/g, ' ')}`;
+  }
+
+  const eslintMatch = trimmed.match(/^\d+:\d+\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
+  if (eslintMatch) {
+    return `lint:${eslintMatch[1]}:${eslintMatch[2].replace(/\s+/g, ' ')}:${eslintMatch[3]}`;
+  }
+
+  return null;
 }
 
 // --- Rough Token Estimation ---
