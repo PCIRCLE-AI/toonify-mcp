@@ -28,6 +28,9 @@
     "claude",
     "claude-code",
     "mcp",
+    "model-context-protocol",
+    "context-compression",
+    "context-window",
     "token-optimization",
     "toonify",
     "llm-optimization"
