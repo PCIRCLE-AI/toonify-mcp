@@ -2,10 +2,6 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-[![npm](https://img.shields.io/npm/v/toonify-mcp)](https://www.npmjs.com/package/toonify-mcp)
-[![CI](https://github.com/PCIRCLE-AI/toonify-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/PCIRCLE-AI/toonify-mcp/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node](https://img.shields.io/node/v/toonify-mcp)](package.json)
 
 Context compression plugin for Claude Code. Automatically trims large tool output—JSON, CSV, YAML, stack traces, and logs—before it enters the context window.
 

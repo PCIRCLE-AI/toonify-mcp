@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap');
+    </style>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1E3A8A"/>
+      <stop offset="100%" style="stop-color:#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563EB"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="savingsBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E3A8A"/>
+      <stop offset="100%" style="stop-color:#312E81"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="#F1F5F9"/>
+
+  <!-- Header bar -->
+  <rect x="0" y="0" width="1280" height="88" fill="url(#headerGrad)"/>
+  <text x="640" y="38" font-family="'JetBrains Mono', monospace" font-size="11" fill="#93C5FD" text-anchor="middle" letter-spacing="4" font-weight="600">TOONIFY MCP</text>
+  <text x="640" y="68" font-family="'IBM Plex Sans', sans-serif" font-size="26" fill="white" text-anchor="middle" font-weight="600">Context compression for Claude Code</text>
+
+  <!-- BEFORE panel -->
+  <rect x="48" y="116" width="496" height="432" rx="12" fill="white" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- Before header -->
+  <rect x="48" y="116" width="496" height="48" rx="12" fill="#FEF2F2"/>
+  <rect x="48" y="140" width="496" height="24" fill="#FEF2F2"/>
+  <text x="296" y="148" font-family="'IBM Plex Sans', sans-serif" font-size="15" fill="#DC2626" text-anchor="middle" font-weight="600">BEFORE  ·  1,840 tokens</text>
+
+  <!-- Before content: bloated JSON -->
+  <text x="72" y="198" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">{</text>
+  <text x="72" y="218" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">  "users": [</text>
+  <text x="72" y="238" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">    {</text>
+  <text x="72" y="258" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">      "id": 1,</text>
+  <text x="72" y="278" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      "name": "Alice Johnson",</text>
+  <text x="72" y="298" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      "email": "alice@example.com",</text>
+  <text x="72" y="318" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      "role": "admin",</text>
+  <text x="72" y="338" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      "createdAt": "2024-01-15T08:30:00Z",</text>
+  <text x="72" y="358" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      "updatedAt": "2024-03-22T14:20:00Z",</text>
+  <text x="72" y="378" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      "preferences": {</text>
+  <text x="72" y="398" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">        "theme": "dark",</text>
+  <text x="72" y="418" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">        "notifications": true,</text>
+  <text x="72" y="438" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">        "language": "en-US"</text>
+  <text x="72" y="458" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">      }</text>
+  <text x="72" y="478" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">    },</text>
+  <text x="72" y="498" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94A3B8">    { "id": 2, "name": "Bob Smith" … }</text>
+  <text x="72" y="518" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">  ]</text>
+  <text x="72" y="538" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">}</text>
+
+  <!-- Arrow in middle -->
+  <rect x="560" y="290" width="160" height="60" rx="30" fill="url(#arrowGrad)"/>
+  <text x="640" y="316" font-family="'JetBrains Mono', monospace" font-size="11" fill="white" text-anchor="middle" font-weight="600">toonify-mcp</text>
+  <text x="640" y="338" font-family="'IBM Plex Sans', sans-serif" font-size="22" fill="white" text-anchor="middle">→</text>
+
+  <!-- AFTER panel -->
+  <rect x="736" y="116" width="496" height="432" rx="12" fill="white" stroke="#BFDBFE" stroke-width="2"/>
+
+  <!-- After header -->
+  <rect x="736" y="116" width="496" height="48" rx="12" fill="#F0FDF4"/>
+  <rect x="736" y="140" width="496" height="24" fill="#F0FDF4"/>
+  <text x="984" y="148" font-family="'IBM Plex Sans', sans-serif" font-size="15" fill="#16A34A" text-anchor="middle" font-weight="600">AFTER  ·  720 tokens  (−61%)</text>
+
+  <!-- After content: compressed TOON format -->
+  <text x="760" y="198" font-family="'JetBrains Mono', monospace" font-size="12" fill="#1D4ED8">// TOON:json rows=2 cols=7 ratio=0.39</text>
+  <text x="760" y="228" font-family="'JetBrains Mono', monospace" font-size="12" fill="#64748B">id|name|email|role|createdAt|updatedAt|preferences</text>
+  <text x="760" y="258" font-family="'JetBrains Mono', monospace" font-size="12" fill="#475569">1|Alice Johnson|alice@example.com|admin|</text>
+  <text x="760" y="278" font-family="'JetBrains Mono', monospace" font-size="12" fill="#475569">  2024-01-15T08:30:00Z|2024-03-22T14:20:00Z|</text>
+  <text x="760" y="298" font-family="'JetBrains Mono', monospace" font-size="12" fill="#475569">  {theme:dark,notifications:true,language:en-US}</text>
+  <text x="760" y="318" font-family="'JetBrains Mono', monospace" font-size="12" fill="#475569">2|Bob Smith|bob@example.com|user|…</text>
+
+  <!-- Savings callout box -->
+  <rect x="760" y="370" width="448" height="140" rx="8" fill="url(#savingsBg)"/>
+  <text x="984" y="412" font-family="'IBM Plex Sans', sans-serif" font-size="14" fill="#93C5FD" text-anchor="middle" letter-spacing="2">TOKEN SAVINGS</text>
+  <text x="984" y="468" font-family="'JetBrains Mono', monospace" font-size="56" fill="white" text-anchor="middle" font-weight="700">−61%</text>
+  <text x="984" y="498" font-family="'IBM Plex Sans', sans-serif" font-size="14" fill="#93C5FD" text-anchor="middle">1,120 tokens saved on this call</text>
+
+  <!-- Bottom URL -->
+  <text x="640" y="592" font-family="'IBM Plex Sans', sans-serif" font-size="14" fill="#94A3B8" text-anchor="middle">Open source · toonify.pcircle.ai · github.com/PCIRCLE-AI/toonify-mcp</text>
+</svg>

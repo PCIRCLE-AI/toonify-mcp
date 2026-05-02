@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap');
+    </style>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A"/>
+      <stop offset="100%" style="stop-color:#1E293B"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563EB"/>
+      <stop offset="100%" style="stop-color:#60A5FA"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#818CF8"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E293B" stroke-width="1" opacity="0.6"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="640" fill="url(#grid)" opacity="0.4"/>
+
+  <!-- Left accent line -->
+  <rect x="64" y="64" width="4" height="512" fill="url(#blue)" rx="2"/>
+
+  <!-- Top label -->
+  <text x="88" y="112" font-family="'JetBrains Mono', monospace" font-size="14" fill="#60A5FA" letter-spacing="3" font-weight="600">OPEN SOURCE · LOCAL-FIRST · MIT</text>
+
+  <!-- Main title -->
+  <text x="88" y="220" font-family="'JetBrains Mono', monospace" font-size="80" fill="white" font-weight="700" letter-spacing="-2">Toonify MCP</text>
+
+  <!-- Tagline -->
+  <text x="88" y="278" font-family="'IBM Plex Sans', sans-serif" font-size="28" fill="#94A3B8" font-weight="400">Context compression plugin for Claude Code</text>
+
+  <!-- Divider -->
+  <rect x="88" y="310" width="560" height="1" fill="#334155"/>
+
+  <!-- Stats row -->
+  <!-- Stat 1 -->
+  <text x="88" y="380" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="700" fill="url(#blue)">48.1%</text>
+  <text x="88" y="414" font-family="'IBM Plex Sans', sans-serif" font-size="16" fill="#64748B">avg token savings</text>
+
+  <!-- Stat 2 -->
+  <text x="320" y="380" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="700" fill="url(#blue)">12</text>
+  <text x="320" y="414" font-family="'IBM Plex Sans', sans-serif" font-size="16" fill="#64748B">fixture types</text>
+
+  <!-- Stat 3 -->
+  <text x="440" y="380" font-family="'JetBrains Mono', monospace" font-size="52" font-weight="700" fill="url(#blue)">0</text>
+  <text x="440" y="414" font-family="'IBM Plex Sans', sans-serif" font-size="16" fill="#64748B">config required</text>
+
+  <!-- Bottom tags -->
+  <!-- Tag 1 -->
+  <rect x="88" y="468" width="148" height="36" rx="6" fill="#1E3A5F" stroke="#2563EB" stroke-width="1"/>
+  <text x="162" y="491" font-family="'JetBrains Mono', monospace" font-size="13" fill="#60A5FA" text-anchor="middle">JSON · CSV · YAML</text>
+
+  <!-- Tag 2 -->
+  <rect x="248" y="468" width="148" height="36" rx="6" fill="#1E3A5F" stroke="#2563EB" stroke-width="1"/>
+  <text x="322" y="491" font-family="'JetBrains Mono', monospace" font-size="13" fill="#60A5FA" text-anchor="middle">Stack traces · Logs</text>
+
+  <!-- Tag 3 -->
+  <rect x="408" y="468" width="148" height="36" rx="6" fill="#1E3A5F" stroke="#2563EB" stroke-width="1"/>
+  <text x="482" y="491" font-family="'JetBrains Mono', monospace" font-size="13" fill="#60A5FA" text-anchor="middle">TS · Py · Go · PHP</text>
+
+  <!-- Right side: code block -->
+  <rect x="720" y="100" width="496" height="440" rx="12" fill="#0F172A" stroke="#1E293B" stroke-width="2"/>
+
+  <!-- Code block header -->
+  <rect x="720" y="100" width="496" height="44" rx="12" fill="#1E293B"/>
+  <rect x="720" y="132" width="496" height="12" fill="#1E293B"/>
+  <circle cx="752" cy="122" r="7" fill="#EF4444" opacity="0.7"/>
+  <circle cx="776" cy="122" r="7" fill="#F59E0B" opacity="0.7"/>
+  <circle cx="800" cy="122" r="7" fill="#10B981" opacity="0.7"/>
+  <text x="960" y="128" font-family="'JetBrains Mono', monospace" font-size="13" fill="#475569" text-anchor="middle">toonify-mcp status</text>
+
+  <!-- Code content -->
+  <text x="752" y="188" font-family="'JetBrains Mono', monospace" font-size="13" fill="#64748B">$ toonify-mcp status</text>
+  <text x="752" y="216" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Toonify MCP status (v0.7.2)</text>
+  <text x="752" y="244" font-family="'JetBrains Mono', monospace" font-size="13" fill="#64748B">&#160;</text>
+  <text x="752" y="272" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Health: <tspan fill="#10B981">active</tspan></text>
+  <text x="752" y="300" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Requests: <tspan fill="#60A5FA">47</tspan></text>
+  <text x="752" y="328" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Optimized: <tspan fill="#60A5FA">43</tspan> (91.5%)</text>
+  <text x="752" y="356" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Skipped: <tspan fill="#60A5FA">4</tspan></text>
+  <text x="752" y="384" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Tokens saved: <tspan fill="#60A5FA">84,320</tspan></text>
+  <text x="752" y="412" font-family="'JetBrains Mono', monospace" font-size="13" fill="#64748B">&#160;</text>
+  <text x="752" y="440" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Last optimized: <tspan fill="#F59E0B">Read</tspan> as json</text>
+  <text x="752" y="468" font-family="'JetBrains Mono', monospace" font-size="13" fill="#94A3B8">Saved: <tspan fill="#10B981">2,840 tokens (61.2%)</tspan></text>
+
+  <!-- URL -->
+  <text x="640" y="604" font-family="'JetBrains Mono', monospace" font-size="14" fill="#334155" text-anchor="middle">toonify.pcircle.ai · github.com/PCIRCLE-AI/toonify-mcp</text>
+</svg>
