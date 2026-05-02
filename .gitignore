@@ -87,6 +87,8 @@ REFACTORING_ANALYSIS.md
 *-business-strategy*.md
 
 # Project-specific (toonify-mcp)
+docs/social-preview/
+!docs/social-preview/v3-before-after.svg
 design/
 research/
 hooks/node_modules/
