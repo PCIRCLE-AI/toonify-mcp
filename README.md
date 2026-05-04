@@ -55,3 +55,4 @@ claude mcp list
 - Terms: https://toonify.pcircle.ai/terms.html
 - [benchmarks.html](docs/benchmarks.html)
 - [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)
