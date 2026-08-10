@@ -403,5 +403,14 @@ users:
       expect(result.reason).not.toContain('processing budget');
       tightOptimizer.destroy();
     });
+
+    // Regression: maxProcessingTime * MIN_THROUGHPUT_CHARS_PER_MS collapses
+    // to <= 0 for zero/negative/non-finite budgets, which would silently
+    // reject every non-empty request. Fail construction instead.
+    test('rejects a non-positive maxProcessingTime at construction', () => {
+      expect(() => new TokenOptimizer({ maxProcessingTime: 0 })).toThrow('maxProcessingTime must be a positive, finite number');
+      expect(() => new TokenOptimizer({ maxProcessingTime: -5 })).toThrow('maxProcessingTime must be a positive, finite number');
+      expect(() => new TokenOptimizer({ maxProcessingTime: NaN })).toThrow('maxProcessingTime must be a positive, finite number');
+    });
   });
 });

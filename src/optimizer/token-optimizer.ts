@@ -85,6 +85,14 @@ export class TokenOptimizer {
     // Validate resultCache configuration
     this.validateResultCacheConfig(this.config.resultCache);
 
+    // maxProcessingTime feeds directly into the entry-time size guard
+    // (maxProcessableLength = maxProcessingTime * MIN_THROUGHPUT_CHARS_PER_MS).
+    // Zero, negative, or non-finite values collapse that ceiling to <= 0,
+    // which rejects every non-empty request with a confusing reason string.
+    if (typeof this.config.maxProcessingTime !== 'number' || !Number.isFinite(this.config.maxProcessingTime) || this.config.maxProcessingTime <= 0) {
+      throw new Error('maxProcessingTime must be a positive, finite number (milliseconds)');
+    }
+
     // Initialize tokenizer with fallback on WASM load failure
     try {
       this.tokenEncoder = new MultilingualTokenizer('gpt-4', true);
