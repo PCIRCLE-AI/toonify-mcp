@@ -76,7 +76,7 @@ Eve,32,Portland`;
 
     test('rejects content with inconsistent commas', () => {
       const result = detector.detect('hello,world\njust one line with no commas\nno,pattern,here,at,all');
-      expect(result.type).not.toBe('csv');
+      expect(result.type).toBe('unknown');
     });
   });
 

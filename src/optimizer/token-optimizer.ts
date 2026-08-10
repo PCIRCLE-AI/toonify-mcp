@@ -31,13 +31,18 @@ const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
  * (5 warm runs each, dist/, no coverage instrumentation) ran far faster —
  * 2,356 / 3,080 / 3,085 chars/ms — because it has none of that contention.
  *
- * This constant is a SIZE ceiling, not a wall-clock guarantee: it is set
- * below the worst throughput seen in either measurement so known workloads
- * (uniform JSON up to ~294,000 chars) clear it comfortably, but it does not
- * prove any given request finishes within maxProcessingTime under arbitrary
- * contention — a slow-enough machine can still exceed the budget on content
- * that passes this check. It exists to reject obviously-oversized input
- * before spending work on it, not to bound worst-case latency exactly.
+ * This constant is a SIZE ceiling, not a wall-clock guarantee. It sits below
+ * both local re-measurements and below the two larger, more representative
+ * audited rates (447, 997 chars/ms) so known workloads (uniform JSON up to
+ * ~294,000 chars) clear it comfortably. It is NOT below the audit's smallest
+ * sample (133 chars/ms at 7,168 chars) — that figure is dominated by fixed
+ * per-call overhead at small payload sizes and is not representative of
+ * throughput near the ~800,000-char default ceiling, so it is deliberately
+ * not used as the floor. This does not prove any given request finishes
+ * within maxProcessingTime under arbitrary contention — a slow-enough
+ * machine can still exceed the budget on content that passes this check.
+ * It exists to reject obviously-oversized input before spending work on it,
+ * not to bound worst-case latency exactly.
  */
 const MIN_THROUGHPUT_CHARS_PER_MS = 400;
 

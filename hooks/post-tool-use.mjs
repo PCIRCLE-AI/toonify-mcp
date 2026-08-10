@@ -94,7 +94,69 @@ function detectStructuredData(content) {
   return null;
 }
 
+// --- Source Code Guard ---
+//
+// Used ONLY to gate debug-output detection, never to route to a compressor.
+// Real source code can score >= 3 on detectDebugOutput's heuristics — e.g. a
+// file with several near-identical `throw new Error("FAIL: ...")` lines
+// legitimately contains "FAIL" and repeated near-duplicate lines. Without
+// this guard, compressDebugOutput() would run collapseDuplicateLines() /
+// collapseSourceExcerptNoise() on that source and hand back something like
+// `[toonify] repeated 4 more times` spliced into an array literal — a
+// misleading, corrupted view of a real file appended alongside the
+// original via additionalContext. Mirrors the ordering in
+// src/optimizer/pipeline/detector.ts, where code is detected before debug
+// output for exactly this reason.
+function looksLikeSourceCode(content) {
+  const lines = content.split('\n');
+  if (lines.length < 3) return false;
+  const sample = lines.slice(0, 50).join('\n');
+
+  const tsIndicators = [
+    /\bimport\s+.*\bfrom\s+['"]/,
+    /\bexport\s+(default\s+)?(class|function|const|interface|type)\b/,
+    /:\s*(string|number|boolean|void)\b/,
+    /=>\s*[{(]/,
+    /\binterface\s+\w+/,
+    /\bconst\s+\w+\s*:\s*\w+/,
+  ];
+  if (tsIndicators.filter(p => p.test(sample)).length >= 2) return true;
+
+  const pyIndicators = [
+    /^def\s+\w+\s*\(/m,
+    /^class\s+\w+.*:/m,
+    /^from\s+\w+\s+import\b/m,
+    /^import\s+\w+/m,
+    /^\s+self\./m,
+    /:\s*$\n\s+/m,
+  ];
+  if (pyIndicators.filter(p => p.test(sample)).length >= 2) return true;
+
+  const phpIndicators = [
+    /^<\?php\b/m,
+    /\bnamespace\s+[\w\\]+;/m,
+    /\buse\s+[\w\\]+;/m,
+    /\bfunction\s+\w+\s*\(/m,
+    /\$this->/,
+    /\bpublic\s+(static\s+)?(function|readonly)\b/m,
+  ];
+  if (phpIndicators.filter(p => p.test(sample)).length >= 2) return true;
+
+  const goIndicators = [
+    /^package\s+\w+/m,
+    /^func\s+/m,
+    /\bfmt\.\w+/,
+    /\b:=\s/,
+    /\berr\s*!=\s*nil\b/,
+  ];
+  if (goIndicators.filter(p => p.test(sample)).length >= 2) return true;
+
+  return false;
+}
+
 function detectDebugOutput(content) {
+  if (looksLikeSourceCode(content)) return false;
+
   const lines = content.split('\n').filter(line => line.trim().length > 0);
   if (lines.length < 4) return false;
 
@@ -155,15 +217,25 @@ function hasMultipleFileLocationDiagnostics(content) {
 function collapseSourceExcerptNoise(content) {
   const lines = content.split('\n');
   const result = [];
+  let omitted = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trimStart();
     const nextTrimmed = lines[i + 1]?.trimStart() || '';
 
-    if (/^\s*\d+\s+\|/.test(trimmed)) continue;
-    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) continue;
+    if (/^\s*\d+\s+\|/.test(trimmed)) { omitted++; continue; }
+    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) { omitted++; continue; }
 
     result.push(lines[i]);
+  }
+
+  // One summary marker for the whole document rather than one per drop
+  // cluster — these lines duplicate the file:line:col already stated in
+  // the diagnostic header above them, so per-cluster markers would often
+  // cost more text than the noise they replace. The point is to avoid a
+  // *zero*-indication silent drop, not to preserve per-line detail here.
+  if (omitted > 0) {
+    result.push(`[toonify] ${omitted} source excerpt line${omitted > 1 ? 's' : ''} omitted throughout`);
   }
 
   return result.join('\n');
@@ -183,6 +255,7 @@ function collapseSimilarDiagnosticLines(content) {
     }
 
     let repeatCount = 1;
+    const otherLocations = [];
     let j = i + 1;
     let separatorCount = 0;
 
@@ -196,6 +269,8 @@ function collapseSimilarDiagnosticLines(content) {
       const nextKey = getNormalizedDiagnosticKey(lines[j]);
       if (nextKey === key && separatorCount <= 2) {
         repeatCount++;
+        const loc = getDiagnosticLocation(lines[j]);
+        if (loc) otherLocations.push(loc);
         separatorCount = 0;
         j++;
         continue;
@@ -206,7 +281,8 @@ function collapseSimilarDiagnosticLines(content) {
 
     result.push(lines[i]);
     if (repeatCount > 1) {
-      result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}`);
+      const suffix = otherLocations.length > 0 ? ` (also at ${otherLocations.join(', ')})` : '';
+      result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}${suffix}`);
     }
 
     if (j < lines.length && result[result.length - 1] !== '' && lines[j - 1]?.trim() === '') {
@@ -282,15 +358,31 @@ function isStackFrame(line) {
 function getNormalizedDiagnosticKey(line) {
   const trimmed = line.trim();
 
-  const tscMatch = trimmed.match(/^[\w./-]+\.[A-Za-z0-9]+:\d+:\d+\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
+  const tscMatch = trimmed.match(/^([\w./-]+\.[A-Za-z0-9]+:\d+:\d+)\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
   if (tscMatch) {
-    return `tsc:${tscMatch[1]}:${tscMatch[2]}:${tscMatch[3].replace(/\s+/g, ' ')}`;
+    return `tsc:${tscMatch[2]}:${tscMatch[3]}:${tscMatch[4].replace(/\s+/g, ' ')}`;
   }
 
-  const eslintMatch = trimmed.match(/^\d+:\d+\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
+  const eslintMatch = trimmed.match(/^(\d+:\d+)\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
   if (eslintMatch) {
-    return `lint:${eslintMatch[1]}:${eslintMatch[2].replace(/\s+/g, ' ')}:${eslintMatch[3]}`;
+    return `lint:${eslintMatch[2]}:${eslintMatch[3].replace(/\s+/g, ' ')}:${eslintMatch[4]}`;
   }
+
+  return null;
+}
+
+// Location this diagnostic line refers to (file:line:col for tsc, line:col
+// for eslint), used only to avoid silently dropping WHERE collapsed
+// occurrences were, not for the dedup key itself — grouping by location
+// would defeat collapsing genuinely repeated diagnostics.
+function getDiagnosticLocation(line) {
+  const trimmed = line.trim();
+
+  const tscMatch = trimmed.match(/^([\w./-]+\.[A-Za-z0-9]+:\d+:\d+)\s+-\s+(error|warning)\s+[A-Z]+\d+:/);
+  if (tscMatch) return tscMatch[1];
+
+  const eslintMatch = trimmed.match(/^(\d+:\d+)\s+(error|warning)\s+/);
+  if (eslintMatch) return eslintMatch[1];
 
   return null;
 }
@@ -388,18 +480,32 @@ async function main() {
       output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
     }
 
-    // Return optimized content. `updatedToolOutput` REPLACES the tool result
-    // Claude sees (Claude Code v2.1.121+, all built-in tools). Do not switch
-    // this to an append-only hookSpecificOutput field — appending after the
-    // original tool result means the model receives both the full original
-    // content AND the compressed copy, growing context instead of shrinking
-    // it (this is what the hook did before this fix).
+    // Return optimized content via additionalContext, not updatedToolOutput.
+    //
+    // updatedToolOutput REPLACES the tool result Claude sees and is the
+    // right field in principle (Claude Code v2.1.121+), but it requires the
+    // value to match the tool's own structured output shape — a plain
+    // string is schema-invalid. Verified live against Claude Code v2.1.226:
+    // Read's tool_response is an object ({type, file:{filePath, content,
+    // ...}}), not a string, so this hook's own entry gate
+    // (`typeof tool_response !== 'string'`, see main()) has always
+    // short-circuited to passthrough for Read/Grep/Glob/WebFetch before
+    // this code path is ever reached. Bypassing that gate to test
+    // updatedToolOutput directly, Claude Code's Zod validation rejected a
+    // bare string for Read with `invalid_type: expected object, received
+    // string` and fell back to the original content. Switching to
+    // updatedToolOutput needs per-tool response reconstruction (replace
+    // just the text field, keep the rest of the object) against currently
+    // undocumented internal schemas — real follow-up work, not a one-line
+    // field rename. additionalContext appends after the original result
+    // (so context grows, not shrinks) but is schema-valid and actually
+    // reaches Claude today.
     process.stdout.write(JSON.stringify({
       continue: true,
       suppressOutput: true,
       hookSpecificOutput: {
         hookEventName: 'PostToolUse',
-        updatedToolOutput: output,
+        additionalContext: output,
       },
     }));
   } catch (error) {

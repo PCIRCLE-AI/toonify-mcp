@@ -1,6 +1,9 @@
 /**
- * TOON Compressor — converts JSON/CSV/YAML to TOON format
+ * TOON Compressor — converts JSON/YAML to TOON format
  * Extracted from TokenOptimizer for pipeline architecture.
+ *
+ * 'csv' is deliberately excluded — see detector.ts for why the detector
+ * never routes CSV here.
  */
 
 import { encode as toonEncode } from '@toon-format/toon';
@@ -9,7 +12,7 @@ import type { ContentType, DetectResult, CompressResult } from '../pipeline/type
 
 export class ToonCompressor implements Compressor {
   readonly name = 'toon';
-  readonly supportedTypes: ContentType[] = ['json', 'csv', 'yaml'];
+  readonly supportedTypes: ContentType[] = ['json', 'yaml'];
 
   compress(content: string, detection: DetectResult): CompressResult {
     // Use pre-parsed data from detector when available

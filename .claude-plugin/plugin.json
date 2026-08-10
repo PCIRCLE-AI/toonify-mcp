@@ -1,6 +1,6 @@
 {
   "name": "toonify-mcp",
-  "description": "Local context compression for Claude Code workflows, including structured data, debug-heavy output, and supported source files.",
+  "description": "Local context compression for Claude Code workflows, including structured data and debug-heavy output.",
   "author": {
     "name": "PCIRCLE AI"
   },

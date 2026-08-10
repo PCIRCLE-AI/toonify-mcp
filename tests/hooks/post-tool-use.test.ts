@@ -45,8 +45,8 @@ describe('PostToolUse Hook', () => {
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
       expect(output.hookEventName).toBe('PostToolUse');
-      expect(typeof output.updatedToolOutput).toBe('string');
-      expect(output.updatedToolOutput as string).toContain('[TOON-JSON]');
+      expect(typeof output.additionalContext).toBe('string');
+      expect(output.additionalContext as string).toContain('[TOON-JSON]');
     });
 
     test('optimizes debug-heavy output while preserving actionable lines', async () => {
@@ -84,10 +84,10 @@ Tests:       1 failed, 1 total`,
       expect(result.continue).toBe(true);
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.updatedToolOutput as string).toContain('tests/user-service.test.ts');
-      expect(output.updatedToolOutput as string).toContain('/workspace/src/index.ts:11:3');
-      expect(output.updatedToolOutput as string).not.toContain('      41 |');
-      expect(output.updatedToolOutput as string).toContain('[toonify]');
+      expect(output.additionalContext as string).toContain('tests/user-service.test.ts');
+      expect(output.additionalContext as string).toContain('/workspace/src/index.ts:11:3');
+      expect(output.additionalContext as string).not.toContain('      41 |');
+      expect(output.additionalContext as string).toContain('[toonify]');
     });
 
     test('collapses repeated TypeScript diagnostics in hook mode', async () => {
@@ -117,10 +117,10 @@ Found 3 errors in 2 files.`,
       expect(result.continue).toBe(true);
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.updatedToolOutput as string).toContain('[toonify] similar diagnostic repeated 1 more time');
-      expect(output.updatedToolOutput as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
-      expect(output.updatedToolOutput as string).not.toContain('18   title={42}');
-      expect(output.updatedToolOutput as string).not.toContain('22   title={99}');
+      expect(output.additionalContext as string).toContain('[toonify] similar diagnostic repeated 1 more time');
+      expect(output.additionalContext as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
+      expect(output.additionalContext as string).not.toContain('18   title={42}');
+      expect(output.additionalContext as string).not.toContain('22   title={99}');
     });
   });
 
@@ -197,6 +197,34 @@ class Service:
       const csv = ['id,name,email,age,department', ...rows].join('\n');
 
       const { stdout } = await runHook({ tool_name: 'Read', tool_response: csv });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Regression: source code can score >= 3 on detectDebugOutput's
+    // heuristics (e.g. repeated near-identical lines + the literal word
+    // "FAIL" both appearing legitimately in real code), which used to route
+    // it into compressDebugOutput() and silently splice a
+    // "[toonify] repeated N more times" note into what was a valid TS array
+    // literal, corrupting real source. Guarded against here regardless of
+    // which hookSpecificOutput field is used — an appended corrupted copy
+    // is still misleading even when the original is also present.
+    test('source code with repeated near-identical lines is not misclassified as debug output', async () => {
+      const ts = `export const RETRY_MESSAGES: string[] = [
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+];
+
+export function nextMessage(index: number): string {
+  return RETRY_MESSAGES[index % RETRY_MESSAGES.length];
+}
+`;
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: ts });
       const result = parseOutput(stdout);
 
       expect(result).toEqual({ continue: true });

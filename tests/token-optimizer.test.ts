@@ -51,7 +51,7 @@ describe('TokenOptimizer', () => {
       expect(result.optimizedContent).toBeUndefined();
     });
 
-    test('rejects CSV with inconsistent column counts', async () => {
+    test('CSV with inconsistent column counts is also untouched (column consistency no longer matters)', async () => {
       const invalidCSV = `name,age,city
 John Doe,30
 Jane Smith,25,London,UK`;
@@ -59,6 +59,7 @@ Jane Smith,25,London,UK`;
       const result = await optimizer.optimize(invalidCSV);
 
       expect(result.optimized).toBe(false);
+      expect(result.reason).toBe('Not structured data');
     });
   });
 
