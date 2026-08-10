@@ -1,9 +1,16 @@
 /**
- * Content type detector — identifies JSON, CSV, YAML, or code
+ * Content type detector — identifies JSON, YAML, code, or debug output
+ *
+ * CSV is deliberately not detected. Encoding CSV as TOON was reported as a
+ * net loss at every size tried, -17.1% / -16.7% / -15.4% at 50 / 500 / 2000
+ * rows (external audit); independently reproduced here with a differently
+ * shaped CSV fixture at -9.7% / -9.0% / -8.5% for the same row counts. Both
+ * runs agree on the sign (always a loss), so detecting CSV only bought a
+ * parse + encode + reject cycle for no benefit.
  */
 
 import yaml from 'yaml';
-import type { ContentType, DetectResult } from './types.js';
+import type { DetectResult } from './types.js';
 
 export class Detector {
   /**
@@ -18,10 +25,6 @@ export class Detector {
     // Try YAML (only if structurally complex)
     const yamlResult = this.tryYAML(content);
     if (yamlResult) return yamlResult;
-
-    // Try CSV
-    const csvResult = this.tryCSV(content);
-    if (csvResult) return csvResult;
 
     // Try code detection
     const codeResult = this.detectCode(content);
@@ -109,15 +112,6 @@ export class Detector {
       if (typeof data === 'object' && data !== null) {
         return { type: 'yaml', confidence: 0.9, data };
       }
-    } catch {}
-    return null;
-  }
-
-  private tryCSV(content: string): DetectResult | null {
-    if (!this.looksLikeCSV(content)) return null;
-    try {
-      const data = this.parseCSV(content);
-      return { type: 'csv', confidence: 0.8, data };
     } catch {}
     return null;
   }
@@ -289,67 +283,5 @@ export class Detector {
     const yamlDensity = (yamlLines + listItems) / Math.min(lines.length, 20);
 
     return hasStructure && yamlDensity >= 0.3;
-  }
-
-  private looksLikeCSV(content: string): boolean {
-    const lines = content.split('\n').filter(l => l.trim());
-    if (lines.length < 2) return false;
-
-    const firstLineCommas = (lines[0].match(/,/g) || []).length;
-    if (firstLineCommas === 0) return false;
-
-    let matchingLines = 0;
-    for (let i = 1; i < Math.min(lines.length, 10); i++) {
-      const commas = (lines[i].match(/,/g) || []).length;
-      if (commas === firstLineCommas) matchingLines++;
-    }
-
-    return matchingLines >= Math.min(lines.length - 1, 7);
-  }
-
-  private parseCSV(content: string): Record<string, string>[] {
-    const lines = content.split('\n').filter(l => l.trim());
-    const headers = this.parseCSVLine(lines[0]);
-
-    return lines.slice(1).map(line => {
-      const values = this.parseCSVLine(line);
-      const obj: Record<string, string> = {};
-      headers.forEach((header, i) => {
-        obj[header] = values[i] || '';
-      });
-      return obj;
-    });
-  }
-
-  private parseCSVLine(line: string): string[] {
-    const fields: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (inQuotes) {
-        if (char === '"' && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else if (char === '"') {
-          inQuotes = false;
-        } else {
-          current += char;
-        }
-      } else {
-        if (char === '"') {
-          inQuotes = true;
-        } else if (char === ',') {
-          fields.push(current.trim());
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-    }
-
-    fields.push(current.trim());
-    return fields;
   }
 }

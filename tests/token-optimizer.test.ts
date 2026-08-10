@@ -32,9 +32,11 @@ describe('TokenOptimizer', () => {
     });
   });
 
-  describe('CSV optimization', () => {
-    test('detects and processes CSV format correctly', async () => {
-      // Create larger CSV dataset
+  describe('CSV is deliberately not compressed', () => {
+    // TOON encoding of CSV measured as a net loss at every row count tried
+    // (see src/optimizer/pipeline/detector.ts), so CSV text is never
+    // detected as a structured-data type and always passes through as-is.
+    test('leaves well-formed CSV untouched', async () => {
       const headers = 'id,name,email,age,city,country,department,salary,hire_date';
       const rows = Array.from({ length: 25 }, (_, i) =>
         `${i},Employee ${i},employee${i}@company.com,${25 + i},City ${i},Country ${i},Dept ${i % 5},${50000 + i * 1000},2020-01-${(i % 28) + 1}`
@@ -43,19 +45,10 @@ describe('TokenOptimizer', () => {
 
       const result = await optimizer.optimize(csvData);
 
-      // CSV should be detected and processed (either optimized or rejected based on savings)
-      expect(result.originalTokens).toBeGreaterThan(0);
-
-      if (result.optimized) {
-        expect(result.format).toBe('csv');
-        expect(result.optimizedContent).toBeDefined();
-        expect(result.savings).toBeDefined();
-        expect(result.savings!.percentage).toBeGreaterThanOrEqual(30);
-        expect(result.optimizedTokens).toBeLessThan(result.originalTokens);
-      } else {
-        // If not optimized, should have valid reason (e.g., savings too low)
-        expect(result.reason).toBeDefined();
-      }
+      expect(result.optimized).toBe(false);
+      expect(result.format).toBeUndefined();
+      expect(result.reason).toBe('Not structured data');
+      expect(result.optimizedContent).toBeUndefined();
     });
 
     test('rejects CSV with inconsistent column counts', async () => {
@@ -348,18 +341,23 @@ users:
   });
 
   describe('Edge cases', () => {
+    // Regression: an all-whitespace/empty tool result must short-circuit to
+    // passthrough with no optimizedContent, never reach the pipeline.
     test('handles empty string', async () => {
       const result = await optimizer.optimize('');
 
       expect(result.optimized).toBe(false);
-      expect(result.reason).toBe('Not structured data');
+      expect(result.reason).toBe('Empty content');
+      expect(result.optimizedContent).toBeUndefined();
+      expect(result.originalTokens).toBe(0);
     });
 
     test('handles whitespace-only content', async () => {
       const result = await optimizer.optimize('   \n\t  \n   ');
 
       expect(result.optimized).toBe(false);
-      expect(result.reason).toBe('Not structured data');
+      expect(result.reason).toBe('Empty content');
+      expect(result.optimizedContent).toBeUndefined();
     });
 
     test('handles exactly 200 characters threshold', async () => {
@@ -369,6 +367,40 @@ users:
 
       expect(result.optimized).toBe(false);
       expect(result.reason).toBe('Not structured data');
+    });
+  });
+
+  describe('processing time budget (entry guard, not post-hoc discard)', () => {
+    // Regression: the old check ran the pipeline to completion and then
+    // discarded a correct, already-computed result if the wall clock
+    // exceeded maxProcessingTime — which made success depend on CPU
+    // contention (e.g. 19 Jest suites running in parallel under coverage
+    // instrumentation), not on the content itself. The guard must now be
+    // decided from content.length before any pipeline work starts.
+    test('rejects oversized content before processing, using a size-derived reason', async () => {
+      const tightOptimizer = new TokenOptimizer({ maxProcessingTime: 10 });
+      // 10ms budget * 400 chars/ms throughput assumption = 4,000 char ceiling.
+      const oversized = JSON.stringify({ items: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `Item ${i}` })) });
+      expect(oversized.length).toBeGreaterThan(4000);
+
+      const result = await tightOptimizer.optimize(oversized);
+
+      expect(result.optimized).toBe(false);
+      expect(result.reason).toContain('processing budget');
+      expect(result.originalTokens).toBe(0);
+      tightOptimizer.destroy();
+    });
+
+    test('accepts content within the budget for the same config', async () => {
+      const tightOptimizer = new TokenOptimizer({ maxProcessingTime: 10 });
+      const small = JSON.stringify({ id: 1, name: 'ok' });
+
+      const result = await tightOptimizer.optimize(small);
+
+      // Small content must never be rejected by the size guard itself —
+      // it may still be rejected later for low savings, but not for size.
+      expect(result.reason).not.toContain('processing budget');
+      tightOptimizer.destroy();
     });
   });
 });

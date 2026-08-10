@@ -2,13 +2,13 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Plugin de compresión de contexto para Claude Code. Reduce automáticamente las salidas grandes de herramientas—JSON, CSV, YAML, stack traces y logs—antes de que entren en la ventana de contexto.
+Plugin de compresión de contexto para Claude Code. Reduce automáticamente las salidas grandes de herramientas—JSON, YAML, stack traces y logs—antes de que entren en la ventana de contexto.
 
 Funciona como plugin de Claude Code (automático, sin configuración) o como servidor MCP (bajo demanda).
 
 ## Funciones
 
-- Comprime respuestas grandes de JSON, CSV, YAML y APIs
+- Comprime respuestas grandes de JSON, YAML y APIs
 - Reduce fallos de tests largos y stack traces
 - Se ejecuta automáticamente en segundo plano—sin cambios en tu flujo de trabajo de Claude Code
 

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Plugin-mode hook now returns `hookSpecificOutput.updatedToolOutput` instead of `additionalContext`, so the compressed content replaces the original tool result instead of being appended after it (the previous behavior made context bigger, not smaller)
+- Removed `CodeCompressor` from the pipeline and the standalone hook: comment-stripping heuristics dropped the closing `"""` of multi-line Python docstrings and truncated regex literals such as `/^https?:\/\//` at the `//`, producing source that no longer parses. Measured savings (0.8% on a React/TS project, 6.5% median on a Python project) did not justify the risk. Source code now always passes through untouched
+- Removed CSV detection from the pipeline detector and the standalone hook: encoding CSV as TOON measured as a net loss at every size tried
+- `TokenOptimizer`'s processing-time budget is now an entry-time size guard instead of a post-hoc discard. Previously the full pipeline ran and the result was thrown away if the wall clock exceeded `maxProcessingTime` (default 50ms) — a check driven by OS scheduling noise, not actual cost, which made `npm run test:coverage` fail nondeterministically under parallel test load. Raised the default budget to 2000ms and derived a content-length ceiling from it before any pipeline work starts
+- Empty or whitespace-only content is now rejected immediately with an explicit `Empty content` reason instead of falling through to the detector
+
+### Changed
+- README (all 11 language files) and `package.json`'s description no longer claim CSV or source-code compression, matching the above
+- MCP server's `optimize_content` tool description no longer lists CSV as an accepted content type
+
+### Tests
+- Added regression coverage: Python source with a multi-line docstring and TypeScript source with regex literals both pass through the pipeline and the hook byte-for-byte unchanged
+- Added regression coverage for the empty-content guard and the entry-time processing-budget guard
+- Updated pipeline/detector/hook tests that previously asserted `CodeCompressor` or CSV-to-TOON behavior to assert passthrough instead
+
 ## [0.7.2] - 2026-05-01
 
 ### Changed

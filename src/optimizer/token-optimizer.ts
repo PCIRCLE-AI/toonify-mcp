@@ -11,10 +11,35 @@ import type {
 import { CacheOptimizer, LRUCache, type LRUCacheConfig } from './caching/index.js';
 import { MultilingualTokenizer } from './multilingual/index.js';
 import { Pipeline } from './pipeline/index.js';
-import { ToonCompressor, CodeCompressor, DebugOutputCompressor } from './compressors/index.js';
+import { ToonCompressor, DebugOutputCompressor } from './compressors/index.js';
 
 /** Maximum content size to process (10 MB) — prevents DoS via unbounded JSON.parse */
 const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
+
+/**
+ * Conservative processing throughput (chars/ms) used to turn
+ * `maxProcessingTime` into an entry-time size guard.
+ *
+ * A prior audit measured pipeline.run() on uniform JSON (TOON's best case)
+ * under `npm run test:coverage` (19 Jest suites in parallel + Istanbul
+ * instrumentation — the exact contended scenario that made the old post-hoc
+ * timeout check flaky):
+ *   50 rows   /  7,168 chars  /  54ms  ≈  133 chars/ms
+ *   500 rows  / 72,000 chars  / 161ms  ≈  447 chars/ms
+ *   2000 rows / 294,000 chars / 295ms  ≈  997 chars/ms
+ * A local, uncontended re-measurement of the same shapes on this machine
+ * (5 warm runs each, dist/, no coverage instrumentation) ran far faster —
+ * 2,356 / 3,080 / 3,085 chars/ms — because it has none of that contention.
+ *
+ * This constant is a SIZE ceiling, not a wall-clock guarantee: it is set
+ * below the worst throughput seen in either measurement so known workloads
+ * (uniform JSON up to ~294,000 chars) clear it comfortably, but it does not
+ * prove any given request finishes within maxProcessingTime under arbitrary
+ * contention — a slow-enough machine can still exceed the budget on content
+ * that passes this check. It exists to reject obviously-oversized input
+ * before spending work on it, not to bound worst-case latency exactly.
+ */
+const MIN_THROUGHPUT_CHARS_PER_MS = 400;
 
 export class TokenOptimizer {
   private config: OptimizationConfig;
@@ -29,7 +54,7 @@ export class TokenOptimizer {
       enabled: true,
       minTokensThreshold: 50,
       minSavingsThreshold: 30,
-      maxProcessingTime: 50,
+      maxProcessingTime: 2000,
       skipToolPatterns: [],
       caching: {
         enabled: true,
@@ -63,10 +88,12 @@ export class TokenOptimizer {
       this.tokenEncoder = new MultilingualTokenizer('gpt-4', false);
     }
 
-    // Initialize pipeline with compressors
+    // Initialize pipeline with compressors.
+    // CodeCompressor is deliberately NOT registered — see compressors/code.ts.
+    // Detection still returns code-* types, so the pipeline falls through to
+    // "No compressor for type" and the source is passed through untouched.
     this.pipeline = new Pipeline(this.tokenEncoder);
     this.pipeline.register(new ToonCompressor());
-    this.pipeline.register(new CodeCompressor());
     this.pipeline.register(new DebugOutputCompressor());
 
     // Initialize cache optimizer
@@ -106,7 +133,36 @@ export class TokenOptimizer {
       };
     }
 
-    const startTime = Date.now();
+    // Empty (or whitespace-only) content has nothing to optimize.
+    if (content.trim().length === 0) {
+      return {
+        optimized: false,
+        originalContent: content,
+        originalTokens: 0,
+        reason: 'Empty content'
+      };
+    }
+
+    // Entry guard: reject content whose size makes it unlikely to finish
+    // inside maxProcessingTime, BEFORE spending any work on it. This replaces
+    // a prior post-hoc check that ran the full pipeline and then discarded
+    // the result if the wall clock exceeded the budget — that measured OS
+    // scheduling noise, not actual processing cost, and threw away real work.
+    //
+    // Note: at the default 2000ms budget this ceiling (~800,000 chars) is
+    // tighter than MAX_CONTENT_SIZE (10MB) above, so this check is the one
+    // that actually fires for large default-config input. MAX_CONTENT_SIZE
+    // still matters for callers who raise maxProcessingTime enough to push
+    // this ceiling past it (maxProcessingTime > ~25,000ms).
+    const maxProcessableLength = this.config.maxProcessingTime * MIN_THROUGHPUT_CHARS_PER_MS;
+    if (content.length > maxProcessableLength) {
+      return {
+        optimized: false,
+        originalContent: content,
+        originalTokens: 0,
+        reason: `Content too large for ${this.config.maxProcessingTime}ms processing budget: ${content.length} chars exceeds ~${maxProcessableLength} char estimate`
+      };
+    }
 
     // Check LRU cache first
     const cacheKey = this.generateCacheKey(content, metadata);
@@ -145,17 +201,6 @@ export class TokenOptimizer {
           originalContent: content,
           originalTokens: pipelineResult.originalTokens,
           reason: pipelineResult.reason,
-        };
-      }
-
-      // Check processing time
-      const elapsed = Date.now() - startTime;
-      if (elapsed > this.config.maxProcessingTime) {
-        return {
-          optimized: false,
-          originalContent: content,
-          originalTokens: pipelineResult.originalTokens,
-          reason: `Processing timeout: ${elapsed}ms`
         };
       }
 

@@ -60,8 +60,10 @@ license: MIT`;
     });
   });
 
-  describe('CSV detection', () => {
-    test('detects CSV with consistent columns', () => {
+  describe('CSV is deliberately not detected', () => {
+    // TOON encoding measured as a net loss on CSV at every row count tried,
+    // so well-formed CSV must not be routed to a compressor at all.
+    test('does not classify well-formed CSV as csv', () => {
       const csv = `name,age,city
 Alice,30,NYC
 Bob,25,LA
@@ -69,8 +71,7 @@ Carol,35,Chicago
 Dave,28,Seattle
 Eve,32,Portland`;
       const result = detector.detect(csv);
-      expect(result.type).toBe('csv');
-      expect(result.confidence).toBe(0.8);
+      expect(result.type).toBe('unknown');
     });
 
     test('rejects content with inconsistent commas', () => {

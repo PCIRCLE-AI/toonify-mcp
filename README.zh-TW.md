@@ -2,13 +2,13 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Claude Code 的 context 壓縮外掛。在大型工具輸出進入 context window 之前自動縮小——支援 JSON、CSV、YAML、stack trace 與 log。
+Claude Code 的 context 壓縮外掛。在大型工具輸出進入 context window 之前自動縮小——支援 JSON、YAML、stack trace 與 log。
 
 可作為 Claude Code 外掛（自動、免設定）或 MCP 伺服器（手動呼叫）使用。
 
 ## 功能
 
-- 壓縮大型 JSON、CSV、YAML 與 API 回應
+- 壓縮大型 JSON、YAML 與 API 回應
 - 縮短長篇測試失敗與 stack trace
 - 在背景自動運作，不影響原有的 Claude Code 使用方式
 

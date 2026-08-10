@@ -57,7 +57,7 @@ export class ToonifyMCPServer {
             properties: {
               content: {
                 type: 'string',
-                description: 'The content to optimize (JSON, CSV, or YAML)',
+                description: 'The content to optimize (JSON or YAML)',
               },
               toolName: {
                 type: 'string',

@@ -2,13 +2,13 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Plugin kompresi konteks untuk Claude Code. Secara otomatis mengecilkan output alat yang besar—JSON, CSV, YAML, stack trace, dan log—sebelum masuk ke jendela konteks.
+Plugin kompresi konteks untuk Claude Code. Secara otomatis mengecilkan output alat yang besar—JSON, YAML, stack trace, dan log—sebelum masuk ke jendela konteks.
 
 Berfungsi sebagai plugin Claude Code (otomatis, tanpa konfigurasi) atau server MCP (sesuai permintaan).
 
 ## Fitur
 
-- Mengompresi respons JSON, CSV, YAML, dan API yang besar
+- Mengompresi respons JSON, YAML, dan API yang besar
 - Memperkecil test failure panjang dan stack trace
 - Berjalan otomatis di latar belakang—tidak ada perubahan pada alur kerja Claude Code
 

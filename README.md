@@ -4,13 +4,13 @@
 
 ![Toonify MCP — context compression for Claude Code](docs/social-preview/v3-before-after.svg)
 
-Context compression plugin for Claude Code. Automatically trims large tool output—JSON, CSV, YAML, stack traces, and logs—before it enters the context window.
+Context compression plugin for Claude Code. Automatically trims large tool output—JSON, YAML, stack traces, and logs—before it enters the context window.
 
 Works as a Claude Code plugin (automatic, zero-config) or as an MCP server (on-demand).
 
 ## Features
 
-- Compresses large JSON, CSV, YAML, and API responses
+- Compresses large JSON, YAML, and API responses
 - Reduces long test failures and stack traces
 - Runs automatically in the background—no change to your Claude Code workflow required
 

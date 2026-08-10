@@ -1,5 +1,9 @@
 /**
- * Tests for YAML detection and CSV quote handling improvements
+ * Tests for YAML detection strictness and CSV passthrough behavior.
+ *
+ * CSV detection (and its quoted-field parsing) was removed from the
+ * detector: TOON encoding of CSV measured as a net loss at every size
+ * tried. These CSV cases now assert passthrough, not quote handling.
  */
 
 import { describe, test, expect, beforeEach } from '@jest/globals';
@@ -77,8 +81,8 @@ logging:
     });
   });
 
-  describe('CSV quote handling', () => {
-    test('handles quoted fields with commas inside', async () => {
+  describe('CSV passthrough', () => {
+    test('leaves CSV with quoted fields containing commas untouched', async () => {
       const csv = `name,title,salary
 "Smith, John",Engineer,75000
 "Doe, Jane","Senior Engineer",95000
@@ -86,14 +90,11 @@ logging:
 "Brown, Alice",Designer,65000
 "Jones, Charlie","PM, Product",85000`;
       const result = await optimizer.optimize(csv);
-      // Should detect as CSV and handle quotes correctly
-      expect(result.originalTokens).toBeGreaterThan(0);
-      if (result.optimized) {
-        expect(result.format).toBe('csv');
-      }
+      expect(result.optimized).toBe(false);
+      expect(result.format).toBeUndefined();
     });
 
-    test('handles escaped quotes in CSV', async () => {
+    test('leaves CSV with escaped quotes untouched', async () => {
       const csv = `id,description,price
 1,"A ""great"" product",29.99
 2,"Standard item",19.99
@@ -101,10 +102,10 @@ logging:
 4,"Regular product",24.99
 5,"Budget ""value"" option",14.99`;
       const result = await optimizer.optimize(csv);
-      expect(result.originalTokens).toBeGreaterThan(0);
+      expect(result.optimized).toBe(false);
     });
 
-    test('handles simple CSV without quotes', async () => {
+    test('leaves simple CSV without quotes untouched', async () => {
       const csv = `id,name,email,age,department
 1,Alice,alice@test.com,30,Engineering
 2,Bob,bob@test.com,25,Design
@@ -112,10 +113,8 @@ logging:
 4,Dave,dave@test.com,28,Marketing
 5,Eve,eve@test.com,32,Engineering`;
       const result = await optimizer.optimize(csv);
-      expect(result.originalTokens).toBeGreaterThan(0);
-      if (result.optimized) {
-        expect(result.format).toBe('csv');
-      }
+      expect(result.optimized).toBe(false);
+      expect(result.format).toBeUndefined();
     });
   });
 

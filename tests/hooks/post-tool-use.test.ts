@@ -45,76 +45,8 @@ describe('PostToolUse Hook', () => {
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
       expect(output.hookEventName).toBe('PostToolUse');
-      expect(typeof output.additionalContext).toBe('string');
-      expect(output.additionalContext as string).toContain('[TOON-JSON]');
-    });
-
-    test('preserves PHP attributes and heredoc bodies during code compression', async () => {
-      const input = {
-        tool_name: 'Read',
-        tool_response: `<?php
-
-use Symfony\\Component\\Routing\\Attribute\\Route;
-
-class ApiController {
-    // Remove this comment line
-    #[Route('/api/users', methods: ['GET'])]
-    public function listUsers() {
-        $html = <<<HTML
-<h1>Users</h1>
-// This is HTML, not a PHP comment
-# also not a PHP comment
-HTML;
-        return $this->render($html); # remove trailing comment
-    }
-}
-`,
-      };
-
-      const { stdout } = await runHook(input);
-      const result = parseOutput(stdout);
-
-      expect(result.continue).toBe(true);
-      expect(result.suppressOutput).toBe(true);
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.hookEventName).toBe('PostToolUse');
-      expect(output.additionalContext as string).toContain("#[Route('/api/users', methods: ['GET'])]");
-      expect(output.additionalContext as string).toContain('// This is HTML, not a PHP comment');
-      expect(output.additionalContext as string).toContain('# also not a PHP comment');
-      expect(output.additionalContext as string).not.toContain('remove trailing comment');
-    });
-
-    test('preserves PHP backtick command strings during code compression', async () => {
-      const input = {
-        tool_name: 'Read',
-        tool_response: `<?php
-
-use App\\Support\\Runner;
-use App\\Support\\Shell;
-
-class Runner {
-    // Remove this comment line
-    public function cmd() {
-        return \`echo #notacomment\`; # remove trailing comment
-    }
-
-    // Remove this comment line too
-    public function cmdTwo() {
-        return \`printf %s #still-not-a-comment\`; # remove trailing comment
-    }
-}
-`,
-      };
-
-      const { stdout } = await runHook(input);
-      const result = parseOutput(stdout);
-
-      expect(result.continue).toBe(true);
-      expect(result.suppressOutput).toBe(true);
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('return `echo #notacomment`;');
-      expect(output.additionalContext as string).toContain('return `printf %s #still-not-a-comment`;');
-      expect(output.additionalContext as string).not.toContain('remove trailing comment');
+      expect(typeof output.updatedToolOutput).toBe('string');
+      expect(output.updatedToolOutput as string).toContain('[TOON-JSON]');
     });
 
     test('optimizes debug-heavy output while preserving actionable lines', async () => {
@@ -152,10 +84,10 @@ Tests:       1 failed, 1 total`,
       expect(result.continue).toBe(true);
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('tests/user-service.test.ts');
-      expect(output.additionalContext as string).toContain('/workspace/src/index.ts:11:3');
-      expect(output.additionalContext as string).not.toContain('      41 |');
-      expect(output.additionalContext as string).toContain('[toonify]');
+      expect(output.updatedToolOutput as string).toContain('tests/user-service.test.ts');
+      expect(output.updatedToolOutput as string).toContain('/workspace/src/index.ts:11:3');
+      expect(output.updatedToolOutput as string).not.toContain('      41 |');
+      expect(output.updatedToolOutput as string).toContain('[toonify]');
     });
 
     test('collapses repeated TypeScript diagnostics in hook mode', async () => {
@@ -185,10 +117,89 @@ Found 3 errors in 2 files.`,
       expect(result.continue).toBe(true);
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('[toonify] similar diagnostic repeated 1 more time');
-      expect(output.additionalContext as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
-      expect(output.additionalContext as string).not.toContain('18   title={42}');
-      expect(output.additionalContext as string).not.toContain('22   title={99}');
+      expect(output.updatedToolOutput as string).toContain('[toonify] similar diagnostic repeated 1 more time');
+      expect(output.updatedToolOutput as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
+      expect(output.updatedToolOutput as string).not.toContain('18   title={42}');
+      expect(output.updatedToolOutput as string).not.toContain('22   title={99}');
+    });
+  });
+
+  describe('source code is never rewritten', () => {
+    // Regression for Bug B: `removeInlineCStyleComment` did not know about
+    // regex literals, so `/^https?:\/\//` was truncated at the `//` and the
+    // file Claude received no longer parsed. The hook must not touch code.
+    const tsWithRegexLiterals = `import { normalize } from './util';
+import type { Parsed } from './types';
+
+export interface Parts {
+  host: string;
+  segments: string[];
+}
+
+export function clean(url: string, s: string): Parts {
+  // strip the scheme
+  const a = url.replace(/^https?:\\/\\//, "");
+  const b = s.split(/\\/\\//);
+  const c = a.replace(/\\/\\/+/g, "/"); // collapse duplicate slashes
+  return { host: normalize(c), segments: b };
+}
+`;
+
+    test('TypeScript with regex literals is left byte-for-byte alone', async () => {
+      const { stdout } = await runHook({
+        tool_name: 'Read',
+        tool_response: tsWithRegexLiterals,
+      });
+      const result = parseOutput(stdout);
+
+      // Passthrough means the hook emits no replacement content at all, so the
+      // original tool result reaches Claude unchanged.
+      expect(result).toEqual({ continue: true });
+      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.suppressOutput).toBeUndefined();
+    });
+
+    test('Python with a multi-line docstring is left byte-for-byte alone', async () => {
+      const py = `import json
+from typing import Any
+
+
+def calc(x: int) -> int:
+    """Compute the thing.
+
+    Args:
+        x: the input.
+    """
+    return x * 2
+
+
+class Service:
+    """Manages operations."""
+
+    def __init__(self) -> None:
+        self.items: list[Any] = []  # store items here
+
+    def add(self, item: Any) -> bool:
+        self.items.append(item)
+        return True
+`;
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: py });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    test('CSV is left alone rather than converted to TOON', async () => {
+      const rows = Array.from({ length: 40 }, (_, i) =>
+        `${i},Employee ${i},employee${i}@company.com,${25 + (i % 30)},Dept ${i % 5}`
+      );
+      const csv = ['id,name,email,age,department', ...rows].join('\n');
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: csv });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
     });
   });
 
