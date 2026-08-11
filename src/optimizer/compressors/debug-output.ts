@@ -62,6 +62,7 @@ export class DebugOutputCompressor implements Compressor {
   private collapseSourceExcerptNoise(content: string): string {
     const lines = content.split('\n');
     const result: string[] = [];
+    let omitted = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -70,17 +71,28 @@ export class DebugOutputCompressor implements Compressor {
 
       if (/^\d+\s+\|/.test(trimmed)) {
         // Drop unhighlighted numbered context lines from excerpt blocks.
+        omitted++;
         continue;
       }
 
       // Drop TypeScript-style excerpt lines when the diagnostic header already
       // includes the file and line number, and the next line is only a pointer.
       if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) {
+        omitted++;
         continue;
       }
 
       // Keep highlighted lines like `> 43 | expect(...)`
       result.push(line);
+    }
+
+    // One summary marker for the whole document rather than one per drop
+    // cluster — these lines duplicate the file:line:col already stated in
+    // the diagnostic header above them, so per-cluster markers would often
+    // cost more text than the noise they replace. The point is to avoid a
+    // *zero*-indication silent drop, not to preserve per-line detail here.
+    if (omitted > 0) {
+      result.push(`[toonify] ${omitted} source excerpt line${omitted > 1 ? 's' : ''} omitted throughout`);
     }
 
     return result.join('\n');
@@ -100,6 +112,7 @@ export class DebugOutputCompressor implements Compressor {
       }
 
       let repeatCount = 1;
+      const otherLocations: string[] = [];
       let j = i + 1;
       let separatorCount = 0;
 
@@ -113,6 +126,8 @@ export class DebugOutputCompressor implements Compressor {
         const nextKey = this.getNormalizedDiagnosticKey(lines[j]);
         if (nextKey === key && separatorCount <= 2) {
           repeatCount++;
+          const loc = this.getDiagnosticLocation(lines[j]);
+          if (loc) otherLocations.push(loc);
           separatorCount = 0;
           j++;
           continue;
@@ -123,7 +138,8 @@ export class DebugOutputCompressor implements Compressor {
 
       result.push(lines[i]);
       if (repeatCount > 1) {
-        result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}`);
+        const suffix = otherLocations.length > 0 ? ` (also at ${otherLocations.join(', ')})` : '';
+        result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}${suffix}`);
       }
 
       if (j < lines.length && result[result.length - 1] !== '' && lines[j - 1]?.trim() === '') {
@@ -208,15 +224,31 @@ export class DebugOutputCompressor implements Compressor {
   private getNormalizedDiagnosticKey(line: string): string | null {
     const trimmed = line.trim();
 
-    const tscMatch = trimmed.match(/^[\w./-]+\.[A-Za-z0-9]+:\d+:\d+\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
+    const tscMatch = trimmed.match(/^([\w./-]+\.[A-Za-z0-9]+:\d+:\d+)\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
     if (tscMatch) {
-      return `tsc:${tscMatch[1]}:${tscMatch[2]}:${tscMatch[3].replace(/\s+/g, ' ')}`;
+      return `tsc:${tscMatch[2]}:${tscMatch[3]}:${tscMatch[4].replace(/\s+/g, ' ')}`;
     }
 
-    const eslintMatch = trimmed.match(/^\d+:\d+\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
+    const eslintMatch = trimmed.match(/^(\d+:\d+)\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
     if (eslintMatch) {
-      return `lint:${eslintMatch[1]}:${eslintMatch[2].replace(/\s+/g, ' ')}:${eslintMatch[3]}`;
+      return `lint:${eslintMatch[2]}:${eslintMatch[3].replace(/\s+/g, ' ')}:${eslintMatch[4]}`;
     }
+
+    return null;
+  }
+
+  // Location this diagnostic line refers to (file:line:col for tsc, line:col
+  // for eslint), used only to avoid silently dropping WHERE collapsed
+  // occurrences were, not for the dedup key itself — grouping by location
+  // would defeat collapsing genuinely repeated diagnostics.
+  private getDiagnosticLocation(line: string): string | null {
+    const trimmed = line.trim();
+
+    const tscMatch = trimmed.match(/^([\w./-]+\.[A-Za-z0-9]+:\d+:\d+)\s+-\s+(error|warning)\s+[A-Z]+\d+:/);
+    if (tscMatch) return tscMatch[1];
+
+    const eslintMatch = trimmed.match(/^(\d+:\d+)\s+(error|warning)\s+/);
+    if (eslintMatch) return eslintMatch[1];
 
     return null;
   }
