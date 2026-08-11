@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Local Context Compression for Claude Code</title>
-    <meta name="description" content="Open-source context compression plugin for Claude Code. Automatically trims large JSON, CSV, YAML, stack traces, and logs before they enter the context window. 48% average token savings.">
+    <meta name="description" content="Open-source context compression plugin for Claude Code. Automatically trims large JSON, YAML, stack traces, and logs before they enter the context window. 48% average token savings.">
     <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
     <meta name="author" content="PCIRCLE AI">
     <meta name="application-name" content="Toonify MCP">
@@ -20,11 +20,11 @@
     <meta property="og:site_name" content="Toonify MCP">
     <meta property="og:locale" content="en_US">
     <meta property="og:title" content="Toonify MCP - Local Context Compression for Claude Code">
-    <meta property="og:description" content="Compresses large JSON, logs, stack traces, and source files before they enter the context window. 48% average token savings. Zero workflow changes.">
+    <meta property="og:description" content="Compresses large JSON, logs, and stack traces before they enter the context window. 48% average token savings. Zero workflow changes.">
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/">
     <meta property="twitter:title" content="Toonify MCP - Local Context Compression for Claude Code">
-    <meta property="twitter:description" content="Compresses large JSON, logs, stack traces, and source files before they enter the context window. 48% average token savings. Zero workflow changes.">
+    <meta property="twitter:description" content="Compresses large JSON, logs, and stack traces before they enter the context window. 48% average token savings. Zero workflow changes.">
 
     <!-- Google Fonts: JetBrains Mono + IBM Plex Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -379,13 +379,12 @@
                     "license": "https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/LICENSE",
                     "url": "https://toonify.pcircle.ai/",
                     "downloadUrl": "https://github.com/PCIRCLE-AI/toonify-mcp",
-                    "description": "A local-first Claude Code plugin and MCP server that automatically compresses large JSON, CSV, YAML, debug output, and source files before they enter the context window.",
+                    "description": "A local-first Claude Code plugin and MCP server that automatically compresses large JSON, YAML, and debug output before they enter the context window.",
                     "featureList": [
                         "Plugin mode for automatic post-tool optimization",
                         "MCP server mode for explicit control",
-                        "Structured data compression for JSON, CSV, YAML, and API responses",
+                        "Structured data compression for JSON, YAML, and API responses",
                         "Conservative debug-output compression for test failures and stack traces",
-                        "Source-code compression for TypeScript, Python, Go, and PHP",
                         "Built-in doctor and status commands for install verification"
                     ],
                     "author": {
@@ -453,7 +452,7 @@
             </div>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                Compresses large JSON, logs, stack traces, and source files before they enter the context window. 48% average token savings across structured data, debug output, and source files.
+                Compresses large JSON, logs, and stack traces before they enter the context window. 48% average token savings across structured data and debug output.
             </p>
 
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
@@ -483,7 +482,7 @@
             <dl class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">BEST FOR</dt>
-                    <dd style="color: var(--text-secondary);">Large JSON, CSV, YAML, logs, test output, and supported source files.</dd>
+                    <dd style="color: var(--text-secondary);">Large JSON, YAML, logs, and test output.</dd>
                 </div>
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">DEFAULT PATH</dt>
@@ -507,7 +506,7 @@
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold heading-mono mb-4" style="color: var(--text-primary);">Best for Large Tool Output</h2>
                 <p class="text-xl max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                    Toonify is most useful when the heavy part of your session comes from tool output or source files, not from normal chat.
+                    Toonify is most useful when the heavy part of your session comes from tool output, not from normal chat.
                 </p>
             </div>
 
@@ -516,7 +515,7 @@
                     <div class="text-sm heading-mono mb-3 gradient-text">BEST FIT</div>
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large structured payloads</h3>
                     <p style="color: var(--text-secondary);">
-                        Teams reading large JSON, CSV, YAML, API responses, and generated data into Claude Code.
+                        Teams reading large JSON, YAML, API responses, and generated data into Claude Code.
                     </p>
                 </div>
 
@@ -525,14 +524,6 @@
                     <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Debug-heavy sessions</h3>
                     <p style="color: var(--text-secondary);">
                         Test failures, stack traces, compiler diagnostics, and repetitive lint/build output where the signal matters more than every repeated line.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">ALSO USEFUL</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Code-heavy sessions</h3>
-                    <p style="color: var(--text-secondary);">
-                        TypeScript, Python, Go, and PHP source files where comments and whitespace add token cost without helping the model much.
                     </p>
                 </div>
 
@@ -684,7 +675,7 @@ claude mcp list
                     <div class="text-3xl mb-4">📦</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Large Structured Payloads</h3>
                     <p style="color: var(--text-secondary);">
-                        Built for large JSON, CSV, YAML, API responses, and generated output that would otherwise bloat context.
+                        Built for large JSON, YAML, API responses, and generated output that would otherwise bloat context.
                     </p>
                 </div>
 
@@ -693,14 +684,6 @@ claude mcp list
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Debug Output Compression</h3>
                     <p style="color: var(--text-secondary);">
                         Helps with long test failures, stack traces, compiler diagnostics, and repetitive lint or build output.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🌍</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Supported Code Compression</h3>
-                    <p style="color: var(--text-secondary);">
-                        Makes supported TypeScript, Python, Go, and PHP files lighter when comments and whitespace add cost but not much value.
                     </p>
                 </div>
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toonify MCP - Claude Code 大型輸出壓縮工具</title>
-    <meta name="description" content="開源的 Claude Code context 壓縮外掛。在大型 JSON、CSV、YAML、stack trace、log 進入 context window 前自動壓縮。平均節省 48% token。">
+    <meta name="description" content="開源的 Claude Code context 壓縮外掛。在大型 JSON、YAML、stack trace、log 進入 context window 前自動壓縮。平均節省 48% token。">
     <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
     <meta name="author" content="PCIRCLE AI">
     <meta name="application-name" content="Toonify MCP">
@@ -23,13 +23,13 @@
     <meta property="og:site_name" content="Toonify MCP">
     <meta property="og:locale" content="zh_TW">
     <meta property="og:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
-    <meta property="og:description" content="在大型 JSON、log、stack trace、原始碼進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
+    <meta property="og:description" content="在大型 JSON、log、stack trace 進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/index-zh.html">
     <meta property="twitter:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
-    <meta property="twitter:description" content="在大型 JSON、log、stack trace、原始碼進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
+    <meta property="twitter:description" content="在大型 JSON、log、stack trace 進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
 
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="assets/tailwind.css">
@@ -388,13 +388,12 @@
                     "license": "https://github.com/PCIRCLE-AI/toonify-mcp/blob/main/LICENSE",
                     "url": "https://toonify.pcircle.ai/index-zh.html",
                     "downloadUrl": "https://github.com/PCIRCLE-AI/toonify-mcp",
-                    "description": "本地優先的 Claude Code 外掛與 MCP 伺服器，可減輕大型資料、除錯輸出與支援原始碼帶來的上下文負擔。",
+                    "description": "本地優先的 Claude Code 外掛與 MCP 伺服器，可減輕大型資料與除錯輸出帶來的上下文負擔。",
                     "featureList": [
                         "外掛模式可在 Claude Code 中自動優化工具輸出",
                         "MCP 伺服器模式提供顯式控制",
-                        "支援 JSON、CSV、YAML 與 API 回應的結構化資料壓縮",
+                        "支援 JSON、YAML 與 API 回應的結構化資料壓縮",
                         "支援測試失敗、stack trace 與編譯錯誤的保守壓縮",
-                        "支援 TypeScript、Python、Go、PHP 原始碼壓縮",
                         "內建 doctor 與 status 指令可驗證安裝與近期活動"
                     ],
                     "author": {
@@ -451,7 +450,7 @@
             </h1>
 
             <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto" style="color: var(--text-secondary);">
-                在大型 JSON、log、stack trace、原始碼進入 context window 前先自動壓縮。結構化資料、debug 輸出與原始碼平均節省 48% token。
+                在大型 JSON、log、stack trace 進入 context window 前先自動壓縮。結構化資料與 debug 輸出平均節省 48% token。
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -481,7 +480,7 @@
             <dl class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">最適合</dt>
-                    <dd style="color: var(--text-secondary);">大型 JSON、CSV、YAML、log 輸出、測試輸出與支援的原始碼。</dd>
+                    <dd style="color: var(--text-secondary);">大型 JSON、YAML、log 輸出與測試輸出。</dd>
                 </div>
                 <div class="feature-card">
                     <dt class="text-sm heading-mono mb-2 gradient-text">預設路徑</dt>
@@ -506,7 +505,7 @@
                 <span class="gradient-text">最適合大型工具輸出情境</span>
             </h2>
             <p class="text-xl text-center max-w-3xl mx-auto mb-12" style="color: var(--text-secondary);">
-                當 context 的主要負擔來自工具輸出或原始碼（而非一般對話）時，效果最佳。
+                當 context 的主要負擔來自工具輸出（而非一般對話）時，效果最佳。
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -514,7 +513,7 @@
                     <div class="text-sm heading-mono mb-3 gradient-text">最適合</div>
                     <h3 class="text-2xl font-bold mb-3 heading-mono">大型結構化資料</h3>
                     <p style="color: var(--text-secondary);">
-                        常把大 JSON、CSV、YAML、API 回應或產生出的資料讀進 Claude Code 的團隊。
+                        常把大 JSON、YAML、API 回應或產生出的資料讀進 Claude Code 的團隊。
                     </p>
                 </div>
 
@@ -523,14 +522,6 @@
                     <h3 class="text-2xl font-bold mb-3 heading-mono">Debug 密集工作階段</h3>
                     <p style="color: var(--text-secondary);">
                         測試失敗、stack trace、編譯錯誤與重複的 lint / build 輸出，這種情境更在意可行動訊號而不是每一行重複內容。
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-sm heading-mono mb-3 gradient-text">也有幫助</div>
-                    <h3 class="text-2xl font-bold mb-3 heading-mono">程式碼密集工作階段</h3>
-                    <p style="color: var(--text-secondary);">
-                        TypeScript、Python、Go、PHP 原始碼很多，註解與空白會吃掉不少 token 的情境。
                     </p>
                 </div>
 
@@ -684,19 +675,13 @@ claude mcp list
                 <div class="feature-card">
                     <div class="text-3xl mb-4">📦</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono">大型結構化輸出</h3>
-                    <p style="color: var(--text-secondary);">適合大 JSON、CSV、YAML、API 回應與產生出的資料，避免上下文被 payload 撐大。</p>
+                    <p style="color: var(--text-secondary);">適合大 JSON、YAML、API 回應與產生出的資料，避免上下文被 payload 撐大。</p>
                 </div>
 
                 <div class="feature-card">
                     <div class="text-3xl mb-4">🧪</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono">Debug 輸出壓縮</h3>
                     <p style="color: var(--text-secondary);">適合處理長篇測試失敗、stack trace、編譯錯誤與重複的 lint / build 輸出。</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="text-3xl mb-4">🌏</div>
-                    <h3 class="text-xl font-bold mb-3 heading-mono">支援部分原始碼壓縮</h3>
-                    <p style="color: var(--text-secondary);">讓支援的 TypeScript、Python、Go、PHP 檔案更輕，少掉多餘註解與空白帶來的負擔。</p>
                 </div>
 
                 <div class="feature-card">
