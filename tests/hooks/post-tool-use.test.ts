@@ -274,6 +274,20 @@ export function nextMessage(index: number): string {
       const result = parseOutput(stdout);
       expect(result.continue).toBe(true);
     });
+
+    // Regression: JSON.parse/yamlParse ran on arbitrarily large content with
+    // no ceiling in the standalone hook, unlike the (already-guarded)
+    // library path (see src/optimizer/token-optimizer.ts's MAX_CONTENT_SIZE).
+    test('passes through content over the 10MB size ceiling without parsing it', async () => {
+      const oversized = 'x'.repeat(10 * 1024 * 1024 + 1);
+      const { stdout } = await runHook({
+        tool_name: 'Read',
+        tool_response: oversized,
+      });
+
+      const result = parseOutput(stdout);
+      expect(result).toEqual({ continue: true });
+    }, 15000);
   });
 
   describe('error handling', () => {

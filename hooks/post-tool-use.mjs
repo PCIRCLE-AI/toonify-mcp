@@ -25,6 +25,15 @@ import { homedir } from 'os';
 
 // --- Configuration ---
 
+/**
+ * Maximum content size to attempt JSON.parse/yamlParse/detection on (10 MB).
+ * Mirrors MAX_CONTENT_SIZE in src/optimizer/token-optimizer.ts — this hook
+ * has its own detection pipeline (see detectStructuredData/detectDebugOutput
+ * below) and needs the same DoS-prevention ceiling; without it, arbitrarily
+ * large Read/WebFetch content gets parsed synchronously with no bound.
+ */
+const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
+
 const DEFAULT_CONFIG = {
   enabled: true,
   minTokensThreshold: 50,
@@ -409,6 +418,11 @@ async function main() {
 
     // Skip if no response or empty
     if (!tool_response || typeof tool_response !== 'string' || tool_response.length < 50) {
+      return passthrough();
+    }
+
+    // Size ceiling before JSON.parse/yamlParse/detection — see MAX_CONTENT_SIZE.
+    if (tool_response.length > MAX_CONTENT_SIZE) {
       return passthrough();
     }
 
