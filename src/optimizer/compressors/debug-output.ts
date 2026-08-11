@@ -17,7 +17,7 @@
 
 import type { Compressor } from './compressor.js';
 import type { ContentType, DetectResult, CompressResult } from '../pipeline/types.js';
-import { capLineLengths } from '../pipeline/detector.js';
+import { capLine } from '../pipeline/detector.js';
 
 export class DebugOutputCompressor implements Compressor {
   readonly name = 'debug-output';
@@ -92,11 +92,11 @@ export class DebugOutputCompressor implements Compressor {
       // uncapped content passed into compress() — Pipeline.run() never caps
       // it, only Detector.detectDebugOutput()'s internal scoring does.
       // Verified directly against the compiled compressor: an adversarial
-      // payload took ~14s here before this fix. capLineLengths(nextTrimmed)
+      // payload took ~14s here before this fix. capLine(nextTrimmed)
       // no-ops for any real pointer line (always short), so this changes
       // nothing for legitimate content — only what the vulnerable regex
       // sees is bounded, the actual line kept/dropped is still the real one.
-      if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(nextTrimmed))) {
+      if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLine(nextTrimmed))) {
         omitted++;
         continue;
       }
@@ -185,7 +185,7 @@ export class DebugOutputCompressor implements Compressor {
     // truncated.
     return content
       .split('\n')
-      .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(line)))
+      .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLine(line)))
       .join('\n');
   }
 

@@ -40,6 +40,14 @@ import type { DetectResult } from './types.js';
  */
 const MAX_LINE_LENGTH_FOR_SCAN = 2000;
 
+// Single-line cap — use inside per-line predicates. Do NOT use
+// capLineLengths (content-level) per line; it splits/maps/joins the whole
+// string each call.
+export function capLine(line: string): string {
+  return line.length > MAX_LINE_LENGTH_FOR_SCAN ? line.slice(0, MAX_LINE_LENGTH_FOR_SCAN) : line;
+}
+
+// Content-level cap — for multi-line content fed to a regex in one shot.
 export function capLineLengths(content: string): string {
   const lines = content.split('\n');
   let capped = false;
@@ -162,10 +170,12 @@ export class Detector {
    * Detect code by language using content heuristics
    */
   detectCode(content: string): DetectResult | null {
-    const lines = content.split('\n');
+    // split's limit stops after 50 lines instead of materializing every line
+    // of a large document just to sample the first 50.
+    const lines = content.split('\n', 50);
     if (lines.length < 3) return null;
 
-    const sample = capLineLengths(lines.slice(0, 50).join('\n'));
+    const sample = capLineLengths(lines.join('\n'));
 
     // TypeScript/JavaScript
     if (this.looksLikeTypeScript(sample)) {

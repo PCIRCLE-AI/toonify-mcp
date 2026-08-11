@@ -144,6 +144,17 @@ function detectStructuredData(content) {
 // drift.
 const MAX_LINE_LENGTH_FOR_SCAN = 2000;
 
+// Single-line cap — use this inside per-line predicates. Real diagnostic
+// lines (tsc/eslint/traceback) front-load their file:line:col, so capping
+// the head preserves the location signal; only adversarial padding is lost.
+function capLine(line) {
+  return line.length > MAX_LINE_LENGTH_FOR_SCAN ? line.slice(0, MAX_LINE_LENGTH_FOR_SCAN) : line;
+}
+
+// Content-level cap — for multi-line content fed to a regex in one shot
+// (detectDebugOutput's scoring regexes, detectCode's sample). Do NOT call
+// this per-line: it splits/maps/joins the whole string each call, which is
+// ~O(lines) per invocation. Use capLine() for that.
 function capLineLengths(content) {
   const lines = content.split('\n');
   let capped = false;
@@ -171,9 +182,11 @@ function capLineLengths(content) {
 // src/optimizer/pipeline/detector.ts, where code is detected before debug
 // output for exactly this reason.
 function looksLikeSourceCode(content) {
-  const lines = content.split('\n');
+  // split's limit stops after 50 lines instead of materializing an array of
+  // every line in a (up to 10MB) document just to sample the first 50.
+  const lines = content.split('\n', 50);
   if (lines.length < 3) return false;
-  const sample = capLineLengths(lines.slice(0, 50).join('\n'));
+  const sample = capLineLengths(lines.join('\n'));
 
   const tsIndicators = [
     /\bimport\s+.*\bfrom\s+['"]/,
@@ -282,13 +295,13 @@ function compressDebugOutput(content) {
   // ambiguous-character-class ReDoS this file fixed in detection, but this
   // call runs on full, uncapped content. Verified live: a 4-line payload
   // scoring >= 3 plus one 150,000-space line took the real hook 15s here.
-  // Test capLineLengths(line) (no-ops for any real pointer line, which is
+  // Test capLine(line) (no-ops for any real pointer line, which is
   // always short) rather than `line` — the FILTER decision still applies to
   // the real, uncapped line, so no content is truncated; only what the
   // vulnerable regex sees is bounded.
   result = result
     .split('\n')
-    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(line)))
+    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLine(line)))
     .join('\n');
   result = collapseSimilarDiagnosticLines(result);
   result = collapseDuplicateLines(result);
@@ -333,7 +346,7 @@ function collapseSourceExcerptNoise(content) {
     // filter above — test the capped form for the same reason (a real
     // pointer line is always short, so this never changes behavior for
     // legitimate content, only defuses an unbounded nextTrimmed).
-    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(nextTrimmed))) { omitted++; continue; }
+    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLine(nextTrimmed))) { omitted++; continue; }
 
     result.push(lines[i]);
   }

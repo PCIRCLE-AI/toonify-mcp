@@ -299,5 +299,23 @@ Nothing failed, and there are no file paths or stack traces in this note.`;
       // debug-output structure, just proving detection completes fast.
       expect(result === null || result.type === 'debug-output').toBe(true);
     });
+
+    // The 2000-char scan cap truncates line HEADS. Real diagnostics
+    // front-load their file:line:col (tsc: "src/a.ts:12:5 - error TS...";
+    // the huge generic/union type lives in the MESSAGE, after the location),
+    // so a legitimately long diagnostic line (>2000 chars) must still detect
+    // as debug output — the cap must not strip a real location and flip a
+    // true positive to a false negative.
+    test('a legitimately long diagnostic line (>2000 chars) still detects as debug output', () => {
+      const hugeUnion = Array.from({ length: 200 }, (_, i) => `'Variant${i}'`).join(' | ');
+      const line1 = `src/a.ts:12:5 - error TS2345: Argument of type '${hugeUnion}' is not assignable to parameter.`;
+      const line2 = `src/b.ts:20:9 - error TS2345: Argument of type '${hugeUnion}' is not assignable to parameter.`;
+      const line3 = `src/c.ts:30:1 - error TS2345: Argument of type '${hugeUnion}' is not assignable to parameter.`;
+      expect(line1.length).toBeGreaterThan(2000);
+      const content = [line1, '', line2, '', line3, '', 'Found 3 errors in 3 files.'].join('\n');
+
+      const result = detector.detectDebugOutput(content);
+      expect(result?.type).toBe('debug-output');
+    });
   });
 });
