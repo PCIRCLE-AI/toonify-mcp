@@ -12,6 +12,47 @@
 import yaml from 'yaml';
 import type { DetectResult } from './types.js';
 
+/**
+ * ReDoS guard for detectDebugOutput()'s regex heuristics.
+ *
+ * hasMultipleFileLocationDiagnostics()'s /\b[\w./-]+\.(ts|...):\d+:\d+\b/g
+ * has an ambiguous overlap between the `.` inside its character class and
+ * the literal `.` before the extension: on a run like "a.a.a.a...." with no
+ * valid `:line:col` suffix, the engine backtracks through the whole run at
+ * every position — O(n^2). The same class of blowup hits
+ * /^\s*at\s+.+\(.+:\d+:\d+\)/m in detectDebugOutput() (two greedy `.+` with
+ * no closing `:N:N)` ever appearing). Verified independently: doubling
+ * input length roughly quadrupled match time for both regexes (clean
+ * quadratic fit). This is reachable through TokenOptimizer.optimize(), and
+ * while the entry-time size guard there bounds content to ~800,000 chars at
+ * default config, that bound was calibrated against TOON-encoding JSON —
+ * an entirely different cost profile — so content that isn't JSON/YAML at
+ * all can still pass that guard and then take orders of magnitude longer
+ * than the maxProcessingTime budget the guard is meant to enforce.
+ *
+ * Fix is structural rather than per-regex: legitimate debug output (stack
+ * traces, compiler diagnostics, test failures) never has a single line more
+ * than a few hundred characters long, so capping line length before ANY of
+ * these heuristic regexes run bounds worst-case backtracking to a constant
+ * per line — regardless of whether some other regex here has a similar
+ * latent ambiguity that hasn't been found yet. Mirrors the identical fix in
+ * hooks/post-tool-use.mjs — fix both together so they don't drift.
+ */
+const MAX_LINE_LENGTH_FOR_SCAN = 2000;
+
+function capLineLengths(content: string): string {
+  const lines = content.split('\n');
+  let capped = false;
+  const result = lines.map(line => {
+    if (line.length > MAX_LINE_LENGTH_FOR_SCAN) {
+      capped = true;
+      return line.slice(0, MAX_LINE_LENGTH_FOR_SCAN);
+    }
+    return line;
+  });
+  return capped ? result.join('\n') : content;
+}
+
 export class Detector {
   /**
    * Detect content type with confidence score.
@@ -47,37 +88,38 @@ export class Detector {
     const lines = content.split('\n').filter(line => line.trim().length > 0);
     if (lines.length < 4) return null;
 
+    const scanContent = capLineLengths(content);
     let score = 0;
 
-    if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(content)) {
+    if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/\berror TS\d+:/m.test(content) || /^\s*error(\[[^\]]+\])?:/im.test(content)) {
+    if (/\berror TS\d+:/m.test(scanContent) || /^\s*error(\[[^\]]+\])?:/im.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(content) || /^\w+(Error|Exception):\s+/m.test(content)) {
+    if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(scanContent) || /^\w+(Error|Exception):\s+/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*at\s+.+:\d+:\d+/m.test(content) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(content)) {
+    if (/^\s*at\s+.+:\d+:\d+/m.test(scanContent) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(content) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(content)) {
+    if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(scanContent) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(content)) {
+    if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(scanContent)) {
       score += 1;
     }
 
-    if (/^\s*[×✕]\s+/m.test(content) || /^\s*>\s+.+$/m.test(content)) {
+    if (/^\s*[×✕]\s+/m.test(scanContent) || /^\s*>\s+.+$/m.test(scanContent)) {
       score += 1;
     }
 
-    if (/^\s*npm ERR!/m.test(content) || /^\s*error Command failed/m.test(content)) {
+    if (/^\s*npm ERR!/m.test(scanContent) || /^\s*error Command failed/m.test(scanContent)) {
       score += 1;
     }
 
@@ -85,7 +127,7 @@ export class Detector {
       score += 1;
     }
 
-    if (this.hasMultipleFileLocationDiagnostics(content)) {
+    if (this.hasMultipleFileLocationDiagnostics(scanContent)) {
       score += 1;
     }
 
@@ -123,7 +165,7 @@ export class Detector {
     const lines = content.split('\n');
     if (lines.length < 3) return null;
 
-    const sample = lines.slice(0, 50).join('\n');
+    const sample = capLineLengths(lines.slice(0, 50).join('\n'));
 
     // TypeScript/JavaScript
     if (this.looksLikeTypeScript(sample)) {

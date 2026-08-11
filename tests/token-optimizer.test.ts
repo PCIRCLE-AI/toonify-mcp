@@ -412,5 +412,48 @@ users:
       expect(() => new TokenOptimizer({ maxProcessingTime: -5 })).toThrow('maxProcessingTime must be a positive, finite number');
       expect(() => new TokenOptimizer({ maxProcessingTime: NaN })).toThrow('maxProcessingTime must be a positive, finite number');
     });
+
+    // Number.isFinite(Infinity) === false, so Infinity must be rejected by
+    // the same guard as NaN/0/negative — an off-by-one in the validation
+    // (e.g. checking > 0 without also checking isFinite) would let this
+    // through and collapse maxProcessableLength to Infinity, disabling the
+    // entry-time guard entirely for that instance.
+    test('rejects an Infinity maxProcessingTime at construction', () => {
+      expect(() => new TokenOptimizer({ maxProcessingTime: Infinity })).toThrow('maxProcessingTime must be a positive, finite number');
+    });
+
+    // Exact-boundary test: content.length === maxProcessableLength must be
+    // accepted (not rejected for size — it may still be rejected later for
+    // other reasons), content.length === maxProcessableLength + 1 must be
+    // rejected. Prior tests only covered clearly-above/clearly-below,
+    // leaving a `>` vs `>=` off-by-one unverified.
+    test('accepts content exactly at the size-guard boundary, rejects one char over', async () => {
+      const tightOptimizer = new TokenOptimizer({ maxProcessingTime: 10 }); // ceiling = 4000 chars
+      const atBoundary = 'a'.repeat(4000);
+      const overBoundary = 'a'.repeat(4001);
+
+      const atResult = await tightOptimizer.optimize(atBoundary);
+      const overResult = await tightOptimizer.optimize(overBoundary);
+
+      expect(atResult.reason).not.toContain('processing budget');
+      expect(overResult.reason).toContain('processing budget');
+      tightOptimizer.destroy();
+    });
+
+    // If a caller raises maxProcessingTime enough that the derived
+    // maxProcessableLength exceeds MAX_CONTENT_SIZE (10MB), the entry-time
+    // guard becomes dead code for that instance — MAX_CONTENT_SIZE must
+    // still be the backstop, not silently bypassed.
+    test('MAX_CONTENT_SIZE still rejects content when a large maxProcessingTime pushes the entry-time ceiling past it', async () => {
+      const looseOptimizer = new TokenOptimizer({ maxProcessingTime: 1e9 }); // ceiling >> 10MB
+      const overTenMb = 'a'.repeat(10 * 1024 * 1024 + 1);
+
+      const result = await looseOptimizer.optimize(overTenMb);
+
+      expect(result.optimized).toBe(false);
+      expect(result.reason).toContain('Content too large');
+      expect(result.reason).not.toContain('processing budget');
+      looseOptimizer.destroy();
+    });
   });
 });

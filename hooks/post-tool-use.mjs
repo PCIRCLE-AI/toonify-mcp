@@ -13,6 +13,16 @@
  *
  * CSV is not converted: TOON measured as a net loss on CSV at every size.
  *
+ * tool_response is a structured object for the tools this hook matches, not
+ * a plain string — see extractText() below for the shapes verified live
+ * against a real Claude Code session (Read, WebFetch). Where the shape is
+ * known, compressed content goes out via hookSpecificOutput.updatedToolOutput
+ * (replaces what Claude sees — this is what makes context actually shrink).
+ * Where it isn't recognized, or tool_response is already a plain string, the
+ * hook falls back to additionalContext (schema-agnostic, appends instead of
+ * replacing) so it degrades safely rather than risk a malformed
+ * updatedToolOutput.
+ *
  * Input:  JSON on stdin with { tool_name, tool_response, ... }
  * Output: JSON on stdout with { continue, hookSpecificOutput }
  */
@@ -103,6 +113,42 @@ function detectStructuredData(content) {
   return null;
 }
 
+// --- ReDoS guard ---
+//
+// hasMultipleFileLocationDiagnostics()'s /\b[\w./-]+\.(ts|...):\\d+:\\d+\b/g
+// has an ambiguous overlap between the `.` inside its character class and
+// the literal `.` before the extension: on a run like "a.a.a.a...." with no
+// valid `:line:col` suffix, the engine backtracks through the whole run at
+// every position — O(n^2). The same class of blowup hits
+// /^\s*at\s+.+\(.+:\d+:\d+\)/m in detectDebugOutput() (two greedy `.+` with
+// no closing `:N:N)` ever appearing). Verified independently: doubling
+// input length roughly quadrupled match time for both regexes (clean
+// quadratic fit), and a crafted ~100KB single-line payload took the real
+// hook process over 10 seconds wall-clock. MAX_CONTENT_SIZE does NOT protect
+// against this — it bounds JSON.parse/yamlParse cost, not regex
+// backtracking cost, which is orders of magnitude worse per byte.
+//
+// Fix is structural rather than per-regex: legitimate debug output (stack
+// traces, compiler diagnostics, test failures) never has a single line more
+// than a few hundred characters long, so capping line length before ANY of
+// these heuristic regexes run bounds worst-case backtracking to a constant
+// per line — regardless of whether some other regex in this file has a
+// similar latent ambiguity that hasn't been found yet.
+const MAX_LINE_LENGTH_FOR_SCAN = 2000;
+
+function capLineLengths(content) {
+  const lines = content.split('\n');
+  let capped = false;
+  const result = lines.map(line => {
+    if (line.length > MAX_LINE_LENGTH_FOR_SCAN) {
+      capped = true;
+      return line.slice(0, MAX_LINE_LENGTH_FOR_SCAN);
+    }
+    return line;
+  });
+  return capped ? result.join('\n') : content;
+}
+
 // --- Source Code Guard ---
 //
 // Used ONLY to gate debug-output detection, never to route to a compressor.
@@ -119,7 +165,7 @@ function detectStructuredData(content) {
 function looksLikeSourceCode(content) {
   const lines = content.split('\n');
   if (lines.length < 3) return false;
-  const sample = lines.slice(0, 50).join('\n');
+  const sample = capLineLengths(lines.slice(0, 50).join('\n'));
 
   const tsIndicators = [
     /\bimport\s+.*\bfrom\s+['"]/,
@@ -160,6 +206,21 @@ function looksLikeSourceCode(content) {
   ];
   if (goIndicators.filter(p => p.test(sample)).length >= 2) return true;
 
+  // Generic fallback for languages not covered above (Java, C, C++, Rust,
+  // Ruby, ...). Without this, e.g. Java source with several identical
+  // `throw new RuntimeException("FAIL");` lines is NOT recognized as code
+  // (0-1 of the TS/Python/PHP/Go indicators match) and falls through to
+  // detectDebugOutput, which then scores it >= 3 ("FAIL" + repeated lines)
+  // and corrupts real code — reproduced and verified. Mirrors
+  // looksLikeGenericCode in src/optimizer/pipeline/detector.ts.
+  const genericIndicators = [
+    /[{}\[\]();]/,
+    /\b(function|class|return|if|else|for|while)\b/,
+    /\/\/.+$/m,
+    /^\s{2,}\S/m,
+  ];
+  if (genericIndicators.filter(p => p.test(sample)).length >= 3) return true;
+
   return false;
 }
 
@@ -169,18 +230,19 @@ function detectDebugOutput(content) {
   const lines = content.split('\n').filter(line => line.trim().length > 0);
   if (lines.length < 4) return false;
 
+  const scanContent = capLineLengths(content);
   let score = 0;
 
-  if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(content)) score += 2;
-  if (/\berror TS\d+:/m.test(content) || /^\s*error(\[[^\]]+\])?:/im.test(content)) score += 2;
-  if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(content) || /^\w+(Error|Exception):\s+/m.test(content)) score += 2;
-  if (/^\s*at\s+.+:\d+:\d+/m.test(content) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(content)) score += 2;
-  if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(content) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(content)) score += 2;
-  if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(content)) score += 1;
-  if (/^\s*[×✕]\s+/m.test(content) || /^\s*>\s+.+$/m.test(content)) score += 1;
-  if (/^\s*npm ERR!/m.test(content) || /^\s*error Command failed/m.test(content)) score += 1;
+  if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(scanContent)) score += 2;
+  if (/\berror TS\d+:/m.test(scanContent) || /^\s*error(\[[^\]]+\])?:/im.test(scanContent)) score += 2;
+  if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(scanContent) || /^\w+(Error|Exception):\s+/m.test(scanContent)) score += 2;
+  if (/^\s*at\s+.+:\d+:\d+/m.test(scanContent) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(scanContent)) score += 2;
+  if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(scanContent) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(scanContent)) score += 2;
+  if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(scanContent)) score += 1;
+  if (/^\s*[×✕]\s+/m.test(scanContent) || /^\s*>\s+.+$/m.test(scanContent)) score += 1;
+  if (/^\s*npm ERR!/m.test(scanContent) || /^\s*error Command failed/m.test(scanContent)) score += 1;
   if (hasRepeatedDiagnosticLines(lines)) score += 1;
-  if (hasMultipleFileLocationDiagnostics(content)) score += 1;
+  if (hasMultipleFileLocationDiagnostics(scanContent)) score += 1;
 
   return score >= 3;
 }
@@ -403,6 +465,72 @@ function estimateTokens(text) {
   return Math.ceil(text.length / 4);
 }
 
+// --- Tool Response Shape Adapters ---
+//
+// tool_response is NOT a plain string for the tools this hook matches — it
+// is a structured object whose shape is specific to the tool (Zod-validated
+// by Claude Code, undocumented publicly). Verified live against a real
+// Claude Code session:
+//   Read:     { type, file: { filePath, content, numLines, startLine, totalLines } }
+//   WebFetch: { bytes, code, codeText, result, durationMs, url }
+// Grep and Glob shapes are NOT verified as of this comment (this build's
+// test harness could not exercise them as distinct native tools) — do not
+// guess their shape. extractText() returns null for anything it cannot
+// positively identify, and the caller passes through unchanged rather than
+// risk sending Claude Code a malformed updatedToolOutput.
+//
+// Each recognized shape returns { text, reconstruct(compressedText) }:
+// `text` is what gets fed into detection/compression, and reconstruct()
+// rebuilds a Zod-shape-compatible object with ONLY the text field replaced
+// so updatedToolOutput can genuinely shrink context instead of only
+// appending to it.
+function extractText(toolName, toolResponse) {
+  if (toolResponse === null || typeof toolResponse !== 'object') return null;
+
+  if (toolName === 'Read') {
+    const file = toolResponse.file;
+    if (!file || typeof file.content !== 'string') return null;
+    return {
+      text: file.content,
+      reconstruct(compressedText) {
+        const newLineCount = compressedText.length === 0 ? 0 : compressedText.split('\n').length;
+        // numLines always tracks what's actually in `content` — a stale
+        // count would tell Claude something isn't there that is.
+        // totalLines: a full-file read has numLines === totalLines in the
+        // original response (verified live), signaling "this is everything,
+        // nothing more to page in". That invariant must survive compression
+        // or Claude may think there's more file left to read via
+        // offset/limit when it already has all of it, just compressed. A
+        // genuinely partial read (numLines < totalLines) keeps totalLines
+        // as the true file size, since compression doesn't change how long
+        // the underlying file is.
+        const wasFullRead = file.numLines === file.totalLines;
+        return {
+          ...toolResponse,
+          file: {
+            ...file,
+            content: compressedText,
+            numLines: newLineCount,
+            totalLines: wasFullRead ? newLineCount : file.totalLines,
+          },
+        };
+      },
+    };
+  }
+
+  if (toolName === 'WebFetch') {
+    if (typeof toolResponse.result !== 'string') return null;
+    return {
+      text: toolResponse.result,
+      reconstruct(compressedText) {
+        return { ...toolResponse, result: compressedText };
+      },
+    };
+  }
+
+  return null;
+}
+
 // --- Main ---
 
 async function main() {
@@ -416,13 +544,33 @@ async function main() {
     const hookInput = JSON.parse(inputData);
     const { tool_name, tool_response } = hookInput;
 
-    // Skip if no response or empty
-    if (!tool_response || typeof tool_response !== 'string' || tool_response.length < 50) {
+    if (!tool_response) {
+      return passthrough();
+    }
+
+    // tool_response is a structured object for the tools this hook matches
+    // (verified live: Read, WebFetch), not a plain string — extractText()
+    // pulls the text field out and gives back a reconstruct() that rebuilds
+    // a schema-compatible object with only that field replaced. A string
+    // tool_response (older Claude Code versions, or an unmatched shape) is
+    // used as-is with no reconstruction, going out via additionalContext.
+    let contentText;
+    let reconstruct = null;
+    if (typeof tool_response === 'string') {
+      contentText = tool_response;
+    } else {
+      const extracted = extractText(tool_name, tool_response);
+      if (!extracted) return passthrough();
+      contentText = extracted.text;
+      reconstruct = extracted.reconstruct;
+    }
+
+    if (!contentText || contentText.length < 50) {
       return passthrough();
     }
 
     // Size ceiling before JSON.parse/yamlParse/detection — see MAX_CONTENT_SIZE.
-    if (tool_response.length > MAX_CONTENT_SIZE) {
+    if (contentText.length > MAX_CONTENT_SIZE) {
       return passthrough();
     }
 
@@ -445,13 +593,13 @@ async function main() {
     }
 
     // Check minimum size
-    const estimatedTokens = estimateTokens(tool_response);
+    const estimatedTokens = estimateTokens(contentText);
     if (estimatedTokens < config.minTokensThreshold) {
       return passthrough();
     }
 
     // Detect structured data
-    const structured = detectStructuredData(tool_response);
+    const structured = detectStructuredData(contentText);
 
     let output;
     let formatLabel;
@@ -460,7 +608,7 @@ async function main() {
     if (structured) {
       // Structured data → TOON format
       const toonContent = toonEncode(structured.data);
-      const originalLen = tool_response.length;
+      const originalLen = contentText.length;
       const optimizedLen = toonContent.length;
       savingsPercent = ((originalLen - optimizedLen) / originalLen) * 100;
 
@@ -473,12 +621,12 @@ async function main() {
     } else {
       // Source code is intentionally not compressed — anything that is not
       // structured data or debug output passes through untouched.
-      if (!detectDebugOutput(tool_response)) {
+      if (!detectDebugOutput(contentText)) {
         return passthrough();
       }
 
-      const compressed = compressDebugOutput(tool_response);
-      const originalLen = tool_response.length;
+      const compressed = compressDebugOutput(contentText);
+      const originalLen = contentText.length;
       const compressedLen = compressed.length;
       savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
 
@@ -494,34 +642,32 @@ async function main() {
       output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
     }
 
-    // Return optimized content via additionalContext, not updatedToolOutput.
-    //
-    // updatedToolOutput REPLACES the tool result Claude sees and is the
-    // right field in principle (Claude Code v2.1.121+), but it requires the
-    // value to match the tool's own structured output shape — a plain
-    // string is schema-invalid. Verified live against Claude Code v2.1.226:
-    // Read's tool_response is an object ({type, file:{filePath, content,
-    // ...}}), not a string, so this hook's own entry gate
-    // (`typeof tool_response !== 'string'`, see main()) has always
-    // short-circuited to passthrough for Read/Grep/Glob/WebFetch before
-    // this code path is ever reached. Bypassing that gate to test
-    // updatedToolOutput directly, Claude Code's Zod validation rejected a
-    // bare string for Read with `invalid_type: expected object, received
-    // string` and fell back to the original content. Switching to
-    // updatedToolOutput needs per-tool response reconstruction (replace
-    // just the text field, keep the rest of the object) against currently
-    // undocumented internal schemas — real follow-up work, not a one-line
-    // field rename. additionalContext appends after the original result
-    // (so context grows, not shrinks) but is schema-valid and actually
-    // reaches Claude today.
-    process.stdout.write(JSON.stringify({
-      continue: true,
-      suppressOutput: true,
-      hookSpecificOutput: {
-        hookEventName: 'PostToolUse',
-        additionalContext: output,
-      },
-    }));
+    // reconstruct !== null means tool_response was a recognized structured
+    // shape (Read/WebFetch): rebuild it with the compressed text swapped in
+    // and send it via updatedToolOutput, which REPLACES what Claude sees —
+    // this is what makes context actually shrink instead of only growing.
+    // Anything without a known shape (string tool_response, or an
+    // unrecognized object) falls back to additionalContext, which appends
+    // and is schema-agnostic but doesn't reduce net context size.
+    if (reconstruct) {
+      process.stdout.write(JSON.stringify({
+        continue: true,
+        suppressOutput: true,
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          updatedToolOutput: reconstruct(output),
+        },
+      }));
+    } else {
+      process.stdout.write(JSON.stringify({
+        continue: true,
+        suppressOutput: true,
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          additionalContext: output,
+        },
+      }));
+    }
   } catch (error) {
     // Silent failure - never break the workflow
     // Log to stderr for debugging (Claude Code shows stderr in verbose mode)

@@ -248,5 +248,27 @@ Nothing failed, and there are no file paths or stack traces in this note.`;
       const result = detector.detectDebugOutput(text);
       expect(result).toBeNull();
     });
+
+    // Regression: hasMultipleFileLocationDiagnostics()'s
+    // /\b[\w./-]+\.(ts|...):\d+:\d+\b/g has an ambiguous overlap between the
+    // `.` inside its character class and the literal `.` before the
+    // extension, causing O(n^2) backtracking on content shaped like
+    // "a.a.a.a...." with no valid :line:col suffix ever appearing (same
+    // class of bug independently affects /^\s*at\s+.+\(.+:\d+:\d+\)/m).
+    // Reachable via TokenOptimizer.optimize() -> Pipeline.run() ->
+    // Detector.detect(), where a caller's own maxProcessingTime budget
+    // (default 2000ms) is the thing this should complete well within.
+    test('does not hang on a ReDoS-shaped adversarial payload', () => {
+      const adversarial = 'line one\nline two\nline three\n' + 'a.'.repeat(60000) + '\nline five';
+
+      const start = Date.now();
+      const result = detector.detectDebugOutput(adversarial);
+      const elapsedMs = Date.now() - start;
+
+      expect(elapsedMs).toBeLessThan(500);
+      // Not a correctness assertion either way — this content has no real
+      // debug-output structure, just proving detection completes fast.
+      expect(result === null || result.type === 'debug-output').toBe(true);
+    });
   });
 });
