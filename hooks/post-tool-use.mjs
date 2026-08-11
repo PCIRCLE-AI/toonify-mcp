@@ -4,8 +4,27 @@
  * Toonify PostToolUse Hook
  *
  * Intercepts tool results from Read, Grep, Glob, WebFetch and:
- * - Converts structured data (JSON/CSV/YAML) to TOON format (30-65% savings)
- * - Compresses source code (TS/Py/Go) by removing comments & blank lines (10-35% savings)
+ * - Converts structured data (JSON/YAML) to TOON format
+ * - Collapses repetitive debug output (test failures, stack traces, diagnostics)
+ *
+ * Source code is NOT compressed: the comment-stripping heuristics truncated
+ * regex literals such as /^https?:\/\// at the `//`, producing code that no
+ * longer parses. See src/optimizer/compressors/code.ts for the full rationale.
+ *
+ * CSV is not converted: TOON measured as a net loss on CSV at every size.
+ *
+ * tool_response is a structured object for the tools this hook matches, not
+ * a plain string — see extractText() below for the shapes verified (Read,
+ * WebFetch, Grep — both its 'content' and 'count' modes populate a
+ * compressible `content` field, per the tool's own schema). Where the shape
+ * is known, compressed content goes out via hookSpecificOutput.updatedToolOutput
+ * (replaces what Claude sees — this is what makes context actually shrink).
+ * Where tool_response is a plain string (older Claude Code, or an unmatched
+ * shape), it goes out via additionalContext instead (schema-agnostic,
+ * appends rather than replaces). Where tool_response is an OBJECT with no
+ * compressible field for that tool (Grep's default 'files_with_matches'
+ * mode, Glob, an unmatched tool), the hook passes through untouched — there
+ * is no safe way to extract text from a shape that doesn't have any.
  *
  * Input:  JSON on stdin with { tool_name, tool_response, ... }
  * Output: JSON on stdout with { continue, hookSpecificOutput }
@@ -18,6 +37,15 @@ import { join } from 'path';
 import { homedir } from 'os';
 
 // --- Configuration ---
+
+/**
+ * Maximum content size to attempt JSON.parse/yamlParse/detection on (10 MB).
+ * Mirrors MAX_CONTENT_SIZE in src/optimizer/token-optimizer.ts — this hook
+ * has its own detection pipeline (see detectStructuredData/detectDebugOutput
+ * below) and needs the same DoS-prevention ceiling; without it, arbitrarily
+ * large Read/WebFetch content gets parsed synchronously with no bound.
+ */
+const MAX_CONTENT_SIZE = 10 * 1024 * 1024;
 
 const DEFAULT_CONFIG = {
   enabled: true,
@@ -85,39 +113,81 @@ function detectStructuredData(content) {
     }
   }
 
-  // Try CSV (simple heuristic)
-  const lines = content.split('\n').filter(l => l.trim());
-  if (lines.length >= 3) {
-    const firstCommas = (lines[0].match(/,/g) || []).length;
-    if (firstCommas >= 1) {
-      let matching = 0;
-      for (let i = 1; i < Math.min(lines.length, 10); i++) {
-        if ((lines[i].match(/,/g) || []).length === firstCommas) matching++;
-      }
-      if (matching >= Math.min(lines.length - 1, 5)) {
-        const headers = lines[0].split(',').map(h => h.trim());
-        const rows = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim());
-          const obj = {};
-          headers.forEach((h, i) => { obj[h] = values[i] || ''; });
-          return obj;
-        });
-        return { type: 'csv', data: rows };
-      }
-    }
-  }
-
   return null;
 }
 
-// --- Code Detection ---
+// --- ReDoS guard ---
+//
+// hasMultipleFileLocationDiagnostics()'s /\b[\w./-]+\.(ts|...):\\d+:\\d+\b/g
+// has an ambiguous overlap between the `.` inside its character class and
+// the literal `.` before the extension: on a run like "a.a.a.a...." with no
+// valid `:line:col` suffix, the engine backtracks through the whole run at
+// every position — O(n^2). The same class of blowup hits
+// /^\s*at\s+.+\(.+:\d+:\d+\)/m in detectDebugOutput() (two greedy `.+` with
+// no closing `:N:N)` ever appearing). Verified independently: doubling
+// input length roughly quadrupled match time for both regexes (clean
+// quadratic fit), and a crafted ~100KB single-line payload took the real
+// hook process over 10 seconds wall-clock. MAX_CONTENT_SIZE does NOT protect
+// against this — it bounds JSON.parse/yamlParse cost, not regex
+// backtracking cost, which is orders of magnitude worse per byte.
+//
+// Fix is structural rather than per-regex: legitimate debug output (stack
+// traces, compiler diagnostics, test failures) never has a single line more
+// than a few hundred characters long, so capping line length before ANY of
+// these heuristic regexes run bounds worst-case backtracking to a constant
+// per line — regardless of whether some other regex in this file has a
+// similar latent ambiguity that hasn't been found yet.
+//
+// Mirrors the identical fix in src/optimizer/pipeline/detector.ts — the
+// hook can't import from src/ (standalone .mjs, no build step), so this is
+// a deliberate, necessary duplication. Fix both together so they don't
+// drift.
+const MAX_LINE_LENGTH_FOR_SCAN = 2000;
 
-function detectCode(content) {
+// Single-line cap — use this inside per-line predicates. Real diagnostic
+// lines (tsc/eslint/traceback) front-load their file:line:col, so capping
+// the head preserves the location signal; only adversarial padding is lost.
+function capLine(line) {
+  return line.length > MAX_LINE_LENGTH_FOR_SCAN ? line.slice(0, MAX_LINE_LENGTH_FOR_SCAN) : line;
+}
+
+// Content-level cap — for multi-line content fed to a regex in one shot
+// (detectDebugOutput's scoring regexes, detectCode's sample). Do NOT call
+// this per-line: it splits/maps/joins the whole string each call, which is
+// ~O(lines) per invocation. Use capLine() for that.
+function capLineLengths(content) {
   const lines = content.split('\n');
-  if (lines.length < 5) return null;
-  const sample = lines.slice(0, 50).join('\n');
+  let capped = false;
+  const result = lines.map(line => {
+    if (line.length > MAX_LINE_LENGTH_FOR_SCAN) {
+      capped = true;
+      return line.slice(0, MAX_LINE_LENGTH_FOR_SCAN);
+    }
+    return line;
+  });
+  return capped ? result.join('\n') : content;
+}
 
-  // TypeScript/JavaScript
+// --- Source Code Guard ---
+//
+// Used ONLY to gate debug-output detection, never to route to a compressor.
+// Real source code can score >= 3 on detectDebugOutput's heuristics — e.g. a
+// file with several near-identical `throw new Error("FAIL: ...")` lines
+// legitimately contains "FAIL" and repeated near-duplicate lines. Without
+// this guard, compressDebugOutput() would run collapseDuplicateLines() /
+// collapseSourceExcerptNoise() on that source and hand back something like
+// `[toonify] repeated 4 more times` spliced into an array literal — a
+// misleading, corrupted view of a real file appended alongside the
+// original via additionalContext. Mirrors the ordering in
+// src/optimizer/pipeline/detector.ts, where code is detected before debug
+// output for exactly this reason.
+function looksLikeSourceCode(content) {
+  // split's limit stops after 50 lines instead of materializing an array of
+  // every line in a (up to 10MB) document just to sample the first 50.
+  const lines = content.split('\n', 50);
+  if (lines.length < 3) return false;
+  const sample = capLineLengths(lines.join('\n'));
+
   const tsIndicators = [
     /\bimport\s+.*\bfrom\s+['"]/,
     /\bexport\s+(default\s+)?(class|function|const|interface|type)\b/,
@@ -126,9 +196,8 @@ function detectCode(content) {
     /\binterface\s+\w+/,
     /\bconst\s+\w+\s*:\s*\w+/,
   ];
-  if (tsIndicators.filter(p => p.test(sample)).length >= 2) return 'code-ts';
+  if (tsIndicators.filter(p => p.test(sample)).length >= 2) return true;
 
-  // Python
   const pyIndicators = [
     /^def\s+\w+\s*\(/m,
     /^class\s+\w+.*:/m,
@@ -137,9 +206,8 @@ function detectCode(content) {
     /^\s+self\./m,
     /:\s*$\n\s+/m,
   ];
-  if (pyIndicators.filter(p => p.test(sample)).length >= 2) return 'code-py';
+  if (pyIndicators.filter(p => p.test(sample)).length >= 2) return true;
 
-  // PHP
   const phpIndicators = [
     /^<\?php\b/m,
     /\bnamespace\s+[\w\\]+;/m,
@@ -148,9 +216,8 @@ function detectCode(content) {
     /\$this->/,
     /\bpublic\s+(static\s+)?(function|readonly)\b/m,
   ];
-  if (phpIndicators.filter(p => p.test(sample)).length >= 2) return 'code-php';
+  if (phpIndicators.filter(p => p.test(sample)).length >= 2) return true;
 
-  // Go
   const goIndicators = [
     /^package\s+\w+/m,
     /^func\s+/m,
@@ -158,243 +225,89 @@ function detectCode(content) {
     /\b:=\s/,
     /\berr\s*!=\s*nil\b/,
   ];
-  if (goIndicators.filter(p => p.test(sample)).length >= 2) return 'code-go';
+  if (goIndicators.filter(p => p.test(sample)).length >= 2) return true;
 
-  // Generic code
+  // Generic fallback for languages not covered above (Java, C, C++, Rust,
+  // Ruby, ...). Without this, e.g. Java source with several identical
+  // `throw new RuntimeException("FAIL");` lines is NOT recognized as code
+  // (0-1 of the TS/Python/PHP/Go indicators match) and falls through to
+  // detectDebugOutput, which then scores it >= 3 ("FAIL" + repeated lines)
+  // and corrupts real code — reproduced and verified. Mirrors
+  // looksLikeGenericCode in src/optimizer/pipeline/detector.ts.
   const genericIndicators = [
     /[{}\[\]();]/,
     /\b(function|class|return|if|else|for|while)\b/,
     /\/\/.+$/m,
     /^\s{2,}\S/m,
   ];
-  if (genericIndicators.filter(p => p.test(sample)).length >= 3) return 'code-generic';
+  if (genericIndicators.filter(p => p.test(sample)).length >= 3) return true;
 
-  return null;
+  return false;
 }
 
 function detectDebugOutput(content) {
+  if (looksLikeSourceCode(content)) return false;
+
   const lines = content.split('\n').filter(line => line.trim().length > 0);
   if (lines.length < 4) return false;
 
+  const scanContent = capLineLengths(content);
   let score = 0;
 
-  if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(content)) score += 2;
-  if (/\berror TS\d+:/m.test(content) || /^\s*error(\[[^\]]+\])?:/im.test(content)) score += 2;
-  if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(content) || /^\w+(Error|Exception):\s+/m.test(content)) score += 2;
-  if (/^\s*at\s+.+:\d+:\d+/m.test(content) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(content)) score += 2;
-  if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(content) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(content)) score += 2;
-  if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(content)) score += 1;
-  if (/^\s*[×✕]\s+/m.test(content) || /^\s*>\s+.+$/m.test(content)) score += 1;
-  if (/^\s*npm ERR!/m.test(content) || /^\s*error Command failed/m.test(content)) score += 1;
+  if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(scanContent)) score += 2;
+  if (/\berror TS\d+:/m.test(scanContent) || /^\s*error(\[[^\]]+\])?:/im.test(scanContent)) score += 2;
+  if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(scanContent) || /^\w+(Error|Exception):\s+/m.test(scanContent)) score += 2;
+  if (/^\s*at\s+.+:\d+:\d+/m.test(scanContent) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(scanContent)) score += 2;
+  if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(scanContent) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(scanContent)) score += 2;
+  if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(scanContent)) score += 1;
+  if (/^\s*[×✕]\s+/m.test(scanContent) || /^\s*>\s+.+$/m.test(scanContent)) score += 1;
+  if (/^\s*npm ERR!/m.test(scanContent) || /^\s*error Command failed/m.test(scanContent)) score += 1;
   if (hasRepeatedDiagnosticLines(lines)) score += 1;
-  if (hasMultipleFileLocationDiagnostics(content)) score += 1;
+  if (hasMultipleFileLocationDiagnostics(scanContent)) score += 1;
 
   return score >= 3;
 }
 
-// --- Code Compression (lightweight, safe layers only) ---
-
-function compressCode(content, codeType) {
-  let result = content;
-
-  // Layer 1: Merge consecutive blank lines
-  result = result.replace(/\n{3,}/g, '\n\n');
-
-  // Layer 2: Remove inline comments (not pure comment lines)
-  if (codeType === 'code-php') {
-    const lines = [];
-    let heredocTerminator = null;
-
-    for (const line of result.split('\n')) {
-      if (heredocTerminator) {
-        lines.push(line);
-        if (isPhpHeredocEnd(line, heredocTerminator)) heredocTerminator = null;
-        continue;
-      }
-
-      const nextHeredocTerminator = getPhpHeredocTerminator(line);
-      if (nextHeredocTerminator) {
-        heredocTerminator = nextHeredocTerminator;
-        lines.push(line);
-        continue;
-      }
-
-      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) {
-        lines.push(line);
-        continue;
-      }
-
-      const trimmed = line.trimStart();
-      if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) {
-        lines.push(line);
-        continue;
-      }
-      if (/https?:\/\//.test(line)) {
-        lines.push(line);
-        continue;
-      }
-
-      const slashIdx = findInlineDoubleSlash(line);
-      if (slashIdx > 0) {
-        lines.push(line.slice(0, slashIdx).trimEnd());
-        continue;
-      }
-
-      const hashIdx = findInlineHash(line, true);
-      if (hashIdx > 0) {
-        lines.push(line.slice(0, hashIdx).trimEnd());
-        continue;
-      }
-
-      lines.push(line);
-    }
-
-    result = lines.join('\n');
-  } else {
-    result = result.split('\n').map(line => {
-      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(line)) return line;
-      const trimmed = line.trimStart();
-      if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) return line;
-      if (/https?:\/\//.test(line)) return line;
-
-      if (codeType === 'code-py') {
-        // Python inline # (simple: split on first # not in string)
-        const hashIdx = findInlineHash(line);
-        if (hashIdx > 0) return line.slice(0, hashIdx).trimEnd();
-      } else {
-        // C-style inline // (simple: split on // not in string or URL)
-        const slashIdx = findInlineDoubleSlash(line);
-        if (slashIdx > 0) return line.slice(0, slashIdx).trimEnd();
-      }
-      return line;
-    }).join('\n');
-  }
-
-  // Layer 3: Remove comment-only lines (preserve TODO/FIXME and JSDoc first line)
-  if (codeType === 'code-php') {
-    const lines = [];
-    let heredocTerminator = null;
-
-    for (const line of result.split('\n')) {
-      const trimmed = line.trimStart();
-
-      if (heredocTerminator) {
-        lines.push(line);
-        if (isPhpHeredocEnd(line, heredocTerminator)) heredocTerminator = null;
-        continue;
-      }
-
-      const nextHeredocTerminator = getPhpHeredocTerminator(line);
-      if (nextHeredocTerminator) {
-        heredocTerminator = nextHeredocTerminator;
-        lines.push(line);
-        continue;
-      }
-
-      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) {
-        lines.push(line);
-        continue;
-      }
-      if (trimmed.startsWith('/**')) {
-        lines.push(line);
-        continue;
-      }
-      if (trimmed.startsWith('//')) continue;
-      if (trimmed.startsWith('#') && !trimmed.startsWith('#[')) continue;
-      lines.push(line);
-    }
-
-    result = lines.join('\n');
-  } else {
-    result = result.split('\n').filter((line, idx, arr) => {
-      const trimmed = line.trimStart();
-      if (/\b(TODO|FIXME|HACK|XXX)\b/i.test(trimmed)) return true;
-      if (trimmed.startsWith('/**')) return true; // JSDoc first line
-      if (codeType === 'code-py' && trimmed.startsWith('#')) return false;
-      if (codeType !== 'code-py' && codeType !== 'code-php' && trimmed.startsWith('//')) return false;
-      return true;
-    }).join('\n');
-  }
-
-  // Layer 4: Shorten deep import paths
-  if (codeType === 'code-ts' || codeType === 'code-generic') {
-    result = result.replace(
-      /(from\s+['"])(\.\.\/){2,}[^'"]*\/([^'"]+)(['"])/g,
-      '$1…/$3$4'
-    );
-  }
-
-  // Final cleanup
-  result = result.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
-
-  return result;
-}
-
+// This function and its helpers below (collapseSourceExcerptNoise,
+// collapseSimilarDiagnosticLines, collapseDuplicateLines,
+// collapseLongStackTraces, getNormalizedDiagnosticKey, getDiagnosticLocation,
+// hasRepeatedDiagnosticLines, hasMultipleFileLocationDiagnostics) are
+// intentionally kept in lockstep with DebugOutputCompressor in
+// src/optimizer/compressors/debug-output.ts — same duplication-is-necessary
+// reason as MAX_LINE_LENGTH_FOR_SCAN above (the hook can't import from
+// src/). Edit both together; a fix applied to only one (e.g. the
+// omitted-line marker or the location-preserving dedup key) will silently
+// diverge otherwise.
 function compressDebugOutput(content) {
   let result = content;
 
   result = result.replace(/\n{3,}/g, '\n\n');
   result = collapseSourceExcerptNoise(result);
+  // Drop pointer-only lines (lines that are nothing but ^^^ / ~~~ carets
+  // and whitespace). This is the one collapse step with NO omission marker,
+  // and deliberately so: a caret line has zero semantic payload — it's a
+  // visual underline of the line above, which is itself preserved — so
+  // there is no information to signal was lost, unlike the content-bearing
+  // drops (source excerpts, repeated diagnostics, stack frames) that all
+  // emit a `[toonify] ...` marker.
+  //
+  // Regression: this pointer-line regex is the same
+  // ambiguous-character-class ReDoS this file fixed in detection, but this
+  // call runs on full, uncapped content. Verified live: a 4-line payload
+  // scoring >= 3 plus one 150,000-space line took the real hook 15s here.
+  // Test capLine(line) (no-ops for any real pointer line, which is
+  // always short) rather than `line` — the FILTER decision still applies to
+  // the real, uncapped line, so no content is truncated; only what the
+  // vulnerable regex sees is bounded.
   result = result
     .split('\n')
-    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(line))
+    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLine(line)))
     .join('\n');
   result = collapseSimilarDiagnosticLines(result);
   result = collapseDuplicateLines(result);
   result = collapseLongStackTraces(result);
 
   return result.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
-}
-
-function findInlineDoubleSlash(line) {
-  let inString = null;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inString) {
-      if (ch === inString && line[i - 1] !== '\\') inString = null;
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === '`') { inString = ch; continue; }
-    if (ch === '/' && line[i + 1] === '/') {
-      const before = line.slice(0, i).trimEnd();
-      if (before.length === 0) return -1; // Pure comment line
-      return i;
-    }
-  }
-  return -1;
-}
-
-function findInlineHash(line, preservePhpAttributeSyntax = false) {
-  let inString = null;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inString) {
-      if (ch === inString && line[i - 1] !== '\\') inString = null;
-      continue;
-    }
-    if (ch === '"' || ch === "'" || (preservePhpAttributeSyntax && ch === '`')) {
-      if (line.slice(i, i + 3) === '"""' || line.slice(i, i + 3) === "'''") return -1;
-      inString = ch;
-      continue;
-    }
-    if (ch === '#') {
-      if (preservePhpAttributeSyntax && line[i + 1] === '[') continue;
-      const before = line.slice(0, i).trimEnd();
-      if (before.length === 0) return -1; // Pure comment line
-      return i;
-    }
-  }
-  return -1;
-}
-
-function getPhpHeredocTerminator(line) {
-  const match = line.match(/<<<[ \t]*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1[ \t]*$/);
-  return match ? match[2] : null;
-}
-
-function isPhpHeredocEnd(line, terminator) {
-  const escaped = terminator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`^\\s*${escaped};?\\s*$`).test(line);
 }
 
 function hasRepeatedDiagnosticLines(lines) {
@@ -422,15 +335,29 @@ function hasMultipleFileLocationDiagnostics(content) {
 function collapseSourceExcerptNoise(content) {
   const lines = content.split('\n');
   const result = [];
+  let omitted = 0;
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trimStart();
     const nextTrimmed = lines[i + 1]?.trimStart() || '';
 
-    if (/^\s*\d+\s+\|/.test(trimmed)) continue;
-    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) continue;
+    if (/^\s*\d+\s+\|/.test(trimmed)) { omitted++; continue; }
+    // Same ReDoS-vulnerable pointer-line regex as compressDebugOutput's
+    // filter above — test the capped form for the same reason (a real
+    // pointer line is always short, so this never changes behavior for
+    // legitimate content, only defuses an unbounded nextTrimmed).
+    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLine(nextTrimmed))) { omitted++; continue; }
 
     result.push(lines[i]);
+  }
+
+  // One summary marker for the whole document rather than one per drop
+  // cluster — these lines duplicate the file:line:col already stated in
+  // the diagnostic header above them, so per-cluster markers would often
+  // cost more text than the noise they replace. The point is to avoid a
+  // *zero*-indication silent drop, not to preserve per-line detail here.
+  if (omitted > 0) {
+    result.push(`[toonify] ${omitted} source excerpt line${omitted > 1 ? 's' : ''} omitted throughout`);
   }
 
   return result.join('\n');
@@ -450,6 +377,7 @@ function collapseSimilarDiagnosticLines(content) {
     }
 
     let repeatCount = 1;
+    const otherLocations = [];
     let j = i + 1;
     let separatorCount = 0;
 
@@ -463,6 +391,8 @@ function collapseSimilarDiagnosticLines(content) {
       const nextKey = getNormalizedDiagnosticKey(lines[j]);
       if (nextKey === key && separatorCount <= 2) {
         repeatCount++;
+        const loc = getDiagnosticLocation(lines[j]);
+        if (loc) otherLocations.push(loc);
         separatorCount = 0;
         j++;
         continue;
@@ -473,7 +403,8 @@ function collapseSimilarDiagnosticLines(content) {
 
     result.push(lines[i]);
     if (repeatCount > 1) {
-      result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}`);
+      const suffix = otherLocations.length > 0 ? ` (also at ${otherLocations.join(', ')})` : '';
+      result.push(`[toonify] similar diagnostic repeated ${repeatCount - 1} more time${repeatCount > 2 ? 's' : ''}${suffix}`);
     }
 
     if (j < lines.length && result[result.length - 1] !== '' && lines[j - 1]?.trim() === '') {
@@ -549,15 +480,31 @@ function isStackFrame(line) {
 function getNormalizedDiagnosticKey(line) {
   const trimmed = line.trim();
 
-  const tscMatch = trimmed.match(/^[\w./-]+\.[A-Za-z0-9]+:\d+:\d+\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
+  const tscMatch = trimmed.match(/^([\w./-]+\.[A-Za-z0-9]+:\d+:\d+)\s+-\s+(error|warning)\s+([A-Z]+\d+):\s+(.+)$/);
   if (tscMatch) {
-    return `tsc:${tscMatch[1]}:${tscMatch[2]}:${tscMatch[3].replace(/\s+/g, ' ')}`;
+    return `tsc:${tscMatch[2]}:${tscMatch[3]}:${tscMatch[4].replace(/\s+/g, ' ')}`;
   }
 
-  const eslintMatch = trimmed.match(/^\d+:\d+\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
+  const eslintMatch = trimmed.match(/^(\d+:\d+)\s+(error|warning)\s+(.+?)\s{2,}(@[^\s]+\/[^\s]+|[^\s]+)$/);
   if (eslintMatch) {
-    return `lint:${eslintMatch[1]}:${eslintMatch[2].replace(/\s+/g, ' ')}:${eslintMatch[3]}`;
+    return `lint:${eslintMatch[2]}:${eslintMatch[3].replace(/\s+/g, ' ')}:${eslintMatch[4]}`;
   }
+
+  return null;
+}
+
+// Location this diagnostic line refers to (file:line:col for tsc, line:col
+// for eslint), used only to avoid silently dropping WHERE collapsed
+// occurrences were, not for the dedup key itself — grouping by location
+// would defeat collapsing genuinely repeated diagnostics.
+function getDiagnosticLocation(line) {
+  const trimmed = line.trim();
+
+  const tscMatch = trimmed.match(/^([\w./-]+\.[A-Za-z0-9]+:\d+:\d+)\s+-\s+(error|warning)\s+[A-Z]+\d+:/);
+  if (tscMatch) return tscMatch[1];
+
+  const eslintMatch = trimmed.match(/^(\d+:\d+)\s+(error|warning)\s+/);
+  if (eslintMatch) return eslintMatch[1];
 
   return null;
 }
@@ -567,6 +514,138 @@ function getNormalizedDiagnosticKey(line) {
 function estimateTokens(text) {
   // ~4 characters per token for English, conservative estimate
   return Math.ceil(text.length / 4);
+}
+
+// --- Tool Response Shape Adapters ---
+//
+// tool_response is NOT a plain string for the tools this hook matches — it
+// is a structured object whose shape is specific to the tool (Zod-validated
+// by Claude Code, undocumented in any public API reference). Two
+// independent verification methods were used, both reproducible by anyone
+// with a local Claude Code install:
+//
+//   Read:     { type, file: { filePath, content, numLines, startLine, totalLines } }
+//   WebFetch: { bytes, code, codeText, result, durationMs, url }
+//     — verified by RUNTIME OBSERVATION: registered this hook via a real
+//     Claude Code session's .claude/settings.json and read the literal
+//     stdin bytes the hook actually received.
+//
+//   Grep: { mode?: 'content'|'files_with_matches'|'count' (default
+//     'files_with_matches'), numFiles, filenames, content?, numLines?,
+//     numMatches?, totalFiles?, totalLines?, appliedLimit?, appliedOffset? }
+//   Glob: { durationMs, numFiles, filenames, truncated, totalMatches?,
+//     countIsComplete? }
+//     — verified by SOURCE INSPECTION: `strings -a <path to the installed
+//     claude binary>` (e.g. ~/.local/share/claude/versions/<version> on
+//     macOS) contains the literal Zod schema source for both tools'
+//     outputSchema, plus the CLI's own result-rendering functions, which
+//     confirm `content` is used for 'content' mode (paired with `numLines`,
+//     labeled "lines") and 'count' mode (paired with `numMatches`/
+//     `numFiles`, labeled "matches"/"files") but not for the default
+//     'files_with_matches' mode, which renders `filenames` directly with no
+//     `content` field populated. A prior version of this file's Grep
+//     adapter was built on an unverifiable secondhand claim of live
+//     capture and was retracted; this one is built on grep-able schema
+//     source in the shipped binary, not a report of having looked at it.
+//     Glob's schema confirms it has no adapter-worthy field: filenames is
+//     an array of strings (TOON's advantage is collapsing REPEATED OBJECT
+//     KEYS, which doesn't apply to an array of bare strings), and every
+//     other field is a number/boolean.
+//
+// extractText() returns null for anything it cannot positively identify;
+// the caller passes through unchanged rather than risk sending Claude Code
+// a malformed updatedToolOutput.
+//
+// Each recognized shape returns { text, reconstruct(compressedText) }:
+// `text` is what gets fed into detection/compression, and reconstruct()
+// rebuilds a Zod-shape-compatible object with ONLY the text field replaced
+// so updatedToolOutput can genuinely shrink context instead of only
+// appending to it.
+function extractText(toolName, toolResponse) {
+  if (toolResponse === null || typeof toolResponse !== 'object') return null;
+
+  if (toolName === 'Read') {
+    const file = toolResponse.file;
+    if (!file || typeof file.content !== 'string') return null;
+    return {
+      text: file.content,
+      reconstruct(compressedText) {
+        const newLineCount = compressedText.length === 0 ? 0 : compressedText.split('\n').length;
+        // numLines always tracks what's actually in `content` — a stale
+        // count would tell Claude something isn't there that is.
+        // totalLines: a full-file read has numLines === totalLines in the
+        // original response (verified live), signaling "this is everything,
+        // nothing more to page in". That invariant must survive compression
+        // or Claude may think there's more file left to read via
+        // offset/limit when it already has all of it, just compressed. A
+        // genuinely partial read (numLines < totalLines) keeps totalLines
+        // as the true file size, since compression doesn't change how long
+        // the underlying file is.
+        const wasFullRead = file.numLines === file.totalLines;
+        return {
+          ...toolResponse,
+          file: {
+            ...file,
+            content: compressedText,
+            numLines: newLineCount,
+            totalLines: wasFullRead ? newLineCount : file.totalLines,
+          },
+        };
+      },
+    };
+  }
+
+  if (toolName === 'WebFetch') {
+    if (typeof toolResponse.result !== 'string') return null;
+    return {
+      text: toolResponse.result,
+      reconstruct(compressedText) {
+        return { ...toolResponse, result: compressedText };
+      },
+    };
+  }
+
+  if (toolName === 'Grep') {
+    // `content` is absent for the default 'files_with_matches' mode
+    // (schema-optional, and the CLI's own rendering logic never populates
+    // it for that mode) — the type check is what actually gates this, mode
+    // is not checked directly, since a future schema addition to
+    // 'files_with_matches' would still be safe to compress if it ever gets
+    // a content field, and there's no risk in being permissive here: the
+    // check itself is the safety gate.
+    //
+    // Match-enumeration fidelity ('content' mode returns the lines Claude
+    // searched for, where completeness matters): considered and verified as
+    // safe. Compression only ever fires when content scores >= 3 on the
+    // DEBUG heuristics, i.e. the grep results themselves look like build/
+    // test output. collapseSimilarDiagnosticLines preserves every collapsed
+    // location via its "(also at ...)" suffix. collapseDuplicateLines only
+    // collapses BYTE-IDENTICAL lines — with grep's default `-n` (line
+    // numbers on) or multi-file output, matched lines carry distinct
+    // prefixes and never collapse (verified: they pass through untouched);
+    // the only lines that do collapse are byte-identical ones, which by
+    // definition hold no per-match distinguishing info to lose, and the
+    // "repeated N more times" marker preserves their multiplicity. So no
+    // enumeration is silently lost.
+    if (typeof toolResponse.content !== 'string') return null;
+    return {
+      text: toolResponse.content,
+      reconstruct(compressedText) {
+        // numLines is only meaningfully tied to `content`'s line count in
+        // 'content' mode (the CLI labels it "lines" there); only recompute
+        // it if it was already present, never fabricate a field the
+        // original response didn't have.
+        const patch = { content: compressedText };
+        if (typeof toolResponse.numLines === 'number') {
+          patch.numLines = compressedText.length === 0 ? 0 : compressedText.split('\n').length;
+        }
+        return { ...toolResponse, ...patch };
+      },
+    };
+  }
+
+  // Glob: no adapter — see the comment above this function.
+  return null;
 }
 
 // --- Main ---
@@ -582,8 +661,34 @@ async function main() {
     const hookInput = JSON.parse(inputData);
     const { tool_name, tool_response } = hookInput;
 
-    // Skip if no response or empty
-    if (!tool_response || typeof tool_response !== 'string' || tool_response.length < 50) {
+    if (!tool_response) {
+      return passthrough();
+    }
+
+    // tool_response is a structured object for the tools this hook matches
+    // (Read, WebFetch, Grep — see the comment above extractText() for how
+    // each shape was verified), not a plain string — extractText() pulls
+    // the text field out and gives back a reconstruct() that rebuilds
+    // a schema-compatible object with only that field replaced. A string
+    // tool_response (older Claude Code versions, or an unmatched shape) is
+    // used as-is with no reconstruction, going out via additionalContext.
+    let contentText;
+    let reconstruct = null;
+    if (typeof tool_response === 'string') {
+      contentText = tool_response;
+    } else {
+      const extracted = extractText(tool_name, tool_response);
+      if (!extracted) return passthrough();
+      contentText = extracted.text;
+      reconstruct = extracted.reconstruct;
+    }
+
+    if (!contentText || contentText.length < 50) {
+      return passthrough();
+    }
+
+    // Size ceiling before JSON.parse/yamlParse/detection — see MAX_CONTENT_SIZE.
+    if (contentText.length > MAX_CONTENT_SIZE) {
       return passthrough();
     }
 
@@ -606,13 +711,13 @@ async function main() {
     }
 
     // Check minimum size
-    const estimatedTokens = estimateTokens(tool_response);
+    const estimatedTokens = estimateTokens(contentText);
     if (estimatedTokens < config.minTokensThreshold) {
       return passthrough();
     }
 
     // Detect structured data
-    const structured = detectStructuredData(tool_response);
+    const structured = detectStructuredData(contentText);
 
     let output;
     let formatLabel;
@@ -621,7 +726,7 @@ async function main() {
     if (structured) {
       // Structured data → TOON format
       const toonContent = toonEncode(structured.data);
-      const originalLen = tool_response.length;
+      const originalLen = contentText.length;
       const optimizedLen = toonContent.length;
       savingsPercent = ((originalLen - optimizedLen) / originalLen) * 100;
 
@@ -632,54 +737,67 @@ async function main() {
       formatLabel = structured.type.toUpperCase();
       output = `[TOON-${formatLabel}]\n${toonContent}`;
     } else {
-      const isDebugOutput = detectDebugOutput(tool_response);
-      if (isDebugOutput) {
-        const compressed = compressDebugOutput(tool_response);
-        const originalLen = tool_response.length;
-        const compressedLen = compressed.length;
-        savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
-
-        if (savingsPercent < 10) {
-          return passthrough();
-        }
-
-        formatLabel = 'DEBUG';
-        output = compressed;
-      } else {
-      // Try code detection + compression
-        const codeType = detectCode(tool_response);
-        if (!codeType) {
-          return passthrough();
-        }
-
-        const compressed = compressCode(tool_response, codeType);
-        const originalLen = tool_response.length;
-        const compressedLen = compressed.length;
-        savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
-
-        // Code compression typically has lower savings — use lower threshold (10%)
-        if (savingsPercent < 10) {
-          return passthrough();
-        }
-
-        formatLabel = codeType.replace('code-', '').toUpperCase();
-        output = compressed;
+      // Source code is intentionally not compressed — anything that is not
+      // structured data or debug output passes through untouched.
+      if (!detectDebugOutput(contentText)) {
+        return passthrough();
       }
+
+      const compressed = compressDebugOutput(contentText);
+      const originalLen = contentText.length;
+      const compressedLen = compressed.length;
+      savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
+
+      if (savingsPercent < 10) {
+        return passthrough();
+      }
+
+      formatLabel = 'DEBUG';
+      output = compressed;
     }
 
-    if (config.showStats) {
-      output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
+    // reconstruct !== null means tool_response was a recognized structured
+    // shape (Read/WebFetch/Grep): rebuild it with the compressed text
+    // swapped in and send it via updatedToolOutput, which REPLACES what
+    // Claude sees — this is what makes context actually shrink instead of
+    // only growing. reconstruct === null here can only mean tool_response
+    // was a plain string — an unrecognized OBJECT shape already exited via
+    // passthrough() earlier (see extractText() call above) rather than
+    // reaching this point, since there's no safe field to send via
+    // additionalContext either without knowing what the object means.
+    // additionalContext is schema-agnostic but appends rather than
+    // replaces, so it doesn't reduce net context size.
+    if (reconstruct) {
+      // config.showStats's footer is intentionally NOT appended on this
+      // path. reconstruct() splices `output` into the field that REPLACES
+      // what Claude sees as the tool's actual content (file.content,
+      // result, or content) — a "--- Toonify: ... smaller ---" line baked
+      // into that field isn't a stats annotation, it's fabricated file/page
+      // content. Verified live: with TOONIFY_SHOW_STATS=true, the footer
+      // used to end up inside file.content itself. There's no schema-safe
+      // side channel to put stats in in this branch, so they're just
+      // omitted rather than risk corrupting what Claude thinks a file says.
+      process.stdout.write(JSON.stringify({
+        continue: true,
+        suppressOutput: true,
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          updatedToolOutput: reconstruct(output),
+        },
+      }));
+    } else {
+      if (config.showStats) {
+        output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
+      }
+      process.stdout.write(JSON.stringify({
+        continue: true,
+        suppressOutput: true,
+        hookSpecificOutput: {
+          hookEventName: 'PostToolUse',
+          additionalContext: output,
+        },
+      }));
     }
-
-    // Return optimized content
-    process.stdout.write(JSON.stringify({
-      continue: true,
-      suppressOutput: true,
-      hookSpecificOutput: {
-        hookEventName: 'PostToolUse',
-        additionalContext: output,
-      },
-    }));
   } catch (error) {
     // Silent failure - never break the workflow
     // Log to stderr for debugging (Claude Code shows stderr in verbose mode)

@@ -3,7 +3,7 @@
  */
 
 export type ContentType =
-  | 'json' | 'csv' | 'yaml'
+  | 'json' | 'yaml'
   | 'debug-output'
   | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic'
   | 'unknown';
@@ -11,7 +11,7 @@ export type ContentType =
 export interface DetectResult {
   type: ContentType;
   confidence: number;
-  /** Parsed data for structured formats (JSON/CSV/YAML) */
+  /** Parsed data for structured formats (JSON/YAML) */
   data?: Record<string, unknown> | unknown[];
 }
 

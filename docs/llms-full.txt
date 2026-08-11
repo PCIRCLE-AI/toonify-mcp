@@ -6,9 +6,8 @@ What it is
 - Compresses large tool output before it enters the context window, reducing token cost without changing the Claude Code workflow.
 
 What it compresses
-- Structured data: JSON, CSV, YAML, API responses
+- Structured data: JSON, YAML, API responses
 - Debug-heavy output: test failures, stack traces, compiler diagnostics, repetitive lint/build output
-- Supported source code: TypeScript, Python, Go, PHP
 
 What stays the same
 - Claude Code workflow in plugin mode
@@ -18,7 +17,6 @@ What stays the same
 Best for
 - Workflows with frequent large structured data or API response reads into Claude Code
 - Debugging sessions with long test failures, stack traces, or repetitive build output
-- Workflows with frequent large source-file reads during AI-assisted coding sessions
 
 Limitations
 - Short prose

@@ -11,12 +11,22 @@ import path from 'path';
 const exec = promisify(execFile);
 const hookPath = path.resolve('hooks/post-tool-use.mjs');
 
-async function runHook(input: Record<string, unknown>): Promise<{ stdout: string; stderr: string }> {
+async function runHook(input: Record<string, unknown>, env?: Record<string, string>): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
-    const proc = execFile('node', [hookPath], { timeout: 10000 }, (error, stdout, stderr) => {
-      // Hook returns exit 0 even on internal errors (by design)
-      resolve({ stdout, stderr });
-    });
+    // maxBuffer above Node's 1MB default: compressed output for a
+    // near-10MB-ceiling source can itself be several MB (TOON compression
+    // is real, not free) — the default would silently truncate stdout
+    // mid-write and produce invalid JSON, a test-harness artifact, not a
+    // hook bug.
+    const proc = execFile(
+      'node',
+      [hookPath],
+      { timeout: 10000, maxBuffer: 64 * 1024 * 1024, env: env ? { ...process.env, ...env } : process.env },
+      (error, stdout, stderr) => {
+        // Hook returns exit 0 even on internal errors (by design)
+        resolve({ stdout, stderr });
+      }
+    );
     proc.stdin!.write(JSON.stringify(input));
     proc.stdin!.end();
   });
@@ -47,74 +57,6 @@ describe('PostToolUse Hook', () => {
       expect(output.hookEventName).toBe('PostToolUse');
       expect(typeof output.additionalContext).toBe('string');
       expect(output.additionalContext as string).toContain('[TOON-JSON]');
-    });
-
-    test('preserves PHP attributes and heredoc bodies during code compression', async () => {
-      const input = {
-        tool_name: 'Read',
-        tool_response: `<?php
-
-use Symfony\\Component\\Routing\\Attribute\\Route;
-
-class ApiController {
-    // Remove this comment line
-    #[Route('/api/users', methods: ['GET'])]
-    public function listUsers() {
-        $html = <<<HTML
-<h1>Users</h1>
-// This is HTML, not a PHP comment
-# also not a PHP comment
-HTML;
-        return $this->render($html); # remove trailing comment
-    }
-}
-`,
-      };
-
-      const { stdout } = await runHook(input);
-      const result = parseOutput(stdout);
-
-      expect(result.continue).toBe(true);
-      expect(result.suppressOutput).toBe(true);
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.hookEventName).toBe('PostToolUse');
-      expect(output.additionalContext as string).toContain("#[Route('/api/users', methods: ['GET'])]");
-      expect(output.additionalContext as string).toContain('// This is HTML, not a PHP comment');
-      expect(output.additionalContext as string).toContain('# also not a PHP comment');
-      expect(output.additionalContext as string).not.toContain('remove trailing comment');
-    });
-
-    test('preserves PHP backtick command strings during code compression', async () => {
-      const input = {
-        tool_name: 'Read',
-        tool_response: `<?php
-
-use App\\Support\\Runner;
-use App\\Support\\Shell;
-
-class Runner {
-    // Remove this comment line
-    public function cmd() {
-        return \`echo #notacomment\`; # remove trailing comment
-    }
-
-    // Remove this comment line too
-    public function cmdTwo() {
-        return \`printf %s #still-not-a-comment\`; # remove trailing comment
-    }
-}
-`,
-      };
-
-      const { stdout } = await runHook(input);
-      const result = parseOutput(stdout);
-
-      expect(result.continue).toBe(true);
-      expect(result.suppressOutput).toBe(true);
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('return `echo #notacomment`;');
-      expect(output.additionalContext as string).toContain('return `printf %s #still-not-a-comment`;');
-      expect(output.additionalContext as string).not.toContain('remove trailing comment');
     });
 
     test('optimizes debug-heavy output while preserving actionable lines', async () => {
@@ -189,7 +131,508 @@ Found 3 errors in 2 files.`,
       expect(output.additionalContext as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
       expect(output.additionalContext as string).not.toContain('18   title={42}');
       expect(output.additionalContext as string).not.toContain('22   title={99}');
+      // The hook and the library (src/optimizer/compressors/debug-output.ts)
+      // independently implement the same location-preservation and
+      // omission-marker fixes — assert the same specifics here that
+      // tests/pipeline/debug-output-compressor.test.ts asserts for the
+      // library, so a regression in the hook's own copy (wrong capture
+      // group, off-by-one, wrong suffix formatting) can't slip past this
+      // suite while the library's tests would still catch it.
+      expect(output.additionalContext as string).toContain('(also at src/components/ProfileCard.tsx:22:12)');
+      expect(output.additionalContext as string).toMatch(/\[toonify\] \d+ source excerpt lines? omitted throughout/);
     });
+  });
+
+  describe('object-shaped tool_response (real Claude Code shape)', () => {
+    // tool_response is NOT a plain string for Read/WebFetch in real Claude
+    // Code — verified live against a real session (Read:
+    // {type, file:{filePath, content, numLines, startLine, totalLines}},
+    // WebFetch: {bytes, code, codeText, result, durationMs, url}). Before
+    // this adapter existed, the hook's `typeof tool_response !== 'string'`
+    // gate made it a complete no-op for these shapes: compression never
+    // even ran. Now extractText()/reconstruct() pull the text field out,
+    // compress it, and rebuild the object so updatedToolOutput can replace
+    // (not just append to) what Claude sees.
+    test('Read: compresses file.content and returns updatedToolOutput, not additionalContext', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const content = JSON.stringify(data, null, 2);
+      const lines = content.split('\n').length;
+
+      const input = {
+        tool_name: 'Read',
+        tool_response: {
+          type: 'text',
+          file: {
+            filePath: '/tmp/data.json',
+            content,
+            numLines: lines,
+            startLine: 1,
+            totalLines: lines,
+          },
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      expect(result.suppressOutput).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { file: { content: string; numLines: number; totalLines: number; filePath: string } };
+      expect(updated.file.content).toContain('[TOON-JSON]');
+      expect(updated.file.content.length).toBeLessThan(content.length);
+      expect(updated.file.filePath).toBe('/tmp/data.json');
+      // Full-file-read invariant (numLines === totalLines in the original)
+      // must survive compression, or Claude is misled into thinking there's
+      // more of the file left to page in via offset/limit.
+      expect(updated.file.numLines).toBe(updated.file.totalLines);
+      expect(updated.file.numLines).toBeLessThan(lines);
+    });
+
+    // Regression: config.showStats appended a "--- Toonify: ... smaller ---"
+    // footer to `output` BEFORE reconstruct(output) was called, so with
+    // TOONIFY_SHOW_STATS=true the footer ended up baked into file.content
+    // itself — not a side-channel annotation, fabricated file content
+    // Claude would treat as real. Reproduced live before the fix (footer
+    // literally appeared as the last line of file.content).
+    test('showStats does not leak its footer into updatedToolOutput content', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const content = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Read',
+        tool_response: {
+          type: 'text',
+          file: { filePath: '/tmp/data.json', content, numLines: content.split('\n').length, startLine: 1, totalLines: content.split('\n').length },
+        },
+      };
+
+      const { stdout } = await runHook(input, { TOONIFY_SHOW_STATS: 'true' });
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { file: { content: string } };
+      expect(updated.file.content).not.toContain('--- Toonify:');
+    });
+
+    // The additionalContext path has no such risk (it's already an
+    // "extra info" side channel, not the actual tool result), so the
+    // stats footer should still appear there when requested.
+    test('showStats footer still appears on the additionalContext path', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const content = JSON.stringify(data, null, 2);
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: content }, { TOONIFY_SHOW_STATS: 'true' });
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext as string).toContain('--- Toonify:');
+    });
+
+    test('Read: a genuinely partial read keeps totalLines as the true file size', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const content = JSON.stringify(data, null, 2);
+      const lines = content.split('\n').length;
+
+      const input = {
+        tool_name: 'Read',
+        tool_response: {
+          type: 'text',
+          file: {
+            filePath: '/tmp/data.json',
+            content,
+            numLines: lines,
+            startLine: 1,
+            totalLines: lines + 5000, // simulates a partial read of a bigger file
+          },
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { file: { numLines: number; totalLines: number } };
+      expect(updated.file.totalLines).toBe(lines + 5000);
+      expect(updated.file.numLines).toBeLessThan(updated.file.totalLines);
+    });
+
+    test('WebFetch: compresses result and returns updatedToolOutput, preserving other fields', async () => {
+      const data = { items: Array.from({ length: 300 }, (_, i) => ({ id: i, label: `Item ${i}` })) };
+      const result_ = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'WebFetch',
+        tool_response: {
+          bytes: result_.length,
+          code: 200,
+          codeText: 'OK',
+          result: result_,
+          durationMs: 1200,
+          url: 'https://example.com/data.json',
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { result: string; url: string; code: number; codeText: string; durationMs: number };
+      expect(updated.result).toContain('[TOON-JSON]');
+      expect(updated.result.length).toBeLessThan(result_.length);
+      // Everything except `result` must survive untouched.
+      expect(updated.url).toBe('https://example.com/data.json');
+      expect(updated.code).toBe(200);
+      expect(updated.codeText).toBe('OK');
+      expect(updated.durationMs).toBe(1200);
+    });
+
+    test('unrecognized tool name with an object tool_response passes through safely', async () => {
+      const input = {
+        tool_name: 'SomeFutureTool',
+        tool_response: { matches: ['some result'], count: 1 },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      // extractText() returns null for tool names it doesn't recognize —
+      // must never crash or fabricate a shape, just pass through.
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Grep's schema — {mode?, numFiles, filenames, content?, numLines?,
+    // numMatches?, ...} — was extracted directly from the installed Claude
+    // Code binary's own Zod schema and result-rendering source (`strings`
+    // on the compiled CLI), not a secondhand report. See the comment above
+    // extractText() for the full method and why an earlier, unverifiable
+    // version of this adapter was retracted before being re-added this way.
+    test("Grep 'content' mode: compresses content and recomputes numLines", async () => {
+      const lines = Array.from({ length: 50 }, (_, i) =>
+        `src/components/File${i}.tsx:${10 + i}:12 - error TS2322: Type X is not assignable to type Y.`
+      );
+      const grepContent = lines.join('\n\n');
+
+      const input = {
+        tool_name: 'Grep',
+        tool_response: {
+          mode: 'content',
+          numFiles: 50,
+          filenames: [],
+          content: grepContent,
+          numLines: grepContent.split('\n').length,
+          numMatches: 50,
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { content: string; numLines: number; mode: string; numMatches: number };
+      expect(updated.content.length).toBeLessThan(grepContent.length);
+      expect(updated.mode).toBe('content');
+      expect(updated.numMatches).toBe(50);
+      // numLines must track the actually-returned (compressed) content,
+      // not the stale original count. A hardcoded expectation, not
+      // updated.content.split('\n').length re-applied — reusing the same
+      // formula the implementation uses would make this assertion unable
+      // to fail even if reconstruct() computed numLines wrong. The 50
+      // near-identical diagnostics collapse to: 1 kept line + 1
+      // "repeated... (also at ...)" marker line, and compressDebugOutput's
+      // own trailing '\n' adds one more segment when split — matching the
+      // same trailing-newline convention verified live for Read's shape
+      // (a single-line file's numLines was 2, not 1).
+      expect(updated.content).toBe(
+        'src/components/File0.tsx:10:12 - error TS2322: Type X is not assignable to type Y.\n' +
+        '[toonify] similar diagnostic repeated 49 more times (also at ' +
+        Array.from({ length: 49 }, (_, i) => `src/components/File${i + 1}.tsx:${11 + i}:12`).join(', ') +
+        ')\n'
+      );
+      expect(updated.numLines).toBe(3);
+      expect(updated.numLines).toBeLessThan(grepContent.split('\n').length);
+    });
+
+    test("Grep 'count' mode: compresses content, does not fabricate a numLines field", async () => {
+      const data = { byFile: Array.from({ length: 300 }, (_, i) => ({ file: `src/f${i}.ts`, count: i })) };
+      const grepContent = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Grep',
+        tool_response: { mode: 'count', numFiles: 300, filenames: [], content: grepContent, numMatches: 5000 },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { content: string; numMatches: number; numLines?: number };
+      expect(updated.content).toContain('[TOON-JSON]');
+      expect(updated.numMatches).toBe(5000);
+      // The original response had no numLines field — reconstruct() must
+      // not add one that wasn't there.
+      expect(updated.numLines).toBeUndefined();
+    });
+
+    // The default mode ('files_with_matches') never populates `content`
+    // per the CLI's own rendering logic — extractText()'s type check on
+    // `content` is what actually gates this (mode isn't checked directly),
+    // so this also covers any Grep response with no content field.
+    test("Grep 'files_with_matches' mode (no content field) passes through untouched", async () => {
+      const input = {
+        tool_name: 'Grep',
+        tool_response: { numFiles: 5, filenames: ['a.ts', 'b.ts', 'c.ts', 'd.ts', 'e.ts'] },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Glob deliberately has no adapter at all — its response has no
+    // bulk-text field, only filenames/counts/booleans, so there's nothing
+    // for this hook to compress. This is a scoping decision, not a gap.
+    test('Glob (no compressible text field) passes through untouched', async () => {
+      const input = {
+        tool_name: 'Glob',
+        tool_response: {
+          filenames: Array.from({ length: 50 }, (_, i) => `src/file${i}.ts`),
+          durationMs: 12,
+          numFiles: 50,
+          truncated: false,
+          totalMatches: 50,
+          countIsComplete: true,
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    test('Read with a malformed object shape (missing file.content) passes through safely', async () => {
+      const input = {
+        tool_name: 'Read',
+        tool_response: { type: 'text', file: { filePath: '/tmp/x.json' } }, // no content field
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Mirrors the Read/Grep malformed-shape tests above — WebFetch had only
+    // a happy-path test, no coverage for a missing/wrong-typed `result`.
+    test('WebFetch with a malformed object shape (missing result) passes through safely', async () => {
+      const input = {
+        tool_name: 'WebFetch',
+        tool_response: { bytes: 0, code: 200, codeText: 'OK', durationMs: 10, url: 'https://example.com' }, // no result field
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    test('string tool_response (legacy shape) still goes through additionalContext, not updatedToolOutput', async () => {
+      const input = {
+        tool_name: 'Read',
+        tool_response: JSON.stringify({
+          rows: Array.from({ length: 200 }, (_, i) => ({ id: i, name: `E${i}` })),
+        }, null, 2),
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(typeof output.additionalContext).toBe('string');
+      expect(output.updatedToolOutput).toBeUndefined();
+    });
+  });
+
+  describe('source code is never rewritten', () => {
+    // Regression for Bug B: `removeInlineCStyleComment` did not know about
+    // regex literals, so `/^https?:\/\//` was truncated at the `//` and the
+    // file Claude received no longer parsed. The hook must not touch code.
+    const tsWithRegexLiterals = `import { normalize } from './util';
+import type { Parsed } from './types';
+
+export interface Parts {
+  host: string;
+  segments: string[];
+}
+
+export function clean(url: string, s: string): Parts {
+  // strip the scheme
+  const a = url.replace(/^https?:\\/\\//, "");
+  const b = s.split(/\\/\\//);
+  const c = a.replace(/\\/\\/+/g, "/"); // collapse duplicate slashes
+  return { host: normalize(c), segments: b };
+}
+`;
+
+    test('TypeScript with regex literals is left byte-for-byte alone', async () => {
+      const { stdout } = await runHook({
+        tool_name: 'Read',
+        tool_response: tsWithRegexLiterals,
+      });
+      const result = parseOutput(stdout);
+
+      // Passthrough means the hook emits no replacement content at all, so the
+      // original tool result reaches Claude unchanged.
+      expect(result).toEqual({ continue: true });
+      expect(result.hookSpecificOutput).toBeUndefined();
+      expect(result.suppressOutput).toBeUndefined();
+    });
+
+    test('Python with a multi-line docstring is left byte-for-byte alone', async () => {
+      const py = `import json
+from typing import Any
+
+
+def calc(x: int) -> int:
+    """Compute the thing.
+
+    Args:
+        x: the input.
+    """
+    return x * 2
+
+
+class Service:
+    """Manages operations."""
+
+    def __init__(self) -> None:
+        self.items: list[Any] = []  # store items here
+
+    def add(self, item: Any) -> bool:
+        self.items.append(item)
+        return True
+`;
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: py });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    test('CSV is left alone rather than converted to TOON', async () => {
+      const rows = Array.from({ length: 40 }, (_, i) =>
+        `${i},Employee ${i},employee${i}@company.com,${25 + (i % 30)},Dept ${i % 5}`
+      );
+      const csv = ['id,name,email,age,department', ...rows].join('\n');
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: csv });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Regression: source code can score >= 3 on detectDebugOutput's
+    // heuristics (e.g. repeated near-identical lines + the literal word
+    // "FAIL" both appearing legitimately in real code), which used to route
+    // it into compressDebugOutput() and silently splice a
+    // "[toonify] repeated N more times" note into what was a valid TS array
+    // literal, corrupting real source. Guarded against here regardless of
+    // which hookSpecificOutput field is used — an appended corrupted copy
+    // is still misleading even when the original is also present.
+    test('source code with repeated near-identical lines is not misclassified as debug output', async () => {
+      const ts = `export const RETRY_MESSAGES: string[] = [
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+  "FAIL: unable to process",
+];
+
+export function nextMessage(index: number): string {
+  return RETRY_MESSAGES[index % RETRY_MESSAGES.length];
+}
+`;
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: ts });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Regression: looksLikeSourceCode() only recognized TS/Python/PHP/Go
+    // indicators, so source in any other language (Java, C, C++, Rust,
+    // Ruby, ...) with repeated near-identical lines fell through to
+    // detectDebugOutput and got corrupted the same way the TS case above
+    // used to. A generic-code fallback (mirroring looksLikeGenericCode in
+    // src/optimizer/pipeline/detector.ts) closes this for any C-family-ish
+    // syntax, not just the four explicitly named languages.
+    test('source code in a language without a dedicated indicator set (Java) is not misclassified as debug output', async () => {
+      const java = `package com.example.service;
+
+public class RetryHandler {
+    public void run(int attempt) {
+        if (attempt == 1) { throw new RuntimeException("FAIL"); }
+        if (attempt == 2) { throw new RuntimeException("FAIL"); }
+        if (attempt == 3) { throw new RuntimeException("FAIL"); }
+        if (attempt == 4) { throw new RuntimeException("FAIL"); }
+        if (attempt == 5) { throw new RuntimeException("FAIL"); }
+    }
+}
+`;
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: java });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Regression: hasMultipleFileLocationDiagnostics()'s
+    // /\b[\w./-]+\.(ts|...):\d+:\d+\b/g has an ambiguous overlap between the
+    // `.` inside its character class and the literal `.` before the
+    // extension, causing O(n^2) backtracking on content shaped like
+    // "a.a.a.a...." with no valid :line:col suffix ever appearing (same
+    // class of bug independently affects /^\s*at\s+.+\(.+:\d+:\d+\)/m).
+    // Verified before the fix: a single ~120,000-char adversarial line took
+    // several seconds; this test asserts it now completes well under the
+    // hook's own child-process timeout.
+    test('does not hang on a ReDoS-shaped adversarial payload', async () => {
+      const adversarial = 'line one\nline two\nline three\n' + 'a.'.repeat(60000) + '\nline five';
+
+      const start = Date.now();
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: adversarial });
+      const elapsedMs = Date.now() - start;
+
+      const result = parseOutput(stdout);
+      expect(result.continue).toBe(true);
+      expect(elapsedMs).toBeLessThan(3000);
+    }, 10000);
+
+    // Regression: the payload above only exercises DETECTION regexes — it
+    // scores < 3 so compressDebugOutput() never runs. compressDebugOutput's
+    // own pointer-line filter and collapseSourceExcerptNoise have the SAME
+    // ambiguous-character-class ReDoS but run on full, uncapped content, so
+    // a payload that DOES score >= 3 (real FAIL + stack frames) plus one
+    // long near-whitespace line reaches the compression path. Measured ~15s
+    // before the fix.
+    test('does not hang when the ReDoS-shaped line reaches the compression path', async () => {
+      const adversarial =
+        'FAIL: something broke\nat foo (bar.ts:1:1)\nat foo (bar.ts:2:2)\nat foo (bar.ts:3:3)\n' + ' '.repeat(150000);
+
+      const start = Date.now();
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: adversarial });
+      const elapsedMs = Date.now() - start;
+
+      const result = parseOutput(stdout);
+      expect(result.continue).toBe(true);
+      expect(elapsedMs).toBeLessThan(3000);
+    }, 10000);
   });
 
   describe('passthrough cases', () => {
@@ -235,6 +678,53 @@ Found 3 errors in 2 files.`,
       const result = parseOutput(stdout);
       expect(result.continue).toBe(true);
     });
+
+    // Regression: JSON.parse/yamlParse ran on arbitrarily large content with
+    // no ceiling in the standalone hook, unlike the (already-guarded)
+    // library path (see src/optimizer/token-optimizer.ts's MAX_CONTENT_SIZE).
+    //
+    // A prior version of this test used 'x'.repeat(10MB+1), which is
+    // vacuous: that content has no newline, so it fails JSON.parse and the
+    // YAML gate immediately regardless of whether the size guard exists —
+    // the test passed identically with the guard deliberately disabled.
+    // This version uses genuinely compressible JSON so the two sizes
+    // produce OBSERVABLY DIFFERENT outcomes only if the guard is doing its
+    // job: just under the ceiling must still compress (proving the guard
+    // isn't just rejecting everything), just over it must passthrough.
+    function buildCompressibleJson(targetBytes: number): string {
+      const rows: string[] = [];
+      let size = 2; // '[' + ']'
+      let i = 0;
+      while (size < targetBytes) {
+        const row = JSON.stringify({ id: i, name: `Employee${i}`, active: true });
+        size += row.length + 1; // +1 for the comma
+        rows.push(row);
+        i++;
+      }
+      return `[${rows.join(',')}]`;
+    }
+
+    test('compresses content just under the 10MB ceiling', async () => {
+      const underCeiling = buildCompressibleJson(10 * 1024 * 1024 - 2000);
+      expect(underCeiling.length).toBeLessThan(10 * 1024 * 1024);
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: underCeiling });
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown> | undefined;
+      expect(output?.additionalContext).toContain('[TOON-JSON]');
+    }, 15000);
+
+    test('passes through content over the 10MB size ceiling without parsing it', async () => {
+      const overCeiling = buildCompressibleJson(10 * 1024 * 1024 + 2000);
+      expect(overCeiling.length).toBeGreaterThan(10 * 1024 * 1024);
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: overCeiling });
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    }, 15000);
   });
 
   describe('error handling', () => {

@@ -1,6 +1,32 @@
 /**
  * Code Compressor — heuristic-based compression for source code
  *
+ * ⚠️ NOT REGISTERED IN THE PIPELINE. Do not re-register it.
+ *
+ * Removed from TokenOptimizer's pipeline because it produces syntactically
+ * broken output and the savings do not justify the risk:
+ *
+ *   Bug A — Python docstrings: removeCommentOnlyLines() drops the closing
+ *   `"""` line along with the docstring body, producing
+ *   `SyntaxError: unterminated triple-quoted string literal`.
+ *   Reported: 14 of 34 non-empty Python files (41%) in a FastAPI template
+ *   backend failed `ast.parse` after compression (external audit).
+ *   Reproduced independently on a different real corpus (a data-pipeline
+ *   project, 84 non-empty .py files): 77 files (91.7%) failed `ast.parse`.
+ *
+ *   Bug B — regex literals: removeInlineCStyleComment() tracks only " ' and `
+ *   as string delimiters, so `/^https?:\/\//` is truncated at the `//`.
+ *   The `/https?:\/\//.test(line)` guard does not help — source contains the
+ *   escaped form `https?:\/\/`, not a literal `https://`.
+ *
+ * Reported savings that did not justify keeping it (external audit): React
+ * TS project 0.8% (59 of 60 files under 10%), Python project 6.5% (median
+ * 4.1%).
+ *
+ * The class and tests/pipeline/code-compressor.test.ts are kept so the
+ * behaviour stays documented and testable. Fix Bug A and Bug B with a real
+ * parser before considering re-registration.
+ *
  * 6 layers from safe to aggressive:
  * 1. Merge consecutive blank lines → 1
  * 2. Remove inline comments (// and block comments)
@@ -8,8 +34,6 @@
  * 4. Shorten long import paths
  * 5. Summarize consecutive imports (>500 tokens only)
  * 6. Collapse repetitive patterns (>500 tokens only)
- *
- * Safety: never deletes code logic, preserves TODO/FIXME, preserves docstring first line.
  */
 
 import type { Compressor } from './compressor.js';

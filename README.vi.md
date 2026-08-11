@@ -2,13 +2,13 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Plugin nén ngữ cảnh cho Claude Code. Tự động thu gọn đầu ra lớn từ công cụ—JSON, CSV, YAML, stack trace và log—trước khi chúng vào cửa sổ ngữ cảnh.
+Plugin nén ngữ cảnh cho Claude Code. Tự động thu gọn đầu ra lớn từ công cụ—JSON, YAML, stack trace và log—trước khi chúng vào cửa sổ ngữ cảnh.
 
 Hoạt động như plugin Claude Code (tự động, không cần cấu hình) hoặc máy chủ MCP (theo yêu cầu).
 
 ## Tính năng
 
-- Nén phản hồi lớn dạng JSON, CSV, YAML và API
+- Nén phản hồi lớn dạng JSON, YAML và API
 - Thu gọn test failure dài và stack trace
 - Chạy tự động nền—không thay đổi quy trình làm việc Claude Code
 

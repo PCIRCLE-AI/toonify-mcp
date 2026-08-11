@@ -1,9 +1,65 @@
 /**
- * Content type detector — identifies JSON, CSV, YAML, or code
+ * Content type detector — identifies JSON, YAML, code, or debug output
+ *
+ * CSV is deliberately not detected. Encoding CSV as TOON was reported as a
+ * net loss at every size tried, -17.1% / -16.7% / -15.4% at 50 / 500 / 2000
+ * rows (external audit); independently reproduced here with a differently
+ * shaped CSV fixture at -9.7% / -9.0% / -8.5% for the same row counts. Both
+ * runs agree on the sign (always a loss), so detecting CSV only bought a
+ * parse + encode + reject cycle for no benefit.
  */
 
 import yaml from 'yaml';
-import type { ContentType, DetectResult } from './types.js';
+import type { DetectResult } from './types.js';
+
+/**
+ * ReDoS guard for detectDebugOutput()'s regex heuristics.
+ *
+ * hasMultipleFileLocationDiagnostics()'s /\b[\w./-]+\.(ts|...):\d+:\d+\b/g
+ * has an ambiguous overlap between the `.` inside its character class and
+ * the literal `.` before the extension: on a run like "a.a.a.a...." with no
+ * valid `:line:col` suffix, the engine backtracks through the whole run at
+ * every position — O(n^2). The same class of blowup hits
+ * /^\s*at\s+.+\(.+:\d+:\d+\)/m in detectDebugOutput() (two greedy `.+` with
+ * no closing `:N:N)` ever appearing). Verified independently: doubling
+ * input length roughly quadrupled match time for both regexes (clean
+ * quadratic fit). This is reachable through TokenOptimizer.optimize(), and
+ * while the entry-time size guard there bounds content to ~800,000 chars at
+ * default config, that bound was calibrated against TOON-encoding JSON —
+ * an entirely different cost profile — so content that isn't JSON/YAML at
+ * all can still pass that guard and then take orders of magnitude longer
+ * than the maxProcessingTime budget the guard is meant to enforce.
+ *
+ * Fix is structural rather than per-regex: legitimate debug output (stack
+ * traces, compiler diagnostics, test failures) never has a single line more
+ * than a few hundred characters long, so capping line length before ANY of
+ * these heuristic regexes run bounds worst-case backtracking to a constant
+ * per line — regardless of whether some other regex here has a similar
+ * latent ambiguity that hasn't been found yet. Mirrors the identical fix in
+ * hooks/post-tool-use.mjs — fix both together so they don't drift.
+ */
+const MAX_LINE_LENGTH_FOR_SCAN = 2000;
+
+// Single-line cap — use inside per-line predicates. Do NOT use
+// capLineLengths (content-level) per line; it splits/maps/joins the whole
+// string each call.
+export function capLine(line: string): string {
+  return line.length > MAX_LINE_LENGTH_FOR_SCAN ? line.slice(0, MAX_LINE_LENGTH_FOR_SCAN) : line;
+}
+
+// Content-level cap — for multi-line content fed to a regex in one shot.
+export function capLineLengths(content: string): string {
+  const lines = content.split('\n');
+  let capped = false;
+  const result = lines.map(line => {
+    if (line.length > MAX_LINE_LENGTH_FOR_SCAN) {
+      capped = true;
+      return line.slice(0, MAX_LINE_LENGTH_FOR_SCAN);
+    }
+    return line;
+  });
+  return capped ? result.join('\n') : content;
+}
 
 export class Detector {
   /**
@@ -18,10 +74,6 @@ export class Detector {
     // Try YAML (only if structurally complex)
     const yamlResult = this.tryYAML(content);
     if (yamlResult) return yamlResult;
-
-    // Try CSV
-    const csvResult = this.tryCSV(content);
-    if (csvResult) return csvResult;
 
     // Try code detection
     const codeResult = this.detectCode(content);
@@ -44,37 +96,38 @@ export class Detector {
     const lines = content.split('\n').filter(line => line.trim().length > 0);
     if (lines.length < 4) return null;
 
+    const scanContent = capLineLengths(content);
     let score = 0;
 
-    if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(content)) {
+    if (/\b(FAIL|FAILURES?|AssertionError|Traceback|Caused by:|UnhandledPromiseRejection)\b/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/\berror TS\d+:/m.test(content) || /^\s*error(\[[^\]]+\])?:/im.test(content)) {
+    if (/\berror TS\d+:/m.test(scanContent) || /^\s*error(\[[^\]]+\])?:/im.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(content) || /^\w+(Error|Exception):\s+/m.test(content)) {
+    if (/^\s*File\s+"[^"]+",\s+line\s+\d+/m.test(scanContent) || /^\w+(Error|Exception):\s+/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*at\s+.+:\d+:\d+/m.test(content) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(content)) {
+    if (/^\s*at\s+.+:\d+:\d+/m.test(scanContent) || /^\s*at\s+.+\(.+:\d+:\d+\)/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(content) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(content)) {
+    if (/^\s*\d+:\d+\s+error\s{2,}.+/m.test(scanContent) || /^\s*\d+:\d+\s+warning\s{2,}.+/m.test(scanContent)) {
       score += 2;
     }
 
-    if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(content)) {
+    if (/^\s*(Test Suites:|Tests:|Snapshots:|Time:|Ran all test suites)/m.test(scanContent)) {
       score += 1;
     }
 
-    if (/^\s*[×✕]\s+/m.test(content) || /^\s*>\s+.+$/m.test(content)) {
+    if (/^\s*[×✕]\s+/m.test(scanContent) || /^\s*>\s+.+$/m.test(scanContent)) {
       score += 1;
     }
 
-    if (/^\s*npm ERR!/m.test(content) || /^\s*error Command failed/m.test(content)) {
+    if (/^\s*npm ERR!/m.test(scanContent) || /^\s*error Command failed/m.test(scanContent)) {
       score += 1;
     }
 
@@ -82,7 +135,7 @@ export class Detector {
       score += 1;
     }
 
-    if (this.hasMultipleFileLocationDiagnostics(content)) {
+    if (this.hasMultipleFileLocationDiagnostics(scanContent)) {
       score += 1;
     }
 
@@ -113,23 +166,16 @@ export class Detector {
     return null;
   }
 
-  private tryCSV(content: string): DetectResult | null {
-    if (!this.looksLikeCSV(content)) return null;
-    try {
-      const data = this.parseCSV(content);
-      return { type: 'csv', confidence: 0.8, data };
-    } catch {}
-    return null;
-  }
-
   /**
    * Detect code by language using content heuristics
    */
   detectCode(content: string): DetectResult | null {
-    const lines = content.split('\n');
+    // split's limit stops after 50 lines instead of materializing every line
+    // of a large document just to sample the first 50.
+    const lines = content.split('\n', 50);
     if (lines.length < 3) return null;
 
-    const sample = lines.slice(0, 50).join('\n');
+    const sample = capLineLengths(lines.join('\n'));
 
     // TypeScript/JavaScript
     if (this.looksLikeTypeScript(sample)) {
@@ -289,67 +335,5 @@ export class Detector {
     const yamlDensity = (yamlLines + listItems) / Math.min(lines.length, 20);
 
     return hasStructure && yamlDensity >= 0.3;
-  }
-
-  private looksLikeCSV(content: string): boolean {
-    const lines = content.split('\n').filter(l => l.trim());
-    if (lines.length < 2) return false;
-
-    const firstLineCommas = (lines[0].match(/,/g) || []).length;
-    if (firstLineCommas === 0) return false;
-
-    let matchingLines = 0;
-    for (let i = 1; i < Math.min(lines.length, 10); i++) {
-      const commas = (lines[i].match(/,/g) || []).length;
-      if (commas === firstLineCommas) matchingLines++;
-    }
-
-    return matchingLines >= Math.min(lines.length - 1, 7);
-  }
-
-  private parseCSV(content: string): Record<string, string>[] {
-    const lines = content.split('\n').filter(l => l.trim());
-    const headers = this.parseCSVLine(lines[0]);
-
-    return lines.slice(1).map(line => {
-      const values = this.parseCSVLine(line);
-      const obj: Record<string, string> = {};
-      headers.forEach((header, i) => {
-        obj[header] = values[i] || '';
-      });
-      return obj;
-    });
-  }
-
-  private parseCSVLine(line: string): string[] {
-    const fields: string[] = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (inQuotes) {
-        if (char === '"' && line[i + 1] === '"') {
-          current += '"';
-          i++;
-        } else if (char === '"') {
-          inQuotes = false;
-        } else {
-          current += char;
-        }
-      } else {
-        if (char === '"') {
-          inQuotes = true;
-        } else if (char === ',') {
-          fields.push(current.trim());
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-    }
-
-    fields.push(current.trim());
-    return fields;
   }
 }

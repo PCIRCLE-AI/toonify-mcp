@@ -92,7 +92,12 @@ docs/social-preview/
 design/
 research/
 hooks/node_modules/
-scripts/
+# Ignore local scripts, EXCEPT the published postinstall script (referenced
+# by package.json's "postinstall" and shipped via the "files" allowlist).
+# Must be `scripts/*` not `scripts/` — git can't re-include a file whose
+# parent directory is itself excluded.
+scripts/*
+!scripts/postinstall.mjs
 *-debug.*
 HANDOFF.md
 PUBLISHING.md

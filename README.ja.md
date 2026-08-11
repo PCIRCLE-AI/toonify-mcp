@@ -2,13 +2,13 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
-Claude Code 向けのコンテキスト圧縮プラグインです。大きなツール出力（JSON、CSV、YAML、スタックトレース、ログ）がコンテキストウィンドウに入る前に自動で縮小します。
+Claude Code 向けのコンテキスト圧縮プラグインです。大きなツール出力（JSON、YAML、スタックトレース、ログ）がコンテキストウィンドウに入る前に自動で縮小します。
 
 Claude Code プラグイン（自動・設定不要）と MCP サーバー（オンデマンド）の両方として使えます。
 
 ## 機能
 
-- 大きな JSON、CSV、YAML、API レスポンスを圧縮
+- 大きな JSON、YAML、API レスポンスを圧縮
 - 長いテスト失敗や stack trace を縮小
 - バックグラウンドで自動動作——Claude Code のワークフローを変更する必要なし
 

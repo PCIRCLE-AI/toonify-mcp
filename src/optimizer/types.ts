@@ -15,7 +15,7 @@ export interface OptimizationResult {
     percentage: number;
     withCaching?: number; // Additional savings from caching
   };
-  format?: 'json' | 'csv' | 'yaml' | 'debug-output' | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic' | 'unknown';
+  format?: 'json' | 'yaml' | 'debug-output' | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic' | 'unknown';
   reason?: string; // Why optimization was skipped
   // v0.3.0: Cache-related fields
   cachedContent?: CachedContent;
@@ -29,17 +29,17 @@ export interface ToolMetadata {
   modelId?: string; // v0.3.0: For model-specific optimization
 }
 
-export interface StructuredData {
-  type: 'json' | 'csv' | 'yaml';
-  data: Record<string, unknown> | unknown[];
-  confidence: number;
-}
-
 export interface OptimizationConfig {
   enabled: boolean;
   minTokensThreshold: number; // Only optimize if content > N tokens
   minSavingsThreshold: number; // Only use if savings > N%
-  maxProcessingTime: number; // Max ms to spend optimizing
+  // Processing time budget (ms). This is an ENTRY guard, not a post-hoc one:
+  // TokenOptimizer converts it to a content-length ceiling before running the
+  // pipeline. It is never used to discard an already-computed result — timing
+  // a completed computation and throwing it away if the wall clock ran long
+  // is inherently flaky under parallel test execution / CPU contention,
+  // because elapsed time there reflects OS scheduling, not actual cost.
+  maxProcessingTime: number;
   skipToolPatterns?: string[]; // Tool names to skip
   // v0.3.0: Enhanced configuration
   caching?: CacheConfig;

@@ -4,7 +4,6 @@
 
 import { Pipeline } from '../../src/optimizer/pipeline/pipeline';
 import { ToonCompressor } from '../../src/optimizer/compressors/toon';
-import { CodeCompressor } from '../../src/optimizer/compressors/code';
 import { MultilingualTokenizer } from '../../src/optimizer/multilingual/index';
 
 describe('Pipeline', () => {
@@ -13,8 +12,8 @@ describe('Pipeline', () => {
   beforeEach(() => {
     const tokenizer = new MultilingualTokenizer('gpt-4', true);
     pipeline = new Pipeline(tokenizer);
+    // Mirrors TokenOptimizer: no CodeCompressor is registered.
     pipeline.register(new ToonCompressor());
-    pipeline.register(new CodeCompressor());
   });
 
   describe('JSON content', () => {
@@ -35,8 +34,8 @@ describe('Pipeline', () => {
     });
   });
 
-  describe('code content', () => {
-    test('compresses TypeScript with comments removed', () => {
+  describe('code content is never compressed', () => {
+    test('TypeScript passes through untouched', () => {
       const ts = `import { useState } from 'react';
 import type { FC } from 'react';
 
@@ -60,28 +59,31 @@ export const UserCard: FC<Props> = ({ name, age }) => {
 };`;
 
       const result = pipeline.run(ts, 5);
-      if (result.optimized) {
-        expect(result.format).toBe('code-ts');
-        expect(result.content).not.toContain('// Main component');
-        expect(result.content).not.toContain('// Author: test');
-        expect(result.content).not.toContain('// local state');
-        // JSDoc first line preserved
-        expect(result.content).toContain('/** User card component */');
-      }
-      // Even if savings too low, should still detect correctly
-      expect(result.format === 'code-ts' || result.reason).toBeTruthy();
+      expect(result.optimized).toBe(false);
+      expect(result.reason).toBe('No compressor for type: code-ts');
+      expect(result.content).toBe(ts);
     });
 
-    test('compresses Python with comments removed', () => {
+    // Regression: the CodeCompressor dropped the closing `"""` of a multi-line
+    // docstring, yielding "SyntaxError: unterminated triple-quoted string
+    // literal". Nothing may rewrite Python source any more.
+    test('Python with a multi-line docstring is returned byte-for-byte', () => {
       const py = `from flask import Flask
 import json
 
-# Flask application setup
-# Author: dev team
-# Version: 1.0
+
+def calc(x):
+    """Compute the thing.
+
+    Args:
+        x: the input.
+    """
+    return x * 2
+
 
 class UserService:
     """Manages user operations."""
+
     def __init__(self):
         # Initialize empty user list
         self.users = []  # store users here
@@ -92,11 +94,36 @@ class UserService:
         return True  # success`;
 
       const result = pipeline.run(py, 5);
-      if (result.optimized) {
-        expect(result.format).toBe('code-py');
-        expect(result.content).not.toContain('# Flask application setup');
-        expect(result.content).not.toContain('# Author: dev team');
-      }
+      expect(result.optimized).toBe(false);
+      expect(result.reason).toBe('No compressor for type: code-py');
+      expect(result.content).toBe(py);
+      // Explicit: both docstrings' closing quotes survive (2 docstrings = 4 `"""`).
+      expect(result.content.match(/"""/g)).toHaveLength(4);
+    });
+
+    // Regression for Bug B: `//` inside a regex literal used to be treated as
+    // the start of a comment and everything after it was cut.
+    test('TypeScript containing regex literals is returned byte-for-byte', () => {
+      const ts = `import { normalize } from './util';
+
+export function clean(url: string, s: string): string[] {
+  const a = url.replace(/^https?:\\/\\//, "");
+  const b = s.split(/\\/\\//);
+  return [a, ...b];
+}`;
+
+      const result = pipeline.run(ts, 5);
+      expect(result.optimized).toBe(false);
+      expect(result.content).toBe(ts);
+    });
+  });
+
+  describe('empty content', () => {
+    test('empty string passes through with zero-length output', () => {
+      const result = pipeline.run('', 5);
+      expect(result.optimized).toBe(false);
+      expect(result.content).toBe('');
+      expect(result.content).toHaveLength(0);
     });
   });
 
@@ -118,7 +145,7 @@ class UserService:
       }
     });
 
-    test('uses code compressor for TypeScript', () => {
+    test('routes TypeScript to no compressor at all', () => {
       const ts = `import { a } from 'b';
 import { c } from 'd';
 
@@ -140,9 +167,9 @@ export function doStuff(): void {
 }`;
 
       const result = pipeline.run(ts, 5);
-      if (result.optimized) {
-        expect(result.compressMetadata?.compressor).toBe('code');
-      }
+      expect(result.optimized).toBe(false);
+      expect(result.compressMetadata).toBeUndefined();
+      expect(result.content).toBe(ts);
     });
   });
 });

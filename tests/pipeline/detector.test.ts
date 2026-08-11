@@ -60,8 +60,10 @@ license: MIT`;
     });
   });
 
-  describe('CSV detection', () => {
-    test('detects CSV with consistent columns', () => {
+  describe('CSV is deliberately not detected', () => {
+    // TOON encoding measured as a net loss on CSV at every row count tried,
+    // so well-formed CSV must not be routed to a compressor at all.
+    test('does not classify well-formed CSV as csv', () => {
       const csv = `name,age,city
 Alice,30,NYC
 Bob,25,LA
@@ -69,13 +71,12 @@ Carol,35,Chicago
 Dave,28,Seattle
 Eve,32,Portland`;
       const result = detector.detect(csv);
-      expect(result.type).toBe('csv');
-      expect(result.confidence).toBe(0.8);
+      expect(result.type).toBe('unknown');
     });
 
     test('rejects content with inconsistent commas', () => {
       const result = detector.detect('hello,world\njust one line with no commas\nno,pattern,here,at,all');
-      expect(result.type).not.toBe('csv');
+      expect(result.type).toBe('unknown');
     });
   });
 
@@ -211,6 +212,35 @@ for (let i = 0; i < 10; i++) {
       expect(result.type).toBe('unknown');
       expect(result.confidence).toBe(0);
     });
+
+    // Regression: source in a language with no dedicated indicator set
+    // (Java, C, Rust, ...) plus repeated near-identical lines can score
+    // >= 3 on detectDebugOutput's heuristics (the literal word "FAIL" +
+    // hasRepeatedDiagnosticLines). The hook needed an explicit generic-code
+    // fallback added to its own looksLikeSourceCode() to avoid
+    // misclassifying this as debug output and corrupting it (see
+    // tests/hooks/post-tool-use.test.ts). The library achieves the same
+    // protection structurally, since detect() tries detectCode() (which
+    // has looksLikeGenericCode()) before detectDebugOutput() — this test
+    // closes the coverage gap for that path specifically, using the same
+    // Java fixture as the hook's regression test.
+    test('generic-language code with repeated lines is classified as code, not debug output', () => {
+      const java = `package com.example.service;
+
+public class RetryHandler {
+    public void run(int attempt) {
+        if (attempt == 1) { throw new RuntimeException("FAIL"); }
+        if (attempt == 2) { throw new RuntimeException("FAIL"); }
+        if (attempt == 3) { throw new RuntimeException("FAIL"); }
+        if (attempt == 4) { throw new RuntimeException("FAIL"); }
+        if (attempt == 5) { throw new RuntimeException("FAIL"); }
+    }
+}
+`;
+      const result = detector.detect(java);
+      expect(result.type).toMatch(/^code-/);
+      expect(result.type).not.toBe('debug-output');
+    });
   });
 
   describe('debug output detection', () => {
@@ -246,6 +276,46 @@ The team discussed versioning, benchmarks, and rollout timing.
 Nothing failed, and there are no file paths or stack traces in this note.`;
       const result = detector.detectDebugOutput(text);
       expect(result).toBeNull();
+    });
+
+    // Regression: hasMultipleFileLocationDiagnostics()'s
+    // /\b[\w./-]+\.(ts|...):\d+:\d+\b/g has an ambiguous overlap between the
+    // `.` inside its character class and the literal `.` before the
+    // extension, causing O(n^2) backtracking on content shaped like
+    // "a.a.a.a...." with no valid :line:col suffix ever appearing (same
+    // class of bug independently affects /^\s*at\s+.+\(.+:\d+:\d+\)/m).
+    // Reachable via TokenOptimizer.optimize() -> Pipeline.run() ->
+    // Detector.detect(), where a caller's own maxProcessingTime budget
+    // (default 2000ms) is the thing this should complete well within.
+    test('does not hang on a ReDoS-shaped adversarial payload', () => {
+      const adversarial = 'line one\nline two\nline three\n' + 'a.'.repeat(60000) + '\nline five';
+
+      const start = Date.now();
+      const result = detector.detectDebugOutput(adversarial);
+      const elapsedMs = Date.now() - start;
+
+      expect(elapsedMs).toBeLessThan(500);
+      // Not a correctness assertion either way — this content has no real
+      // debug-output structure, just proving detection completes fast.
+      expect(result === null || result.type === 'debug-output').toBe(true);
+    });
+
+    // The 2000-char scan cap truncates line HEADS. Real diagnostics
+    // front-load their file:line:col (tsc: "src/a.ts:12:5 - error TS...";
+    // the huge generic/union type lives in the MESSAGE, after the location),
+    // so a legitimately long diagnostic line (>2000 chars) must still detect
+    // as debug output — the cap must not strip a real location and flip a
+    // true positive to a false negative.
+    test('a legitimately long diagnostic line (>2000 chars) still detects as debug output', () => {
+      const hugeUnion = Array.from({ length: 200 }, (_, i) => `'Variant${i}'`).join(' | ');
+      const line1 = `src/a.ts:12:5 - error TS2345: Argument of type '${hugeUnion}' is not assignable to parameter.`;
+      const line2 = `src/b.ts:20:9 - error TS2345: Argument of type '${hugeUnion}' is not assignable to parameter.`;
+      const line3 = `src/c.ts:30:1 - error TS2345: Argument of type '${hugeUnion}' is not assignable to parameter.`;
+      expect(line1.length).toBeGreaterThan(2000);
+      const content = [line1, '', line2, '', line3, '', 'Found 3 errors in 3 files.'].join('\n');
+
+      const result = detector.detectDebugOutput(content);
+      expect(result?.type).toBe('debug-output');
     });
   });
 });

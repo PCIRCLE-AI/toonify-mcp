@@ -32,9 +32,11 @@ describe('TokenOptimizer', () => {
     });
   });
 
-  describe('CSV optimization', () => {
-    test('detects and processes CSV format correctly', async () => {
-      // Create larger CSV dataset
+  describe('CSV is deliberately not compressed', () => {
+    // TOON encoding of CSV measured as a net loss at every row count tried
+    // (see src/optimizer/pipeline/detector.ts), so CSV text is never
+    // detected as a structured-data type and always passes through as-is.
+    test('leaves well-formed CSV untouched', async () => {
       const headers = 'id,name,email,age,city,country,department,salary,hire_date';
       const rows = Array.from({ length: 25 }, (_, i) =>
         `${i},Employee ${i},employee${i}@company.com,${25 + i},City ${i},Country ${i},Dept ${i % 5},${50000 + i * 1000},2020-01-${(i % 28) + 1}`
@@ -43,22 +45,13 @@ describe('TokenOptimizer', () => {
 
       const result = await optimizer.optimize(csvData);
 
-      // CSV should be detected and processed (either optimized or rejected based on savings)
-      expect(result.originalTokens).toBeGreaterThan(0);
-
-      if (result.optimized) {
-        expect(result.format).toBe('csv');
-        expect(result.optimizedContent).toBeDefined();
-        expect(result.savings).toBeDefined();
-        expect(result.savings!.percentage).toBeGreaterThanOrEqual(30);
-        expect(result.optimizedTokens).toBeLessThan(result.originalTokens);
-      } else {
-        // If not optimized, should have valid reason (e.g., savings too low)
-        expect(result.reason).toBeDefined();
-      }
+      expect(result.optimized).toBe(false);
+      expect(result.format).toBeUndefined();
+      expect(result.reason).toBe('Not structured data');
+      expect(result.optimizedContent).toBeUndefined();
     });
 
-    test('rejects CSV with inconsistent column counts', async () => {
+    test('CSV with inconsistent column counts is also untouched (column consistency no longer matters)', async () => {
       const invalidCSV = `name,age,city
 John Doe,30
 Jane Smith,25,London,UK`;
@@ -66,6 +59,7 @@ Jane Smith,25,London,UK`;
       const result = await optimizer.optimize(invalidCSV);
 
       expect(result.optimized).toBe(false);
+      expect(result.reason).toBe('Not structured data');
     });
   });
 
@@ -348,18 +342,23 @@ users:
   });
 
   describe('Edge cases', () => {
+    // Regression: an all-whitespace/empty tool result must short-circuit to
+    // passthrough with no optimizedContent, never reach the pipeline.
     test('handles empty string', async () => {
       const result = await optimizer.optimize('');
 
       expect(result.optimized).toBe(false);
-      expect(result.reason).toBe('Not structured data');
+      expect(result.reason).toBe('Empty content');
+      expect(result.optimizedContent).toBeUndefined();
+      expect(result.originalTokens).toBe(0);
     });
 
     test('handles whitespace-only content', async () => {
       const result = await optimizer.optimize('   \n\t  \n   ');
 
       expect(result.optimized).toBe(false);
-      expect(result.reason).toBe('Not structured data');
+      expect(result.reason).toBe('Empty content');
+      expect(result.optimizedContent).toBeUndefined();
     });
 
     test('handles exactly 200 characters threshold', async () => {
@@ -369,6 +368,92 @@ users:
 
       expect(result.optimized).toBe(false);
       expect(result.reason).toBe('Not structured data');
+    });
+  });
+
+  describe('processing time budget (entry guard, not post-hoc discard)', () => {
+    // Regression: the old check ran the pipeline to completion and then
+    // discarded a correct, already-computed result if the wall clock
+    // exceeded maxProcessingTime — which made success depend on CPU
+    // contention (e.g. 19 Jest suites running in parallel under coverage
+    // instrumentation), not on the content itself. The guard must now be
+    // decided from content.length before any pipeline work starts.
+    test('rejects oversized content before processing, using a size-derived reason', async () => {
+      const tightOptimizer = new TokenOptimizer({ maxProcessingTime: 10 });
+      // 10ms budget * 400 chars/ms throughput assumption = 4,000 char ceiling.
+      const oversized = JSON.stringify({ items: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `Item ${i}` })) });
+      expect(oversized.length).toBeGreaterThan(4000);
+
+      const result = await tightOptimizer.optimize(oversized);
+
+      expect(result.optimized).toBe(false);
+      expect(result.reason).toContain('processing budget');
+      expect(result.originalTokens).toBe(0);
+      tightOptimizer.destroy();
+    });
+
+    test('accepts content within the budget for the same config', async () => {
+      const tightOptimizer = new TokenOptimizer({ maxProcessingTime: 10 });
+      const small = JSON.stringify({ id: 1, name: 'ok' });
+
+      const result = await tightOptimizer.optimize(small);
+
+      // Small content must never be rejected by the size guard itself —
+      // it may still be rejected later for low savings, but not for size.
+      expect(result.reason).not.toContain('processing budget');
+      tightOptimizer.destroy();
+    });
+
+    // Regression: maxProcessingTime * MIN_THROUGHPUT_CHARS_PER_MS collapses
+    // to <= 0 for zero/negative/non-finite budgets, which would silently
+    // reject every non-empty request. Fail construction instead.
+    test('rejects a non-positive maxProcessingTime at construction', () => {
+      expect(() => new TokenOptimizer({ maxProcessingTime: 0 })).toThrow('maxProcessingTime must be a positive, finite number');
+      expect(() => new TokenOptimizer({ maxProcessingTime: -5 })).toThrow('maxProcessingTime must be a positive, finite number');
+      expect(() => new TokenOptimizer({ maxProcessingTime: NaN })).toThrow('maxProcessingTime must be a positive, finite number');
+    });
+
+    // Number.isFinite(Infinity) === false, so Infinity must be rejected by
+    // the same guard as NaN/0/negative — an off-by-one in the validation
+    // (e.g. checking > 0 without also checking isFinite) would let this
+    // through and collapse maxProcessableLength to Infinity, disabling the
+    // entry-time guard entirely for that instance.
+    test('rejects an Infinity maxProcessingTime at construction', () => {
+      expect(() => new TokenOptimizer({ maxProcessingTime: Infinity })).toThrow('maxProcessingTime must be a positive, finite number');
+    });
+
+    // Exact-boundary test: content.length === maxProcessableLength must be
+    // accepted (not rejected for size — it may still be rejected later for
+    // other reasons), content.length === maxProcessableLength + 1 must be
+    // rejected. Prior tests only covered clearly-above/clearly-below,
+    // leaving a `>` vs `>=` off-by-one unverified.
+    test('accepts content exactly at the size-guard boundary, rejects one char over', async () => {
+      const tightOptimizer = new TokenOptimizer({ maxProcessingTime: 10 }); // ceiling = 4000 chars
+      const atBoundary = 'a'.repeat(4000);
+      const overBoundary = 'a'.repeat(4001);
+
+      const atResult = await tightOptimizer.optimize(atBoundary);
+      const overResult = await tightOptimizer.optimize(overBoundary);
+
+      expect(atResult.reason).not.toContain('processing budget');
+      expect(overResult.reason).toContain('processing budget');
+      tightOptimizer.destroy();
+    });
+
+    // If a caller raises maxProcessingTime enough that the derived
+    // maxProcessableLength exceeds MAX_CONTENT_SIZE (10MB), the entry-time
+    // guard becomes dead code for that instance — MAX_CONTENT_SIZE must
+    // still be the backstop, not silently bypassed.
+    test('MAX_CONTENT_SIZE still rejects content when a large maxProcessingTime pushes the entry-time ceiling past it', async () => {
+      const looseOptimizer = new TokenOptimizer({ maxProcessingTime: 1e9 }); // ceiling >> 10MB
+      const overTenMb = 'a'.repeat(10 * 1024 * 1024 + 1);
+
+      const result = await looseOptimizer.optimize(overTenMb);
+
+      expect(result.optimized).toBe(false);
+      expect(result.reason).toContain('Content too large');
+      expect(result.reason).not.toContain('processing budget');
+      looseOptimizer.destroy();
     });
   });
 });

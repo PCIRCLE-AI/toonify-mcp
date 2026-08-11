@@ -6,13 +6,12 @@ License: MIT
 
 Summary
 - Toonify MCP is a local-first Claude Code plugin and MCP server.
-- Compresses large JSON, CSV, YAML, API responses, debug output, and source files before they enter the context window.
+- Compresses large JSON, YAML, API responses, and debug output before they enter the context window.
 - Plugin mode runs automatically in the background with no change to the normal Claude Code workflow.
 
 Best for
-- Large structured payloads: JSON, CSV, YAML, API responses
+- Large structured payloads: JSON, YAML, API responses
 - Test failures, stack traces, compiler diagnostics, and repetitive build or lint output
-- Whole source-file reads for TypeScript, Python, Go, and PHP
 
 Limitations
 - Short prose

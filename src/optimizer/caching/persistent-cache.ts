@@ -18,7 +18,7 @@ import type { LRUCacheEntry } from './cache-types.js';
  * Write operation for the queue
  */
 interface WriteOperation<T> {
-  type: 'save' | 'delete' | 'clear' | 'saveAll';
+  type: 'save' | 'delete' | 'clear' | 'saveAll' | 'flush';
   key?: string;
   entry?: LRUCacheEntry<T>;
   entries?: LRUCacheEntry<T>[];
@@ -40,6 +40,7 @@ export class PersistentCache<T = unknown> {
   private pendingWrites: Map<string, LRUCacheEntry<T>> = new Map();
   private batchTimer: NodeJS.Timeout | null = null;
   private readonly BATCH_DELAY_MS = 100; // Debounce writes by 100ms
+  private tempCounter = 0;
 
   constructor(filePath: string) {
     // Expand ~ to home directory
@@ -109,14 +110,25 @@ export class PersistentCache<T = unknown> {
    * Internal use only — async to avoid blocking event loop
    */
   private async saveAllAsync(entries: LRUCacheEntry<T>[]): Promise<void> {
+    // Unique temp path per write. Two write paths call this — the serial
+    // write queue AND the batch timer's flushPendingWrites(), which runs on
+    // a setTimeout OUTSIDE the queue's serialization — so they can overlap.
+    // A shared `${filePath}.tmp` let one call rename the temp away while the
+    // other was about to rename the same temp, producing an intermittent
+    // "ENOENT: rename ...tmp" (also across two PersistentCache instances
+    // pointing at the same filePath). pid + instance-scoped counter +
+    // random makes each atomic write's temp file collision-free.
+    const tempPath = `${this.filePath}.${process.pid}.${this.tempCounter++}.${Math.random().toString(36).slice(2)}.tmp`;
     try {
-      const tempPath = `${this.filePath}.tmp`;
       const content = JSON.stringify(entries, null, 2);
 
       // Write to temp file first, then atomic rename
       await fsp.writeFile(tempPath, content, 'utf-8');
       await fsp.rename(tempPath, this.filePath);
     } catch (error) {
+      // Clean up our own temp file if the rename never happened, so a failed
+      // write doesn't leave an orphan behind.
+      try { await fsp.unlink(tempPath); } catch { /* already gone */ }
       console.error('[PersistentCache] Failed to save cache:', error);
       throw error;
     }
@@ -134,15 +146,21 @@ export class PersistentCache<T = unknown> {
    * Call this before process exit to ensure all writes are persisted
    */
   async flush(): Promise<void> {
-    // Cancel batch timer and flush immediately
+    // Cancel the pending batch timer and flush through the serial queue.
+    // Enqueuing (rather than calling flushPendingWrites() directly) means the
+    // flush is ordered behind any already-queued writes AND the awaited
+    // promise actually resolves when THIS flush's disk write completes — the
+    // prior version fired flushPendingWrites() off-queue, so the
+    // "wait for queue to empty" loop below could return before the flush's
+    // write finished.
     if (this.batchTimer) {
       clearTimeout(this.batchTimer);
       this.batchTimer = null;
     }
 
-    this.flushPendingWrites();
+    await this.queueWrite({ type: 'flush' });
 
-    // Wait for queue to empty
+    // Drain anything else that queued up while this flush ran.
     while (this.writeQueue.length > 0 || this.isProcessing) {
       await new Promise(resolve => setTimeout(resolve, 10));
     }
@@ -228,6 +246,15 @@ export class PersistentCache<T = unknown> {
           await this.saveAllAsync(operation.entries);
         }
         break;
+
+      case 'flush':
+        // Batched flush, run INSIDE the serial queue so it can't interleave
+        // with a concurrent saveAll/delete (both do loadAll → merge → write
+        // full state; interleaving would be last-writer-wins, losing an
+        // update). scheduleBatchWrite enqueues this instead of calling
+        // flushPendingWrites() straight off the timer.
+        await this.flushPendingWrites();
+        break;
     }
   }
 
@@ -240,7 +267,13 @@ export class PersistentCache<T = unknown> {
     }
 
     this.batchTimer = setTimeout(() => {
-      this.flushPendingWrites();
+      this.batchTimer = null;
+      // Enqueue the flush so it runs through the serial write queue rather
+      // than racing queued operations off the timer. Fire-and-forget: no
+      // caller awaits the timer, and a failed flush is already logged inside
+      // saveAllAsync — swallow the queueWrite rejection so it doesn't become
+      // an unhandled promise rejection.
+      this.queueWrite({ type: 'flush' }).catch(() => { /* logged in saveAllAsync */ });
     }, this.BATCH_DELAY_MS);
   }
 

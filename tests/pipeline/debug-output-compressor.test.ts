@@ -84,4 +84,47 @@ describe('DebugOutputCompressor', () => {
     expect(result.compressed).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
     expect(result.compressed).not.toContain('22   title={99}');
   });
+
+  // Regression: getNormalizedDiagnosticKey used to build its dedup key from
+  // error code + message only, not location, so the collapsed occurrence's
+  // OWN location (ProfileCard.tsx:22:12) was lost entirely — only the count
+  // survived. Now the note records where the other occurrence(s) were.
+  test('collapse note preserves the location of the collapsed occurrence', () => {
+    const input = loadFixture('tsc-repeated-errors.txt');
+    const result = compressor.compress(input, detection);
+
+    expect(result.compressed).toContain('(also at src/components/ProfileCard.tsx:22:12)');
+  });
+
+  // Regression: collapseSourceExcerptNoise dropped lines with zero
+  // indication anything was removed, unlike its sibling collapse functions
+  // (collapseDuplicateLines, collapseLongStackTraces) which leave a
+  // "[toonify] N more..." note. Silent drops became a real risk once a
+  // caller could replace the original with this output instead of only
+  // appending it alongside the original.
+  test('marks omitted source-excerpt lines instead of dropping them silently', () => {
+    const input = loadFixture('tsc-errors.txt');
+    const result = compressor.compress(input, detection);
+
+    expect(result.compressed).toMatch(/\[toonify\] \d+ source excerpt lines? omitted throughout/);
+  });
+
+  // Regression: compress()'s pointer-line and source-excerpt regexes ran on
+  // the raw, uncapped content (Pipeline.run passes the ORIGINAL content, not
+  // Detector's internally-capped scanContent). Their ambiguous
+  // /^\s*[|]?\s*(\^+|~+)\s*$/ pattern backtracks quadratically on a long
+  // near-whitespace line — measured ~14s on the payload below before the
+  // fix. Note this reaches compress() directly (not just Detector), which is
+  // exactly the path the earlier detection-only ReDoS test never exercised.
+  test('does not hang on a ReDoS-shaped adversarial payload in the compression path', () => {
+    const adversarial =
+      'FAIL: x\nat foo (bar.ts:1:1)\nat foo (bar.ts:2:2)\nat foo (bar.ts:3:3)\n' + ' '.repeat(150000);
+
+    const start = Date.now();
+    const result = compressor.compress(adversarial, detection);
+    const elapsedMs = Date.now() - start;
+
+    expect(elapsedMs).toBeLessThan(1000);
+    expect(typeof result.compressed).toBe('string');
+  });
 });
