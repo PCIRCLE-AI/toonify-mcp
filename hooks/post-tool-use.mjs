@@ -16,15 +16,18 @@
  * tool_response is a structured object for the tools this hook matches, not
  * a plain string — see extractText() below for the shapes verified (Read,
  * WebFetch, Grep — both its 'content' and 'count' modes populate a
- * compressible `content` field, per the tool's own schema). Where the shape
- * is known, compressed content goes out via hookSpecificOutput.updatedToolOutput
- * (replaces what Claude sees — this is what makes context actually shrink).
- * Where tool_response is a plain string (older Claude Code, or an unmatched
- * shape), it goes out via additionalContext instead (schema-agnostic,
- * appends rather than replaces). Where tool_response is an OBJECT with no
- * compressible field for that tool (Grep's default 'files_with_matches'
- * mode, Glob, an unmatched tool), the hook passes through untouched — there
- * is no safe way to extract text from a shape that doesn't have any.
+ * compressible `content` field, per the tool's own schema).
+ *
+ * Compressed content ALWAYS goes out via hookSpecificOutput.updatedToolOutput,
+ * which REPLACES what Claude sees — that is what actually shrinks context.
+ * The hook never uses additionalContext: it APPENDS (verified live that
+ * `suppressOutput` doesn't hide the original), so it would grow total context
+ * instead of shrinking it. For an object tool_response the replacement is the
+ * object with its text field swapped; for a (compat-only) string
+ * tool_response it's the compressed string itself. Where tool_response is an
+ * OBJECT with no compressible field for that tool (Grep's default
+ * 'files_with_matches' mode, Glob, an unmatched tool), the hook passes
+ * through untouched — there is nothing to safely replace.
  *
  * Input:  JSON on stdin with { tool_name, tool_response, ... }
  * Output: JSON on stdout with { continue, hookSpecificOutput }
@@ -52,7 +55,6 @@ const DEFAULT_CONFIG = {
   minTokensThreshold: 50,
   minSavingsThreshold: 30,
   skipToolPatterns: ['Bash', 'Write', 'Edit'],
-  showStats: false,
 };
 
 function loadConfig() {
@@ -80,9 +82,6 @@ function loadConfig() {
   }
   if (process.env.TOONIFY_SKIP_TOOLS) {
     envConfig.skipToolPatterns = process.env.TOONIFY_SKIP_TOOLS.split(',');
-  }
-  if (process.env.TOONIFY_SHOW_STATS !== undefined) {
-    envConfig.showStats = process.env.TOONIFY_SHOW_STATS === 'true';
   }
 
   return { ...DEFAULT_CONFIG, ...fileConfig, ...envConfig };
@@ -665,17 +664,34 @@ async function main() {
       return passthrough();
     }
 
-    // tool_response is a structured object for the tools this hook matches
-    // (Read, WebFetch, Grep — see the comment above extractText() for how
-    // each shape was verified), not a plain string — extractText() pulls
-    // the text field out and gives back a reconstruct() that rebuilds
-    // a schema-compatible object with only that field replaced. A string
-    // tool_response (older Claude Code versions, or an unmatched shape) is
-    // used as-is with no reconstruction, going out via additionalContext.
+    // Both paths yield a reconstruct(compressedText) that produces a
+    // schema-valid REPLACEMENT for tool_response, so the compressed content
+    // always goes out via updatedToolOutput (which replaces what Claude
+    // sees, actually shrinking context) — never additionalContext (which
+    // appends, growing it).
+    //
+    // - Object tool_response (Read/WebFetch/Grep in current Claude Code):
+    //   extractText() pulls the text field out and its reconstruct() rebuilds
+    //   the object with only that field replaced. An unrecognized object
+    //   (Grep files_with_matches, Glob, an unmatched tool) has no safe text
+    //   field, so extractText returns null and we pass through.
+    //
+    // - String tool_response: the tool's output schema IS a string (that's
+    //   what produced the string), so the compressed string is itself a
+    //   schema-valid replacement — reconstruct is the identity. This is the
+    //   inverse of the earlier verified failure (a bare string was rejected
+    //   for Read *because Read's schema is an object*; here the shapes match,
+    //   so it's valid). Note: no current Claude Code tool sends a string
+    //   tool_response for the matched tools (Read/Bash/Glob/Grep/WebFetch/
+    //   WebSearch all send objects — probed live), so this branch is a
+    //   forward/backward-compat path that can't be exercised here; it
+    //   replaces rather than appends so that IF it ever fires, it saves
+    //   tokens instead of growing context.
     let contentText;
-    let reconstruct = null;
+    let reconstruct;
     if (typeof tool_response === 'string') {
       contentText = tool_response;
+      reconstruct = (compressedText) => compressedText;
     } else {
       const extracted = extractText(tool_name, tool_response);
       if (!extracted) return passthrough();
@@ -720,22 +736,17 @@ async function main() {
     const structured = detectStructuredData(contentText);
 
     let output;
-    let formatLabel;
-    let savingsPercent;
 
     if (structured) {
       // Structured data → TOON format
       const toonContent = toonEncode(structured.data);
-      const originalLen = contentText.length;
-      const optimizedLen = toonContent.length;
-      savingsPercent = ((originalLen - optimizedLen) / originalLen) * 100;
+      const savingsPercent = ((contentText.length - toonContent.length) / contentText.length) * 100;
 
       if (savingsPercent < config.minSavingsThreshold) {
         return passthrough();
       }
 
-      formatLabel = structured.type.toUpperCase();
-      output = `[TOON-${formatLabel}]\n${toonContent}`;
+      output = `[TOON-${structured.type.toUpperCase()}]\n${toonContent}`;
     } else {
       // Source code is intentionally not compressed — anything that is not
       // structured data or debug output passes through untouched.
@@ -744,60 +755,31 @@ async function main() {
       }
 
       const compressed = compressDebugOutput(contentText);
-      const originalLen = contentText.length;
-      const compressedLen = compressed.length;
-      savingsPercent = ((originalLen - compressedLen) / originalLen) * 100;
+      const savingsPercent = ((contentText.length - compressed.length) / contentText.length) * 100;
 
       if (savingsPercent < 10) {
         return passthrough();
       }
 
-      formatLabel = 'DEBUG';
       output = compressed;
     }
 
-    // reconstruct !== null means tool_response was a recognized structured
-    // shape (Read/WebFetch/Grep): rebuild it with the compressed text
-    // swapped in and send it via updatedToolOutput, which REPLACES what
-    // Claude sees — this is what makes context actually shrink instead of
-    // only growing. reconstruct === null here can only mean tool_response
-    // was a plain string — an unrecognized OBJECT shape already exited via
-    // passthrough() earlier (see extractText() call above) rather than
-    // reaching this point, since there's no safe field to send via
-    // additionalContext either without knowing what the object means.
-    // additionalContext is schema-agnostic but appends rather than
-    // replaces, so it doesn't reduce net context size.
-    if (reconstruct) {
-      // config.showStats's footer is intentionally NOT appended on this
-      // path. reconstruct() splices `output` into the field that REPLACES
-      // what Claude sees as the tool's actual content (file.content,
-      // result, or content) — a "--- Toonify: ... smaller ---" line baked
-      // into that field isn't a stats annotation, it's fabricated file/page
-      // content. Verified live: with TOONIFY_SHOW_STATS=true, the footer
-      // used to end up inside file.content itself. There's no schema-safe
-      // side channel to put stats in in this branch, so they're just
-      // omitted rather than risk corrupting what Claude thinks a file says.
-      process.stdout.write(JSON.stringify({
-        continue: true,
-        suppressOutput: true,
-        hookSpecificOutput: {
-          hookEventName: 'PostToolUse',
-          updatedToolOutput: reconstruct(output),
-        },
-      }));
-    } else {
-      if (config.showStats) {
-        output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
-      }
-      process.stdout.write(JSON.stringify({
-        continue: true,
-        suppressOutput: true,
-        hookSpecificOutput: {
-          hookEventName: 'PostToolUse',
-          additionalContext: output,
-        },
-      }));
-    }
+    // Always emit via updatedToolOutput (REPLACE), never additionalContext
+    // (APPEND). additionalContext is purely additive — verified live against
+    // a real Claude Code session that `suppressOutput: true` does NOT hide
+    // the original tool result, so Claude would see the full original PLUS
+    // the appended copy, GROWING total context: the exact opposite of this
+    // tool's purpose. reconstruct() (identity for a string tool_response,
+    // field-swap for an object one) produces a schema-valid replacement, so
+    // updatedToolOutput actually shrinks what Claude sees.
+    process.stdout.write(JSON.stringify({
+      continue: true,
+      suppressOutput: true,
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUse',
+        updatedToolOutput: reconstruct(output),
+      },
+    }));
   } catch (error) {
     // Silent failure - never break the workflow
     // Log to stderr for debugging (Claude Code shows stderr in verbose mode)
