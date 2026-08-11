@@ -259,51 +259,22 @@ Found 3 errors in 2 files.`,
       expect(result).toEqual({ continue: true });
     });
 
-    // Grep's 'count' mode shape ({mode, numFiles, filenames, content,
-    // numMatches}) has lower confidence than Read/WebFetch — see the
-    // provenance note above extractText() — but is handled the same way:
-    // strictly checked, and only that one mode is recognized.
-    test('Grep count mode: compresses content and returns updatedToolOutput, preserving other fields', async () => {
-      const data = { matches: Array.from({ length: 300 }, (_, i) => ({ file: `src/f${i}.ts`, line: i })) };
-      const grepContent = JSON.stringify(data, null, 2);
-
+    // Grep has NO adapter — extractText() never recognizes it, regardless
+    // of shape. An earlier version of this file had a 'count'-mode adapter
+    // sourced from an agent's unverifiable claim of having captured that
+    // shape live; that claim could not be corroborated (see the comment
+    // above extractText()) and the adapter was removed rather than kept on
+    // unreliable evidence. Any Grep tool_response — including one shaped
+    // like the retracted claim — must pass through untouched.
+    test('Grep always passes through untouched (no adapter exists for it)', async () => {
       const input = {
         tool_name: 'Grep',
         tool_response: {
           mode: 'count',
-          numFiles: 300,
+          numFiles: 1,
           filenames: [],
-          content: grepContent,
-          numMatches: 300,
-        },
-      };
-
-      const { stdout } = await runHook(input);
-      const result = parseOutput(stdout);
-
-      expect(result.continue).toBe(true);
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext).toBeUndefined();
-      const updated = output.updatedToolOutput as { content: string; mode: string; numFiles: number; numMatches: number };
-      expect(updated.content).toContain('[TOON-JSON]');
-      expect(updated.content.length).toBeLessThan(grepContent.length);
-      // Everything except `content` must survive untouched.
-      expect(updated.mode).toBe('count');
-      expect(updated.numFiles).toBe(300);
-      expect(updated.numMatches).toBe(300);
-    });
-
-    // A Grep mode whose shape wasn't captured/verified ('content',
-    // 'files_with_matches', or anything else) must not be guessed at —
-    // extractText() only recognizes 'count', so anything else passes
-    // through untouched rather than risk a malformed updatedToolOutput.
-    test('Grep in an unverified mode passes through safely, does not guess the shape', async () => {
-      const input = {
-        tool_name: 'Grep',
-        tool_response: {
-          mode: 'content',
-          filenames: ['src/a.ts', 'src/b.ts'],
-          numFiles: 2,
+          content: 'code.js:50',
+          numMatches: 50,
         },
       };
 
