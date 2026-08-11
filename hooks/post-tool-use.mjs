@@ -471,33 +471,37 @@ function estimateTokens(text) {
 //
 // tool_response is NOT a plain string for the tools this hook matches — it
 // is a structured object whose shape is specific to the tool (Zod-validated
-// by Claude Code, undocumented publicly).
+// by Claude Code, undocumented in any public API reference). Two
+// independent verification methods were used, both reproducible by anyone
+// with a local Claude Code install:
 //
 //   Read:     { type, file: { filePath, content, numLines, startLine, totalLines } }
 //   WebFetch: { bytes, code, codeText, result, durationMs, url }
-//     — verified directly and repeatedly: registered this hook via a real
-//     Claude Code session's .claude/settings.json and captured live stdin.
+//     — verified by RUNTIME OBSERVATION: registered this hook via a real
+//     Claude Code session's .claude/settings.json and read the literal
+//     stdin bytes the hook actually received.
 //
-//   Grep, Glob: NO adapter. An earlier version of this file added one for
-//   Grep's presumed 'count' mode shape, sourced from a background review
-//   agent's claim of having "verified live" that shape in a separate
-//   sandboxed session. That claim could not be corroborated and is now
-//   considered UNRELIABLE: this exact installation, tested from a fully
-//   vanilla `claude -p` session with zero custom settings (the same
-//   methodology the agent described using), has no native Grep or Glob
-//   tool at all — confirmed explicitly ("沒有 Grep 和 Glob") and reproduced
-//   across normal spawn, env-stripped spawn, and a fully clean `env -i`
-//   spawn. Since the agent's claim used the identical spawning method this
-//   session cannot make work, the more likely explanation is that the
-//   claim was fabricated or extrapolated rather than genuinely observed,
-//   not that this one installation is anomalous. Shipping a schema
-//   adapter built on a claim this session cannot trust — even one that
-//   fails safe when wrong — is worse than leaving the gap open and saying
-//   so. If Grep/Glob's real shapes are ever captured from an environment
-//   where those tools verifiably exist, add adapters here the same way
-//   Read/WebFetch were added: register the hook via a real session's
-//   settings.json and read the literal stdin bytes, not an agent's report
-//   of having done so.
+//   Grep: { mode?: 'content'|'files_with_matches'|'count' (default
+//     'files_with_matches'), numFiles, filenames, content?, numLines?,
+//     numMatches?, totalFiles?, totalLines?, appliedLimit?, appliedOffset? }
+//   Glob: { durationMs, numFiles, filenames, truncated, totalMatches?,
+//     countIsComplete? }
+//     — verified by SOURCE INSPECTION: `strings -a <path to the installed
+//     claude binary>` (e.g. ~/.local/share/claude/versions/<version> on
+//     macOS) contains the literal Zod schema source for both tools'
+//     outputSchema, plus the CLI's own result-rendering functions, which
+//     confirm `content` is used for 'content' mode (paired with `numLines`,
+//     labeled "lines") and 'count' mode (paired with `numMatches`/
+//     `numFiles`, labeled "matches"/"files") but not for the default
+//     'files_with_matches' mode, which renders `filenames` directly with no
+//     `content` field populated. A prior version of this file's Grep
+//     adapter was built on an unverifiable secondhand claim of live
+//     capture and was retracted; this one is built on grep-able schema
+//     source in the shipped binary, not a report of having looked at it.
+//     Glob's schema confirms it has no adapter-worthy field: filenames is
+//     an array of strings (TOON's advantage is collapsing REPEATED OBJECT
+//     KEYS, which doesn't apply to an array of bare strings), and every
+//     other field is a number/boolean.
 //
 // extractText() returns null for anything it cannot positively identify;
 // the caller passes through unchanged rather than risk sending Claude Code
@@ -552,7 +556,32 @@ function extractText(toolName, toolResponse) {
     };
   }
 
-  // Grep, Glob: no adapter — see the comment above this function.
+  if (toolName === 'Grep') {
+    // `content` is absent for the default 'files_with_matches' mode
+    // (schema-optional, and the CLI's own rendering logic never populates
+    // it for that mode) — the type check is what actually gates this, mode
+    // is not checked directly, since a future schema addition to
+    // 'files_with_matches' would still be safe to compress if it ever gets
+    // a content field, and there's no risk in being permissive here: the
+    // check itself is the safety gate.
+    if (typeof toolResponse.content !== 'string') return null;
+    return {
+      text: toolResponse.content,
+      reconstruct(compressedText) {
+        // numLines is only meaningfully tied to `content`'s line count in
+        // 'content' mode (the CLI labels it "lines" there); only recompute
+        // it if it was already present, never fabricate a field the
+        // original response didn't have.
+        const patch = { content: compressedText };
+        if (typeof toolResponse.numLines === 'number') {
+          patch.numLines = compressedText.length === 0 ? 0 : compressedText.split('\n').length;
+        }
+        return { ...toolResponse, ...patch };
+      },
+    };
+  }
+
+  // Glob: no adapter — see the comment above this function.
   return null;
 }
 

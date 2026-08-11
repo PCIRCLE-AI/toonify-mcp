@@ -259,23 +259,75 @@ Found 3 errors in 2 files.`,
       expect(result).toEqual({ continue: true });
     });
 
-    // Grep has NO adapter — extractText() never recognizes it, regardless
-    // of shape. An earlier version of this file had a 'count'-mode adapter
-    // sourced from an agent's unverifiable claim of having captured that
-    // shape live; that claim could not be corroborated (see the comment
-    // above extractText()) and the adapter was removed rather than kept on
-    // unreliable evidence. Any Grep tool_response — including one shaped
-    // like the retracted claim — must pass through untouched.
-    test('Grep always passes through untouched (no adapter exists for it)', async () => {
+    // Grep's schema — {mode?, numFiles, filenames, content?, numLines?,
+    // numMatches?, ...} — was extracted directly from the installed Claude
+    // Code binary's own Zod schema and result-rendering source (`strings`
+    // on the compiled CLI), not a secondhand report. See the comment above
+    // extractText() for the full method and why an earlier, unverifiable
+    // version of this adapter was retracted before being re-added this way.
+    test("Grep 'content' mode: compresses content and recomputes numLines", async () => {
+      const lines = Array.from({ length: 50 }, (_, i) =>
+        `src/components/File${i}.tsx:${10 + i}:12 - error TS2322: Type X is not assignable to type Y.`
+      );
+      const grepContent = lines.join('\n\n');
+
       const input = {
         tool_name: 'Grep',
         tool_response: {
-          mode: 'count',
-          numFiles: 1,
+          mode: 'content',
+          numFiles: 50,
           filenames: [],
-          content: 'code.js:50',
+          content: grepContent,
+          numLines: grepContent.split('\n').length,
           numMatches: 50,
         },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { content: string; numLines: number; mode: string; numMatches: number };
+      expect(updated.content.length).toBeLessThan(grepContent.length);
+      expect(updated.mode).toBe('content');
+      expect(updated.numMatches).toBe(50);
+      // numLines must track the actually-returned (compressed) content,
+      // not the stale original count.
+      expect(updated.numLines).toBe(updated.content.split('\n').length);
+      expect(updated.numLines).toBeLessThan(grepContent.split('\n').length);
+    });
+
+    test("Grep 'count' mode: compresses content, does not fabricate a numLines field", async () => {
+      const data = { byFile: Array.from({ length: 300 }, (_, i) => ({ file: `src/f${i}.ts`, count: i })) };
+      const grepContent = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Grep',
+        tool_response: { mode: 'count', numFiles: 300, filenames: [], content: grepContent, numMatches: 5000 },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { content: string; numMatches: number; numLines?: number };
+      expect(updated.content).toContain('[TOON-JSON]');
+      expect(updated.numMatches).toBe(5000);
+      // The original response had no numLines field — reconstruct() must
+      // not add one that wasn't there.
+      expect(updated.numLines).toBeUndefined();
+    });
+
+    // The default mode ('files_with_matches') never populates `content`
+    // per the CLI's own rendering logic — extractText()'s type check on
+    // `content` is what actually gates this (mode isn't checked directly),
+    // so this also covers any Grep response with no content field.
+    test("Grep 'files_with_matches' mode (no content field) passes through untouched", async () => {
+      const input = {
+        tool_name: 'Grep',
+        tool_response: { numFiles: 5, filenames: ['a.ts', 'b.ts', 'c.ts', 'd.ts', 'e.ts'] },
       };
 
       const { stdout } = await runHook(input);
