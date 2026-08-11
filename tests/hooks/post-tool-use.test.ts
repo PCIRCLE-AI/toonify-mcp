@@ -247,7 +247,7 @@ Found 3 errors in 2 files.`,
 
     test('unrecognized tool name with an object tool_response passes through safely', async () => {
       const input = {
-        tool_name: 'Grep',
+        tool_name: 'SomeFutureTool',
         tool_response: { matches: ['some result'], count: 1 },
       };
 
@@ -256,6 +256,82 @@ Found 3 errors in 2 files.`,
 
       // extractText() returns null for tool names it doesn't recognize —
       // must never crash or fabricate a shape, just pass through.
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Grep's 'count' mode shape ({mode, numFiles, filenames, content,
+    // numMatches}) has lower confidence than Read/WebFetch — see the
+    // provenance note above extractText() — but is handled the same way:
+    // strictly checked, and only that one mode is recognized.
+    test('Grep count mode: compresses content and returns updatedToolOutput, preserving other fields', async () => {
+      const data = { matches: Array.from({ length: 300 }, (_, i) => ({ file: `src/f${i}.ts`, line: i })) };
+      const grepContent = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Grep',
+        tool_response: {
+          mode: 'count',
+          numFiles: 300,
+          filenames: [],
+          content: grepContent,
+          numMatches: 300,
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { content: string; mode: string; numFiles: number; numMatches: number };
+      expect(updated.content).toContain('[TOON-JSON]');
+      expect(updated.content.length).toBeLessThan(grepContent.length);
+      // Everything except `content` must survive untouched.
+      expect(updated.mode).toBe('count');
+      expect(updated.numFiles).toBe(300);
+      expect(updated.numMatches).toBe(300);
+    });
+
+    // A Grep mode whose shape wasn't captured/verified ('content',
+    // 'files_with_matches', or anything else) must not be guessed at —
+    // extractText() only recognizes 'count', so anything else passes
+    // through untouched rather than risk a malformed updatedToolOutput.
+    test('Grep in an unverified mode passes through safely, does not guess the shape', async () => {
+      const input = {
+        tool_name: 'Grep',
+        tool_response: {
+          mode: 'content',
+          filenames: ['src/a.ts', 'src/b.ts'],
+          numFiles: 2,
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Glob deliberately has no adapter at all — its response has no
+    // bulk-text field, only filenames/counts/booleans, so there's nothing
+    // for this hook to compress. This is a scoping decision, not a gap.
+    test('Glob (no compressible text field) passes through untouched', async () => {
+      const input = {
+        tool_name: 'Glob',
+        tool_response: {
+          filenames: Array.from({ length: 50 }, (_, i) => `src/file${i}.ts`),
+          durationMs: 12,
+          numFiles: 50,
+          truncated: false,
+          totalMatches: 50,
+          countIsComplete: true,
+        },
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
       expect(result).toEqual({ continue: true });
     });
 

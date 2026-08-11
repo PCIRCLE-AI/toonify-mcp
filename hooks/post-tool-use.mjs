@@ -14,14 +14,16 @@
  * CSV is not converted: TOON measured as a net loss on CSV at every size.
  *
  * tool_response is a structured object for the tools this hook matches, not
- * a plain string — see extractText() below for the shapes verified live
- * against a real Claude Code session (Read, WebFetch). Where the shape is
- * known, compressed content goes out via hookSpecificOutput.updatedToolOutput
- * (replaces what Claude sees — this is what makes context actually shrink).
- * Where it isn't recognized, or tool_response is already a plain string, the
- * hook falls back to additionalContext (schema-agnostic, appends instead of
- * replacing) so it degrades safely rather than risk a malformed
- * updatedToolOutput.
+ * a plain string — see extractText() below for the shapes verified (Read,
+ * WebFetch, Grep's 'count' mode). Where the shape is known, compressed
+ * content goes out via hookSpecificOutput.updatedToolOutput (replaces what
+ * Claude sees — this is what makes context actually shrink). Where
+ * tool_response is a plain string (older Claude Code, or an unmatched
+ * shape), it goes out via additionalContext instead (schema-agnostic,
+ * appends rather than replaces). Where tool_response is an OBJECT whose
+ * shape isn't recognized (unverified Grep modes, Glob, an unmatched tool),
+ * the hook passes through untouched — there is no safe way to extract text
+ * from a shape we don't understand, so it never attempts to.
  *
  * Input:  JSON on stdin with { tool_name, tool_response, ... }
  * Output: JSON on stdout with { continue, hookSpecificOutput }
@@ -469,15 +471,37 @@ function estimateTokens(text) {
 //
 // tool_response is NOT a plain string for the tools this hook matches — it
 // is a structured object whose shape is specific to the tool (Zod-validated
-// by Claude Code, undocumented publicly). Verified live against a real
-// Claude Code session:
+// by Claude Code, undocumented publicly). Confidence varies by source:
+//
 //   Read:     { type, file: { filePath, content, numLines, startLine, totalLines } }
 //   WebFetch: { bytes, code, codeText, result, durationMs, url }
-// Grep and Glob shapes are NOT verified as of this comment (this build's
-// test harness could not exercise them as distinct native tools) — do not
-// guess their shape. extractText() returns null for anything it cannot
-// positively identify, and the caller passes through unchanged rather than
-// risk sending Claude Code a malformed updatedToolOutput.
+//     — verified directly: registered this hook via a real Claude Code
+//     session's .claude/settings.json and captured live stdin.
+//
+//   Grep (mode: 'count'): { mode: 'count', numFiles, filenames, content, numMatches }
+//     — captured by an independent review agent in a different sandboxed
+//     session (not reproducible from this shell — this environment's `claude
+//     -p` subprocesses have no native Grep/Glob tool regardless of env
+//     isolation, confirmed with normal spawn, stripped child-session env
+//     vars, and env -i). Treated as high-but-not-first-hand confidence
+//     because Read and WebFetch, captured by the SAME agent in the SAME
+//     pass, matched byte-for-byte with what this session verified directly.
+//     Grep has at least two OTHER modes ('content', 'files_with_matches')
+//     whose shapes were not captured — extractText() only recognizes
+//     mode === 'count' and returns null for anything else, so those modes
+//     safely fall back to additionalContext rather than guess.
+//
+//   Glob: { filenames, durationMs, numFiles, truncated, totalMatches,
+//     countIsComplete } — same provenance as Grep. Deliberately has NO
+//     adapter: there is no bulk-text field to compress (filenames, counts,
+//     and booleans only), so there is nothing for this hook's TOON/
+//     debug-output compression to do here. This is a scoping conclusion,
+//     not an unverified gap — Glob output is already compact by
+//     construction.
+//
+// extractText() returns null for anything it cannot positively identify;
+// the caller passes through unchanged rather than risk sending Claude Code
+// a malformed updatedToolOutput.
 //
 // Each recognized shape returns { text, reconstruct(compressedText) }:
 // `text` is what gets fed into detection/compression, and reconstruct()
@@ -524,6 +548,19 @@ function extractText(toolName, toolResponse) {
       text: toolResponse.result,
       reconstruct(compressedText) {
         return { ...toolResponse, result: compressedText };
+      },
+    };
+  }
+
+  if (toolName === 'Grep') {
+    // Only the 'count' mode's shape is captured (see comment above) — any
+    // other mode value (including undefined, i.e. a shape that isn't even
+    // mode-tagged the same way) is left alone rather than guessed at.
+    if (toolResponse.mode !== 'count' || typeof toolResponse.content !== 'string') return null;
+    return {
+      text: toolResponse.content,
+      reconstruct(compressedText) {
+        return { ...toolResponse, content: compressedText };
       },
     };
   }
@@ -643,12 +680,16 @@ async function main() {
     }
 
     // reconstruct !== null means tool_response was a recognized structured
-    // shape (Read/WebFetch): rebuild it with the compressed text swapped in
-    // and send it via updatedToolOutput, which REPLACES what Claude sees —
-    // this is what makes context actually shrink instead of only growing.
-    // Anything without a known shape (string tool_response, or an
-    // unrecognized object) falls back to additionalContext, which appends
-    // and is schema-agnostic but doesn't reduce net context size.
+    // shape (Read/WebFetch/Grep-count): rebuild it with the compressed text
+    // swapped in and send it via updatedToolOutput, which REPLACES what
+    // Claude sees — this is what makes context actually shrink instead of
+    // only growing. reconstruct === null here can only mean tool_response
+    // was a plain string — an unrecognized OBJECT shape already exited via
+    // passthrough() earlier (see extractText() call above) rather than
+    // reaching this point, since there's no safe field to send via
+    // additionalContext either without knowing what the object means.
+    // additionalContext is schema-agnostic but appends rather than
+    // replaces, so it doesn't reduce net context size.
     if (reconstruct) {
       process.stdout.write(JSON.stringify({
         continue: true,
