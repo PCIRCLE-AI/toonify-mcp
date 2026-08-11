@@ -15,15 +15,16 @@
  *
  * tool_response is a structured object for the tools this hook matches, not
  * a plain string — see extractText() below for the shapes verified (Read,
- * WebFetch, Grep's 'count' mode). Where the shape is known, compressed
- * content goes out via hookSpecificOutput.updatedToolOutput (replaces what
- * Claude sees — this is what makes context actually shrink). Where
- * tool_response is a plain string (older Claude Code, or an unmatched
+ * WebFetch, Grep — both its 'content' and 'count' modes populate a
+ * compressible `content` field, per the tool's own schema). Where the shape
+ * is known, compressed content goes out via hookSpecificOutput.updatedToolOutput
+ * (replaces what Claude sees — this is what makes context actually shrink).
+ * Where tool_response is a plain string (older Claude Code, or an unmatched
  * shape), it goes out via additionalContext instead (schema-agnostic,
- * appends rather than replaces). Where tool_response is an OBJECT whose
- * shape isn't recognized (unverified Grep modes, Glob, an unmatched tool),
- * the hook passes through untouched — there is no safe way to extract text
- * from a shape we don't understand, so it never attempts to.
+ * appends rather than replaces). Where tool_response is an OBJECT with no
+ * compressible field for that tool (Grep's default 'files_with_matches'
+ * mode, Glob, an unmatched tool), the hook passes through untouched — there
+ * is no safe way to extract text from a shape that doesn't have any.
  *
  * Input:  JSON on stdin with { tool_name, tool_response, ... }
  * Output: JSON on stdout with { continue, hookSpecificOutput }
@@ -136,6 +137,11 @@ function detectStructuredData(content) {
 // these heuristic regexes run bounds worst-case backtracking to a constant
 // per line — regardless of whether some other regex in this file has a
 // similar latent ambiguity that hasn't been found yet.
+//
+// Mirrors the identical fix in src/optimizer/pipeline/detector.ts — the
+// hook can't import from src/ (standalone .mjs, no build step), so this is
+// a deliberate, necessary duplication. Fix both together so they don't
+// drift.
 const MAX_LINE_LENGTH_FOR_SCAN = 2000;
 
 function capLineLengths(content) {
@@ -249,14 +255,40 @@ function detectDebugOutput(content) {
   return score >= 3;
 }
 
+// This function and its helpers below (collapseSourceExcerptNoise,
+// collapseSimilarDiagnosticLines, collapseDuplicateLines,
+// collapseLongStackTraces, getNormalizedDiagnosticKey, getDiagnosticLocation,
+// hasRepeatedDiagnosticLines, hasMultipleFileLocationDiagnostics) are
+// intentionally kept in lockstep with DebugOutputCompressor in
+// src/optimizer/compressors/debug-output.ts — same duplication-is-necessary
+// reason as MAX_LINE_LENGTH_FOR_SCAN above (the hook can't import from
+// src/). Edit both together; a fix applied to only one (e.g. the
+// omitted-line marker or the location-preserving dedup key) will silently
+// diverge otherwise.
 function compressDebugOutput(content) {
   let result = content;
 
   result = result.replace(/\n{3,}/g, '\n\n');
   result = collapseSourceExcerptNoise(result);
+  // Drop pointer-only lines (lines that are nothing but ^^^ / ~~~ carets
+  // and whitespace). This is the one collapse step with NO omission marker,
+  // and deliberately so: a caret line has zero semantic payload — it's a
+  // visual underline of the line above, which is itself preserved — so
+  // there is no information to signal was lost, unlike the content-bearing
+  // drops (source excerpts, repeated diagnostics, stack frames) that all
+  // emit a `[toonify] ...` marker.
+  //
+  // Regression: this pointer-line regex is the same
+  // ambiguous-character-class ReDoS this file fixed in detection, but this
+  // call runs on full, uncapped content. Verified live: a 4-line payload
+  // scoring >= 3 plus one 150,000-space line took the real hook 15s here.
+  // Test capLineLengths(line) (no-ops for any real pointer line, which is
+  // always short) rather than `line` — the FILTER decision still applies to
+  // the real, uncapped line, so no content is truncated; only what the
+  // vulnerable regex sees is bounded.
   result = result
     .split('\n')
-    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(line))
+    .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(line)))
     .join('\n');
   result = collapseSimilarDiagnosticLines(result);
   result = collapseDuplicateLines(result);
@@ -297,7 +329,11 @@ function collapseSourceExcerptNoise(content) {
     const nextTrimmed = lines[i + 1]?.trimStart() || '';
 
     if (/^\s*\d+\s+\|/.test(trimmed)) { omitted++; continue; }
-    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) { omitted++; continue; }
+    // Same ReDoS-vulnerable pointer-line regex as compressDebugOutput's
+    // filter above — test the capped form for the same reason (a real
+    // pointer line is always short, so this never changes behavior for
+    // legitimate content, only defuses an unbounded nextTrimmed).
+    if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(nextTrimmed))) { omitted++; continue; }
 
     result.push(lines[i]);
   }
@@ -564,6 +600,20 @@ function extractText(toolName, toolResponse) {
     // 'files_with_matches' would still be safe to compress if it ever gets
     // a content field, and there's no risk in being permissive here: the
     // check itself is the safety gate.
+    //
+    // Match-enumeration fidelity ('content' mode returns the lines Claude
+    // searched for, where completeness matters): considered and verified as
+    // safe. Compression only ever fires when content scores >= 3 on the
+    // DEBUG heuristics, i.e. the grep results themselves look like build/
+    // test output. collapseSimilarDiagnosticLines preserves every collapsed
+    // location via its "(also at ...)" suffix. collapseDuplicateLines only
+    // collapses BYTE-IDENTICAL lines — with grep's default `-n` (line
+    // numbers on) or multi-file output, matched lines carry distinct
+    // prefixes and never collapse (verified: they pass through untouched);
+    // the only lines that do collapse are byte-identical ones, which by
+    // definition hold no per-match distinguishing info to lose, and the
+    // "repeated N more times" marker preserves their multiplicity. So no
+    // enumeration is silently lost.
     if (typeof toolResponse.content !== 'string') return null;
     return {
       text: toolResponse.content,
@@ -603,8 +653,9 @@ async function main() {
     }
 
     // tool_response is a structured object for the tools this hook matches
-    // (verified live: Read, WebFetch), not a plain string — extractText()
-    // pulls the text field out and gives back a reconstruct() that rebuilds
+    // (Read, WebFetch, Grep — see the comment above extractText() for how
+    // each shape was verified), not a plain string — extractText() pulls
+    // the text field out and gives back a reconstruct() that rebuilds
     // a schema-compatible object with only that field replaced. A string
     // tool_response (older Claude Code versions, or an unmatched shape) is
     // used as-is with no reconstruction, going out via additionalContext.
@@ -692,12 +743,8 @@ async function main() {
       output = compressed;
     }
 
-    if (config.showStats) {
-      output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
-    }
-
     // reconstruct !== null means tool_response was a recognized structured
-    // shape (Read/WebFetch/Grep-count): rebuild it with the compressed text
+    // shape (Read/WebFetch/Grep): rebuild it with the compressed text
     // swapped in and send it via updatedToolOutput, which REPLACES what
     // Claude sees — this is what makes context actually shrink instead of
     // only growing. reconstruct === null here can only mean tool_response
@@ -708,6 +755,15 @@ async function main() {
     // additionalContext is schema-agnostic but appends rather than
     // replaces, so it doesn't reduce net context size.
     if (reconstruct) {
+      // config.showStats's footer is intentionally NOT appended on this
+      // path. reconstruct() splices `output` into the field that REPLACES
+      // what Claude sees as the tool's actual content (file.content,
+      // result, or content) — a "--- Toonify: ... smaller ---" line baked
+      // into that field isn't a stats annotation, it's fabricated file/page
+      // content. Verified live: with TOONIFY_SHOW_STATS=true, the footer
+      // used to end up inside file.content itself. There's no schema-safe
+      // side channel to put stats in in this branch, so they're just
+      // omitted rather than risk corrupting what Claude thinks a file says.
       process.stdout.write(JSON.stringify({
         continue: true,
         suppressOutput: true,
@@ -717,6 +773,9 @@ async function main() {
         },
       }));
     } else {
+      if (config.showStats) {
+        output += `\n\n--- Toonify: ${formatLabel} optimized, ~${savingsPercent.toFixed(0)}% smaller ---`;
+      }
       process.stdout.write(JSON.stringify({
         continue: true,
         suppressOutput: true,

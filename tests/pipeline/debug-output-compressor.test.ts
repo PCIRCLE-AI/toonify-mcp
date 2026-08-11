@@ -108,4 +108,23 @@ describe('DebugOutputCompressor', () => {
 
     expect(result.compressed).toMatch(/\[toonify\] \d+ source excerpt lines? omitted throughout/);
   });
+
+  // Regression: compress()'s pointer-line and source-excerpt regexes ran on
+  // the raw, uncapped content (Pipeline.run passes the ORIGINAL content, not
+  // Detector's internally-capped scanContent). Their ambiguous
+  // /^\s*[|]?\s*(\^+|~+)\s*$/ pattern backtracks quadratically on a long
+  // near-whitespace line — measured ~14s on the payload below before the
+  // fix. Note this reaches compress() directly (not just Detector), which is
+  // exactly the path the earlier detection-only ReDoS test never exercised.
+  test('does not hang on a ReDoS-shaped adversarial payload in the compression path', () => {
+    const adversarial =
+      'FAIL: x\nat foo (bar.ts:1:1)\nat foo (bar.ts:2:2)\nat foo (bar.ts:3:3)\n' + ' '.repeat(150000);
+
+    const start = Date.now();
+    const result = compressor.compress(adversarial, detection);
+    const elapsedMs = Date.now() - start;
+
+    expect(elapsedMs).toBeLessThan(1000);
+    expect(typeof result.compressed).toBe('string');
+  });
 });

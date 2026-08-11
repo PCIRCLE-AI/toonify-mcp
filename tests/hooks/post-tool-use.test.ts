@@ -11,17 +11,22 @@ import path from 'path';
 const exec = promisify(execFile);
 const hookPath = path.resolve('hooks/post-tool-use.mjs');
 
-async function runHook(input: Record<string, unknown>): Promise<{ stdout: string; stderr: string }> {
+async function runHook(input: Record<string, unknown>, env?: Record<string, string>): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     // maxBuffer above Node's 1MB default: compressed output for a
     // near-10MB-ceiling source can itself be several MB (TOON compression
     // is real, not free) — the default would silently truncate stdout
     // mid-write and produce invalid JSON, a test-harness artifact, not a
     // hook bug.
-    const proc = execFile('node', [hookPath], { timeout: 10000, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {
-      // Hook returns exit 0 even on internal errors (by design)
-      resolve({ stdout, stderr });
-    });
+    const proc = execFile(
+      'node',
+      [hookPath],
+      { timeout: 10000, maxBuffer: 64 * 1024 * 1024, env: env ? { ...process.env, ...env } : process.env },
+      (error, stdout, stderr) => {
+        // Hook returns exit 0 even on internal errors (by design)
+        resolve({ stdout, stderr });
+      }
+    );
     proc.stdin!.write(JSON.stringify(input));
     proc.stdin!.end();
   });
@@ -185,6 +190,46 @@ Found 3 errors in 2 files.`,
       expect(updated.file.numLines).toBeLessThan(lines);
     });
 
+    // Regression: config.showStats appended a "--- Toonify: ... smaller ---"
+    // footer to `output` BEFORE reconstruct(output) was called, so with
+    // TOONIFY_SHOW_STATS=true the footer ended up baked into file.content
+    // itself — not a side-channel annotation, fabricated file content
+    // Claude would treat as real. Reproduced live before the fix (footer
+    // literally appeared as the last line of file.content).
+    test('showStats does not leak its footer into updatedToolOutput content', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const content = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Read',
+        tool_response: {
+          type: 'text',
+          file: { filePath: '/tmp/data.json', content, numLines: content.split('\n').length, startLine: 1, totalLines: content.split('\n').length },
+        },
+      };
+
+      const { stdout } = await runHook(input, { TOONIFY_SHOW_STATS: 'true' });
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { file: { content: string } };
+      expect(updated.file.content).not.toContain('--- Toonify:');
+    });
+
+    // The additionalContext path has no such risk (it's already an
+    // "extra info" side channel, not the actual tool result), so the
+    // stats footer should still appear there when requested.
+    test('showStats footer still appears on the additionalContext path', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const content = JSON.stringify(data, null, 2);
+
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: content }, { TOONIFY_SHOW_STATS: 'true' });
+      const result = parseOutput(stdout);
+
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext as string).toContain('--- Toonify:');
+    });
+
     test('Read: a genuinely partial read keeps totalLines as the true file size', async () => {
       const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
       const content = JSON.stringify(data, null, 2);
@@ -294,8 +339,22 @@ Found 3 errors in 2 files.`,
       expect(updated.mode).toBe('content');
       expect(updated.numMatches).toBe(50);
       // numLines must track the actually-returned (compressed) content,
-      // not the stale original count.
-      expect(updated.numLines).toBe(updated.content.split('\n').length);
+      // not the stale original count. A hardcoded expectation, not
+      // updated.content.split('\n').length re-applied — reusing the same
+      // formula the implementation uses would make this assertion unable
+      // to fail even if reconstruct() computed numLines wrong. The 50
+      // near-identical diagnostics collapse to: 1 kept line + 1
+      // "repeated... (also at ...)" marker line, and compressDebugOutput's
+      // own trailing '\n' adds one more segment when split — matching the
+      // same trailing-newline convention verified live for Read's shape
+      // (a single-line file's numLines was 2, not 1).
+      expect(updated.content).toBe(
+        'src/components/File0.tsx:10:12 - error TS2322: Type X is not assignable to type Y.\n' +
+        '[toonify] similar diagnostic repeated 49 more times (also at ' +
+        Array.from({ length: 49 }, (_, i) => `src/components/File${i + 1}.tsx:${11 + i}:12`).join(', ') +
+        ')\n'
+      );
+      expect(updated.numLines).toBe(3);
       expect(updated.numLines).toBeLessThan(grepContent.split('\n').length);
     });
 
@@ -362,6 +421,20 @@ Found 3 errors in 2 files.`,
       const input = {
         tool_name: 'Read',
         tool_response: { type: 'text', file: { filePath: '/tmp/x.json' } }, // no content field
+      };
+
+      const { stdout } = await runHook(input);
+      const result = parseOutput(stdout);
+
+      expect(result).toEqual({ continue: true });
+    });
+
+    // Mirrors the Read/Grep malformed-shape tests above — WebFetch had only
+    // a happy-path test, no coverage for a missing/wrong-typed `result`.
+    test('WebFetch with a malformed object shape (missing result) passes through safely', async () => {
+      const input = {
+        tool_name: 'WebFetch',
+        tool_response: { bytes: 0, code: 200, codeText: 'OK', durationMs: 10, url: 'https://example.com' }, // no result field
       };
 
       const { stdout } = await runHook(input);
@@ -531,6 +604,26 @@ public class RetryHandler {
     // hook's own child-process timeout.
     test('does not hang on a ReDoS-shaped adversarial payload', async () => {
       const adversarial = 'line one\nline two\nline three\n' + 'a.'.repeat(60000) + '\nline five';
+
+      const start = Date.now();
+      const { stdout } = await runHook({ tool_name: 'Read', tool_response: adversarial });
+      const elapsedMs = Date.now() - start;
+
+      const result = parseOutput(stdout);
+      expect(result.continue).toBe(true);
+      expect(elapsedMs).toBeLessThan(3000);
+    }, 10000);
+
+    // Regression: the payload above only exercises DETECTION regexes — it
+    // scores < 3 so compressDebugOutput() never runs. compressDebugOutput's
+    // own pointer-line filter and collapseSourceExcerptNoise have the SAME
+    // ambiguous-character-class ReDoS but run on full, uncapped content, so
+    // a payload that DOES score >= 3 (real FAIL + stack frames) plus one
+    // long near-whitespace line reaches the compression path. Measured ~15s
+    // before the fix.
+    test('does not hang when the ReDoS-shaped line reaches the compression path', async () => {
+      const adversarial =
+        'FAIL: something broke\nat foo (bar.ts:1:1)\nat foo (bar.ts:2:2)\nat foo (bar.ts:3:3)\n' + ' '.repeat(150000);
 
       const start = Date.now();
       const { stdout } = await runHook({ tool_name: 'Read', tool_response: adversarial });

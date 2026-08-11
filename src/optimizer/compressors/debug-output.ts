@@ -6,10 +6,18 @@
  * - preserve actionable lines
  * - reduce obvious repetition and whitespace
  * - avoid inventing summaries
+ *
+ * This class is intentionally kept in lockstep with compressDebugOutput()
+ * and its helpers in hooks/post-tool-use.mjs — the hook is a standalone
+ * .mjs with no build step, so it can't import from here and duplicates
+ * this logic instead. Edit both together; a fix applied to only one (e.g.
+ * the omitted-line marker or the location-preserving dedup key) will
+ * silently diverge otherwise.
  */
 
 import type { Compressor } from './compressor.js';
 import type { ContentType, DetectResult, CompressResult } from '../pipeline/types.js';
+import { capLineLengths } from '../pipeline/detector.js';
 
 export class DebugOutputCompressor implements Compressor {
   readonly name = 'debug-output';
@@ -77,7 +85,18 @@ export class DebugOutputCompressor implements Compressor {
 
       // Drop TypeScript-style excerpt lines when the diagnostic header already
       // includes the file and line number, and the next line is only a pointer.
-      if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(nextTrimmed)) {
+      //
+      // Regression: this pointer-line regex has the same
+      // ambiguous-character-class ReDoS as hasMultipleFileLocationDiagnostics
+      // (already fixed in Detector), but this call runs on the full,
+      // uncapped content passed into compress() — Pipeline.run() never caps
+      // it, only Detector.detectDebugOutput()'s internal scoring does.
+      // Verified directly against the compiled compressor: an adversarial
+      // payload took ~14s here before this fix. capLineLengths(nextTrimmed)
+      // no-ops for any real pointer line (always short), so this changes
+      // nothing for legitimate content — only what the vulnerable regex
+      // sees is bounded, the actual line kept/dropped is still the real one.
+      if (/^\d+\s{2,}\S/.test(trimmed) && /^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(nextTrimmed))) {
         omitted++;
         continue;
       }
@@ -153,9 +172,20 @@ export class DebugOutputCompressor implements Compressor {
   }
 
   private removePointerOnlyLines(content: string): string {
+    // Drop pointer-only lines (nothing but ^^^ / ~~~ carets + whitespace).
+    // This is the one collapse step with NO omission marker, deliberately:
+    // a caret line has zero semantic payload — a visual underline of the
+    // line above, which is preserved — so there's nothing to signal was
+    // lost, unlike the content-bearing drops that all emit a marker.
+    //
+    // Same ReDoS-vulnerable regex as collapseSourceExcerptNoise — test the
+    // capped form of each line for the same reason (real pointer lines are
+    // always short; only adversarial padding is affected). The filter
+    // decision applies to the real, uncapped line, so no content is ever
+    // truncated.
     return content
       .split('\n')
-      .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(line))
+      .filter(line => !/^\s*[|]?\s*(\^+|~+)\s*$/.test(capLineLengths(line)))
       .join('\n');
   }
 

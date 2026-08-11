@@ -212,6 +212,35 @@ for (let i = 0; i < 10; i++) {
       expect(result.type).toBe('unknown');
       expect(result.confidence).toBe(0);
     });
+
+    // Regression: source in a language with no dedicated indicator set
+    // (Java, C, Rust, ...) plus repeated near-identical lines can score
+    // >= 3 on detectDebugOutput's heuristics (the literal word "FAIL" +
+    // hasRepeatedDiagnosticLines). The hook needed an explicit generic-code
+    // fallback added to its own looksLikeSourceCode() to avoid
+    // misclassifying this as debug output and corrupting it (see
+    // tests/hooks/post-tool-use.test.ts). The library achieves the same
+    // protection structurally, since detect() tries detectCode() (which
+    // has looksLikeGenericCode()) before detectDebugOutput() — this test
+    // closes the coverage gap for that path specifically, using the same
+    // Java fixture as the hook's regression test.
+    test('generic-language code with repeated lines is classified as code, not debug output', () => {
+      const java = `package com.example.service;
+
+public class RetryHandler {
+    public void run(int attempt) {
+        if (attempt == 1) { throw new RuntimeException("FAIL"); }
+        if (attempt == 2) { throw new RuntimeException("FAIL"); }
+        if (attempt == 3) { throw new RuntimeException("FAIL"); }
+        if (attempt == 4) { throw new RuntimeException("FAIL"); }
+        if (attempt == 5) { throw new RuntimeException("FAIL"); }
+    }
+}
+`;
+      const result = detector.detect(java);
+      expect(result.type).toMatch(/^code-/);
+      expect(result.type).not.toBe('debug-output');
+    });
   });
 
   describe('debug output detection', () => {

@@ -40,6 +40,7 @@ export class PersistentCache<T = unknown> {
   private pendingWrites: Map<string, LRUCacheEntry<T>> = new Map();
   private batchTimer: NodeJS.Timeout | null = null;
   private readonly BATCH_DELAY_MS = 100; // Debounce writes by 100ms
+  private tempCounter = 0;
 
   constructor(filePath: string) {
     // Expand ~ to home directory
@@ -109,14 +110,25 @@ export class PersistentCache<T = unknown> {
    * Internal use only — async to avoid blocking event loop
    */
   private async saveAllAsync(entries: LRUCacheEntry<T>[]): Promise<void> {
+    // Unique temp path per write. Two write paths call this — the serial
+    // write queue AND the batch timer's flushPendingWrites(), which runs on
+    // a setTimeout OUTSIDE the queue's serialization — so they can overlap.
+    // A shared `${filePath}.tmp` let one call rename the temp away while the
+    // other was about to rename the same temp, producing an intermittent
+    // "ENOENT: rename ...tmp" (also across two PersistentCache instances
+    // pointing at the same filePath). pid + instance-scoped counter +
+    // random makes each atomic write's temp file collision-free.
+    const tempPath = `${this.filePath}.${process.pid}.${this.tempCounter++}.${Math.random().toString(36).slice(2)}.tmp`;
     try {
-      const tempPath = `${this.filePath}.tmp`;
       const content = JSON.stringify(entries, null, 2);
 
       // Write to temp file first, then atomic rename
       await fsp.writeFile(tempPath, content, 'utf-8');
       await fsp.rename(tempPath, this.filePath);
     } catch (error) {
+      // Clean up our own temp file if the rename never happened, so a failed
+      // write doesn't leave an orphan behind.
+      try { await fsp.unlink(tempPath); } catch { /* already gone */ }
       console.error('[PersistentCache] Failed to save cache:', error);
       throw error;
     }

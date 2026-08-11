@@ -40,7 +40,7 @@ import type { DetectResult } from './types.js';
  */
 const MAX_LINE_LENGTH_FOR_SCAN = 2000;
 
-function capLineLengths(content: string): string {
+export function capLineLengths(content: string): string {
   const lines = content.split('\n');
   let capped = false;
   const result = lines.map(line => {
