@@ -33,12 +33,16 @@ export class CacheOptimizer {
   }
 
   /**
-   * Wrap optimized TOON content with cache-friendly structure
+   * Wrap optimized TOON content with cache-friendly structure.
+   *
+   * `format` is a display label only (uppercased into the static prefix, see
+   * createStaticPrefix/formatTOONOutput below) — this class doesn't need to
+   * know which content types the pipeline's Detector currently produces.
    */
   wrapWithCaching(
     toonContent: string,
     toolName: string,
-    format: 'json' | 'csv' | 'yaml',
+    format: string,
     originalTokens: number,
     optimizedTokens: number
   ): CachedContent {

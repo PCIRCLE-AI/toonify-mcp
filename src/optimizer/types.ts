@@ -15,7 +15,7 @@ export interface OptimizationResult {
     percentage: number;
     withCaching?: number; // Additional savings from caching
   };
-  format?: 'json' | 'csv' | 'yaml' | 'debug-output' | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic' | 'unknown';
+  format?: 'json' | 'yaml' | 'debug-output' | 'code-ts' | 'code-py' | 'code-go' | 'code-php' | 'code-generic' | 'unknown';
   reason?: string; // Why optimization was skipped
   // v0.3.0: Cache-related fields
   cachedContent?: CachedContent;
@@ -27,12 +27,6 @@ export interface ToolMetadata {
   contentType?: string;
   size: number;
   modelId?: string; // v0.3.0: For model-specific optimization
-}
-
-export interface StructuredData {
-  type: 'json' | 'csv' | 'yaml';
-  data: Record<string, unknown> | unknown[];
-  confidence: number;
 }
 
 export interface OptimizationConfig {

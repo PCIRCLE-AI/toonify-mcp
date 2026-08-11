@@ -219,7 +219,7 @@ export class TokenOptimizer {
 
       // Wrap with caching structure (for structured data formats)
       const format = pipelineResult.format;
-      const isStructured = format === 'json' || format === 'csv' || format === 'yaml';
+      const isStructured = format === 'json' || format === 'yaml';
 
       let optimizedContent = pipelineResult.content;
       let cachedContent;
@@ -228,7 +228,7 @@ export class TokenOptimizer {
         cachedContent = this.cacheOptimizer.wrapWithCaching(
           pipelineResult.content,
           metadata?.toolName || 'unknown',
-          format as 'json' | 'csv' | 'yaml',
+          format,
           pipelineResult.originalTokens,
           pipelineResult.optimizedTokens!
         );

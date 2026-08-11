@@ -67,17 +67,19 @@ describe('CacheOptimizer', () => {
     });
 
     test('should include tool name and format in static prefix', () => {
+      // `format` is a display label, not a pipeline ContentType — any string
+      // works here, this isn't asserting CSV support.
       const result = optimizer.wrapWithCaching(
         'x'.repeat(5000),
         'Grep',
-        'csv',
+        'yaml',
         10000,
         5000
       );
 
       if (result.cacheBreakpoint) {
         expect(result.staticPrefix).toContain('Grep');
-        expect(result.staticPrefix).toContain('CSV');
+        expect(result.staticPrefix).toContain('YAML');
       }
     });
   });
