@@ -11,6 +11,7 @@ import { ToonifyMCPServer } from './server/mcp-server.js';
 import { runDoctor } from './cli/doctor.js';
 import { runStatus } from './cli/status.js';
 import { runSetup } from './cli/setup.js';
+import { runCompress } from './cli/compress.js';
 
 export async function runCli(args: string[] = process.argv.slice(2)): Promise<number> {
   if (args[0] === 'setup') {
@@ -21,6 +22,9 @@ export async function runCli(args: string[] = process.argv.slice(2)): Promise<nu
   }
   if (args[0] === 'status') {
     return await runStatus();
+  }
+  if (args[0] === 'compress') {
+    return await runCompress();
   }
 
   const server = new ToonifyMCPServer();

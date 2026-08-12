@@ -15,6 +15,7 @@ import {
   hasMarketplace,
   hasToonifyMcpRegistration,
 } from './claude-cli.js';
+import { runSetupCodex } from './setup-codex.js';
 
 const require = createRequire(import.meta.url);
 const { version } = require('../../package.json') as { version: string };
@@ -131,10 +132,17 @@ export async function runSetup(
   commandRunner?: CommandRunner
 ): Promise<number> {
   const modeArg = args[0];
+
+  // Codex setup is independent of the Claude CLI (it edits ~/.codex/config.toml),
+  // so it dispatches before the Claude-CLI-based flow below.
+  if (modeArg === 'codex') {
+    return await runSetupCodex(stdout, stderr);
+  }
+
   const mode: SetupMode = modeArg === 'mcp' ? 'mcp' : 'plugin';
 
   if (modeArg && modeArg !== 'plugin' && modeArg !== 'mcp') {
-    stderr.write('Usage: toonify-mcp setup [plugin|mcp]\n');
+    stderr.write('Usage: toonify-mcp setup [plugin|mcp|codex]\n');
     return 1;
   }
 
