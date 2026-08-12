@@ -33,7 +33,11 @@ function createRunner(state: {
       };
     }
 
-    if (key.startsWith('plugin marketplace add ') && key.endsWith('/.claude-plugin/marketplace.json')) {
+    // Build the expected path suffix with the platform separator so it matches
+    // the CLI's own path.join output on every OS — a hardcoded '/' made this
+    // mock never match on Windows, failing the suite there (issue #19 part 1).
+    // The leading separator is kept as a path-boundary anchor.
+    if (key.startsWith('plugin marketplace add ') && key.endsWith(`${path.sep}.claude-plugin${path.sep}marketplace.json`)) {
       state.marketplaceConfigured = true;
       return { stdout: '', stderr: '' };
     }

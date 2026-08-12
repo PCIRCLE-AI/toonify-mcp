@@ -13,11 +13,18 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest]
         node-version: [18.x, 20.x, 22.x]
+        # One Windows leg: issue #19 shipped a Windows-only test failure
+        # because nothing ran the suite there. A single current-LTS leg keeps
+        # cross-platform coverage without tripling CI cost.
+        include:
+          - os: windows-latest
+            node-version: 22.x
 
     steps:
       - uses: actions/checkout@v4
