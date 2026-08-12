@@ -168,9 +168,9 @@ describe('Token Savings Benchmarks', () => {
     });
   });
 
-  describe('CSV-like structured data', () => {
+  describe('Tabular structured data (JSON)', () => {
     test('Tabular data as JSON', async () => {
-      const result = await runBenchmark('Tabular data', 'CSV-like', {
+      const result = await runBenchmark('Tabular data', 'Tabular', {
         headers: ['Date', 'Product', 'Quantity', 'Price', 'Total'],
         rows: Array.from({ length: 15 }, (_, i) => [
           `2024-01-${String(i + 1).padStart(2, '0')}`,
@@ -185,7 +185,7 @@ describe('Token Savings Benchmarks', () => {
     });
 
     test('Spreadsheet-like structure', async () => {
-      const result = await runBenchmark('Spreadsheet structure', 'CSV-like', {
+      const result = await runBenchmark('Spreadsheet structure', 'Tabular', {
         sheet: 'Sales',
         columns: ['ID', 'Name', 'Region', 'Sales', 'Target', 'Achieved'],
         data: Array.from({ length: 12 }, (_, i) => ({

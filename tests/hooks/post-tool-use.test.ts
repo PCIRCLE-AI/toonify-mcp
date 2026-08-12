@@ -55,8 +55,12 @@ describe('PostToolUse Hook', () => {
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
       expect(output.hookEventName).toBe('PostToolUse');
-      expect(typeof output.additionalContext).toBe('string');
-      expect(output.additionalContext as string).toContain('[TOON-JSON]');
+      // A string tool_response is replaced via updatedToolOutput (the tool's
+      // output schema is a string, so a compressed string is a valid
+      // replacement), never appended via additionalContext.
+      expect(output.additionalContext).toBeUndefined();
+      expect(typeof output.updatedToolOutput).toBe('string');
+      expect(output.updatedToolOutput as string).toContain('[TOON-JSON]');
     });
 
     test('optimizes debug-heavy output while preserving actionable lines', async () => {
@@ -94,10 +98,11 @@ Tests:       1 failed, 1 total`,
       expect(result.continue).toBe(true);
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('tests/user-service.test.ts');
-      expect(output.additionalContext as string).toContain('/workspace/src/index.ts:11:3');
-      expect(output.additionalContext as string).not.toContain('      41 |');
-      expect(output.additionalContext as string).toContain('[toonify]');
+      expect(output.additionalContext).toBeUndefined();
+      expect(output.updatedToolOutput as string).toContain('tests/user-service.test.ts');
+      expect(output.updatedToolOutput as string).toContain('/workspace/src/index.ts:11:3');
+      expect(output.updatedToolOutput as string).not.toContain('      41 |');
+      expect(output.updatedToolOutput as string).toContain('[toonify]');
     });
 
     test('collapses repeated TypeScript diagnostics in hook mode', async () => {
@@ -127,10 +132,11 @@ Found 3 errors in 2 files.`,
       expect(result.continue).toBe(true);
       expect(result.suppressOutput).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('[toonify] similar diagnostic repeated 1 more time');
-      expect(output.additionalContext as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
-      expect(output.additionalContext as string).not.toContain('18   title={42}');
-      expect(output.additionalContext as string).not.toContain('22   title={99}');
+      expect(output.additionalContext).toBeUndefined();
+      expect(output.updatedToolOutput as string).toContain('[toonify] similar diagnostic repeated 1 more time');
+      expect(output.updatedToolOutput as string).toContain('src/screens/UsersPage.tsx:57:9 - error TS2769');
+      expect(output.updatedToolOutput as string).not.toContain('18   title={42}');
+      expect(output.updatedToolOutput as string).not.toContain('22   title={99}');
       // The hook and the library (src/optimizer/compressors/debug-output.ts)
       // independently implement the same location-preservation and
       // omission-marker fixes — assert the same specifics here that
@@ -138,8 +144,8 @@ Found 3 errors in 2 files.`,
       // library, so a regression in the hook's own copy (wrong capture
       // group, off-by-one, wrong suffix formatting) can't slip past this
       // suite while the library's tests would still catch it.
-      expect(output.additionalContext as string).toContain('(also at src/components/ProfileCard.tsx:22:12)');
-      expect(output.additionalContext as string).toMatch(/\[toonify\] \d+ source excerpt lines? omitted throughout/);
+      expect(output.updatedToolOutput as string).toContain('(also at src/components/ProfileCard.tsx:22:12)');
+      expect(output.updatedToolOutput as string).toMatch(/\[toonify\] \d+ source excerpt lines? omitted throughout/);
     });
   });
 
@@ -188,46 +194,6 @@ Found 3 errors in 2 files.`,
       // more of the file left to page in via offset/limit.
       expect(updated.file.numLines).toBe(updated.file.totalLines);
       expect(updated.file.numLines).toBeLessThan(lines);
-    });
-
-    // Regression: config.showStats appended a "--- Toonify: ... smaller ---"
-    // footer to `output` BEFORE reconstruct(output) was called, so with
-    // TOONIFY_SHOW_STATS=true the footer ended up baked into file.content
-    // itself — not a side-channel annotation, fabricated file content
-    // Claude would treat as real. Reproduced live before the fix (footer
-    // literally appeared as the last line of file.content).
-    test('showStats does not leak its footer into updatedToolOutput content', async () => {
-      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
-      const content = JSON.stringify(data, null, 2);
-
-      const input = {
-        tool_name: 'Read',
-        tool_response: {
-          type: 'text',
-          file: { filePath: '/tmp/data.json', content, numLines: content.split('\n').length, startLine: 1, totalLines: content.split('\n').length },
-        },
-      };
-
-      const { stdout } = await runHook(input, { TOONIFY_SHOW_STATS: 'true' });
-      const result = parseOutput(stdout);
-
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      const updated = output.updatedToolOutput as { file: { content: string } };
-      expect(updated.file.content).not.toContain('--- Toonify:');
-    });
-
-    // The additionalContext path has no such risk (it's already an
-    // "extra info" side channel, not the actual tool result), so the
-    // stats footer should still appear there when requested.
-    test('showStats footer still appears on the additionalContext path', async () => {
-      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
-      const content = JSON.stringify(data, null, 2);
-
-      const { stdout } = await runHook({ tool_name: 'Read', tool_response: content }, { TOONIFY_SHOW_STATS: 'true' });
-      const result = parseOutput(stdout);
-
-      const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(output.additionalContext as string).toContain('--- Toonify:');
     });
 
     test('Read: a genuinely partial read keeps totalLines as the true file size', async () => {
@@ -443,7 +409,12 @@ Found 3 errors in 2 files.`,
       expect(result).toEqual({ continue: true });
     });
 
-    test('string tool_response (legacy shape) still goes through additionalContext, not updatedToolOutput', async () => {
+    // A string tool_response is REPLACED via updatedToolOutput (the tool's
+    // output schema is a string, so a compressed string is a schema-valid
+    // replacement that shrinks context), never appended via additionalContext
+    // (which would grow it). The hook must never emit additionalContext at
+    // all — it's purely additive and can't reduce tokens.
+    test('string tool_response is replaced via updatedToolOutput, never additionalContext', async () => {
       const input = {
         tool_name: 'Read',
         tool_response: JSON.stringify({
@@ -455,8 +426,30 @@ Found 3 errors in 2 files.`,
       const result = parseOutput(stdout);
 
       const output = result.hookSpecificOutput as Record<string, unknown>;
-      expect(typeof output.additionalContext).toBe('string');
-      expect(output.updatedToolOutput).toBeUndefined();
+      expect(output.additionalContext).toBeUndefined();
+      expect(typeof output.updatedToolOutput).toBe('string');
+      expect(output.updatedToolOutput as string).toContain('[TOON-JSON]');
+      // The replacement is genuinely smaller than the original string.
+      expect((output.updatedToolOutput as string).length).toBeLessThan(input.tool_response.length);
+    });
+
+    // The hook only REPLACES a tool's result for tools whose result shape and
+    // text semantics it has verified (Read/WebFetch/Grep). For any other tool
+    // — an unmatched or MCP tool — even a compressible string/object result
+    // must pass through untouched: replacing it would strip that tool's only
+    // copy of its output and hand Claude a lossy compressed view instead.
+    // (Since updatedToolOutput REPLACES, this gate matters; when the hook
+    // merely appended, an unmatched tool's promiscuity was near-harmless.)
+    const bigJson = JSON.stringify({ rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) }, null, 2);
+
+    test('a compressible STRING result from an untrusted (MCP/unmatched) tool passes through untouched', async () => {
+      const { stdout } = await runHook({ tool_name: 'mcp__server__query', tool_response: bigJson });
+      expect(parseOutput(stdout)).toEqual({ continue: true });
+    });
+
+    test('a compressible OBJECT result from an untrusted tool passes through untouched', async () => {
+      const { stdout } = await runHook({ tool_name: 'mcp__server__query', tool_response: { result: bigJson } });
+      expect(parseOutput(stdout)).toEqual({ continue: true });
     });
   });
 
@@ -713,7 +706,7 @@ public class RetryHandler {
 
       expect(result.continue).toBe(true);
       const output = result.hookSpecificOutput as Record<string, unknown> | undefined;
-      expect(output?.additionalContext).toContain('[TOON-JSON]');
+      expect(output?.updatedToolOutput).toContain('[TOON-JSON]');
     }, 15000);
 
     test('passes through content over the 10MB size ceiling without parsing it', async () => {
