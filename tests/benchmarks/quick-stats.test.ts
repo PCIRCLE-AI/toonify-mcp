@@ -100,8 +100,13 @@ describe('Token Savings Stats', () => {
     expect(r.pct).toBeGreaterThan(0);
   });
 
-  test('CSV', async () => {
-    const r = await bench('Table', 'CSV', {
+  // Tabular JSON (a {headers, rows} object run through TOON) — NOT literal
+  // CSV text. The detector no longer recognizes CSV at all (TOON was a net
+  // loss on it); this fixture measures TOON on tabular-shaped JSON, which
+  // the docs label "Tabular JSON". Kept in sync so a docs regeneration
+  // can't reintroduce a "CSV" label for something that isn't CSV.
+  test('Tabular', async () => {
+    const r = await bench('Table', 'Tabular', {
       headers: ['Date', 'Product', 'Qty', 'Price'],
       rows: Array.from({ length: 15 }, (_, i) => [
         `2024-01-${i + 1}`,
