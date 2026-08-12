@@ -45,6 +45,32 @@ claude mcp list
 
 `claude mcp list` に `toonify: toonify-mcp - ✓ Connected` と表示されれば完了です。
 
+## パイプフィルター（任意のエージェント CLI）
+
+`toonify-mcp compress` は stdin を読み取り、安全に圧縮できるものだけを圧縮して（JSON/YAML → TOON、繰り返しの多いログは折りたたみ。ソースコード、文章、精度が重要な数値はそのまま通過）、stdout に書き出します。パイプを壊すことはありません——圧縮が適用されない場合、入力はバイト単位でそのまま出力されます。
+
+```bash
+curl -s https://api.example.com/users | toonify-mcp compress
+```
+
+出力がモデルのコンテキストに入る*前*に圧縮されるため、どのエージェント CLI でも使えます。エージェントに使わせるには、プロジェクトのエージェント指示ファイル（例: `AGENTS.md`）にルールを追加してください:
+
+```markdown
+When a command is likely to print large JSON/YAML or long logs,
+pipe it through `toonify-mcp compress` (e.g. `curl ... | toonify-mcp compress`).
+It only rewrites output it can compress losslessly; everything else passes through.
+```
+
+## OpenAI Codex CLI（オンデマンド）
+
+```bash
+toonify-mcp setup codex
+```
+
+`~/.codex/config.toml` に toonify を MCP サーバーとして登録します（実行前にタイムスタンプ付きバックアップを作成します）。以降、Codex は必要に応じて `optimize_content` ツールを呼び出せます。
+
+注意: Codex では**オンデマンドのみで、自動ではありません**——Codex のフックは Claude Code の `updatedToolOutput` のようにツール出力を置き換えることがまだできず、圧縮済みのコピーを追記するとコンテキストは縮むどころか増えてしまいます。Codex で自動圧縮したい場合は、上記のパイプフィルターを使ってください。
+
 ## ドキュメント
 
 - サイト: https://toonify.pcircle.ai/

@@ -45,6 +45,32 @@ claude mcp list
 
 `claude mcp list` phải hiển thị `toonify: toonify-mcp - ✓ Connected`.
 
+## Bộ lọc pipe (mọi agent CLI)
+
+`toonify-mcp compress` đọc từ stdin, nén những gì có thể nén an toàn (JSON/YAML → TOON, log lặp lại được gộp gọn; mã nguồn, văn bản thường và các con số cần độ chính xác cao được giữ nguyên), rồi ghi ra stdout. Nó không bao giờ làm hỏng pipe—khi không thể nén, đầu vào được xuất ra nguyên vẹn từng byte.
+
+```bash
+curl -s https://api.example.com/users | toonify-mcp compress
+```
+
+Cách này hoạt động với mọi agent CLI, vì đầu ra được nén *trước khi* vào ngữ cảnh của mô hình. Để agent tự dùng nó, hãy thêm một quy tắc vào file hướng dẫn agent của dự án (ví dụ `AGENTS.md`):
+
+```markdown
+When a command is likely to print large JSON/YAML or long logs,
+pipe it through `toonify-mcp compress` (e.g. `curl ... | toonify-mcp compress`).
+It only rewrites output it can compress losslessly; everything else passes through.
+```
+
+## OpenAI Codex CLI (theo yêu cầu)
+
+```bash
+toonify-mcp setup codex
+```
+
+Đăng ký toonify làm máy chủ MCP trong `~/.codex/config.toml` (file này được sao lưu kèm dấu thời gian trước khi sửa). Sau đó Codex có thể gọi công cụ `optimize_content` khi cần.
+
+Lưu ý: trên Codex, tính năng này là **theo yêu cầu, không tự động**—hook của Codex hiện chưa thể thay thế đầu ra công cụ như `updatedToolOutput` của Claude Code, và việc nối thêm bản nén sẽ làm ngữ cảnh phình to thay vì thu nhỏ. Để nén tự động trên Codex, hãy dùng bộ lọc pipe ở trên.
+
 ## Tài liệu
 
 - Website: https://toonify.pcircle.ai/

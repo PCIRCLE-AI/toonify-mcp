@@ -45,6 +45,32 @@ claude mcp list
 
 `claude mcp list` 에 `toonify: toonify-mcp - ✓ Connected` 가 표시되면 완료입니다.
 
+## 파이프 필터 (모든 에이전트 CLI)
+
+`toonify-mcp compress` 는 stdin 을 읽어 안전하게 압축할 수 있는 것만 압축한 뒤(JSON/YAML → TOON, 반복되는 로그는 접어서 축소; 소스 코드, 일반 텍스트, 정밀도가 중요한 숫자는 그대로 통과) stdout 으로 내보냅니다. 파이프를 깨뜨리는 일은 없습니다——압축이 적용되지 않으면 입력이 바이트 단위 그대로 출력됩니다.
+
+```bash
+curl -s https://api.example.com/users | toonify-mcp compress
+```
+
+출력이 모델의 컨텍스트에 들어가기 *전에* 압축되기 때문에 어떤 에이전트 CLI 와도 함께 쓸 수 있습니다. 에이전트가 이를 사용하게 하려면 프로젝트의 에이전트 지침 파일(예: `AGENTS.md`)에 규칙을 추가하세요:
+
+```markdown
+When a command is likely to print large JSON/YAML or long logs,
+pipe it through `toonify-mcp compress` (e.g. `curl ... | toonify-mcp compress`).
+It only rewrites output it can compress losslessly; everything else passes through.
+```
+
+## OpenAI Codex CLI (온디맨드)
+
+```bash
+toonify-mcp setup codex
+```
+
+`~/.codex/config.toml` 에 toonify 를 MCP 서버로 등록합니다(먼저 해당 파일의 타임스탬프 백업을 만듭니다). 이후 Codex 는 필요할 때 `optimize_content` 툴을 호출할 수 있습니다.
+
+참고: Codex 에서는 **온디맨드로만 동작하며 자동이 아닙니다**——Codex 의 훅은 아직 Claude Code 의 `updatedToolOutput` 처럼 툴 출력을 교체할 수 없고, 압축본을 덧붙이면 컨텍스트가 줄어들기는커녕 오히려 커집니다. Codex 에서 자동 압축이 필요하면 위의 파이프 필터를 사용하세요.
+
 ## 문서
 
 - 사이트: https://toonify.pcircle.ai/

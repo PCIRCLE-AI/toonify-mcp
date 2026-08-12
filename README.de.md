@@ -45,6 +45,32 @@ claude mcp list
 
 `claude mcp list` sollte `toonify: toonify-mcp - ✓ Connected` anzeigen.
 
+## Pipe-Filter (jede Agent-CLI)
+
+`toonify-mcp compress` liest von stdin, komprimiert, was sich sicher komprimieren lässt (JSON/YAML → TOON, sich wiederholende Logs werden zusammengefasst; Quellcode, Fließtext und präzisionskritische Zahlen passieren unverändert), und schreibt nach stdout. Es bricht niemals eine Pipe—wenn die Komprimierung nicht greift, kommt die Eingabe Byte für Byte unverändert heraus.
+
+```bash
+curl -s https://api.example.com/users | toonify-mcp compress
+```
+
+Das funktioniert mit jeder Agent-CLI, weil die Ausgabe komprimiert wird, *bevor* sie in den Kontext des Modells gelangt. Damit ein Agent es übernimmt, fügen Sie den Agent-Anweisungen Ihres Projekts (z. B. `AGENTS.md`) eine Regel hinzu:
+
+```markdown
+When a command is likely to print large JSON/YAML or long logs,
+pipe it through `toonify-mcp compress` (e.g. `curl ... | toonify-mcp compress`).
+It only rewrites output it can compress losslessly; everything else passes through.
+```
+
+## OpenAI Codex CLI (auf Anfrage)
+
+```bash
+toonify-mcp setup codex
+```
+
+Registriert toonify als MCP-Server in `~/.codex/config.toml` (zuvor wird ein Backup der Datei mit Zeitstempel angelegt). Codex kann dann das Tool `optimize_content` bei Bedarf aufrufen.
+
+Hinweis: Auf Codex ist das **auf Anfrage, nicht automatisch**—die Hooks von Codex können Tool-Ausgaben noch nicht ersetzen, wie es `updatedToolOutput` in Claude Code tut, und das Anhängen einer komprimierten Kopie würde den Kontext vergrößern statt verkleinern. Für automatische Komprimierung auf Codex nutzen Sie den Pipe-Filter oben.
+
 ## Dokumentation
 
 - Website: https://toonify.pcircle.ai/
