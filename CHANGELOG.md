@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-08-12
+
 ### Fixed
 - `toonify-mcp --version` (and any flag or unknown argument) no longer hangs. Anything that wasn't `setup`/`doctor`/`status`/`compress` fell through to starting the MCP server on stdio, which waits on stdin forever. The CLI now handles `--version`/`-v`, `--help`/`-h`/`help`, and rejects unknown arguments with the usage text and exit 1 — the server starts only when invoked with no arguments (as MCP clients do)
 
