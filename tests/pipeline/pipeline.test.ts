@@ -127,6 +127,42 @@ export function clean(url: string, s: string): string[] {
     });
   });
 
+  // The detector parses via JSON.parse, which is lossy for numbers JS can't
+  // represent exactly. ToonCompressor's numeric-fidelity guard must pass such
+  // content through byte-for-byte instead of emitting a corrupted TOON view.
+  // (Same guard as the standalone hook — kept in lockstep.)
+  describe('numeric-fidelity guard', () => {
+    test('64-bit IDs that lose precision pass through untouched', () => {
+      const ids = Array.from({ length: 200 }, (_, i) => `1300000000000000${String(i).padStart(3, '0')}`);
+      const json = `[${ids.map((id) => `{"id": ${id}}`).join(',')}]`;
+
+      const result = pipeline.run(json, 10);
+      expect(result.optimized).toBe(false);
+      expect(result.content).toBe(json);
+    });
+
+    test('trailing-zero decimals pass through untouched', () => {
+      const rows = Array.from({ length: 200 }, (_, i) => `{"i": ${i}, "price": 10.10, "ratio": 1.20}`);
+      const json = `[${rows.join(',')}]`;
+
+      const result = pipeline.run(json, 10);
+      expect(result.optimized).toBe(false);
+      expect(result.content).toBe(json);
+    });
+
+    // Discrimination control: identical shape, safe integers → still compresses.
+    test('safe integers still compress to TOON', () => {
+      const json = JSON.stringify(
+        Array.from({ length: 200 }, (_, i) => ({ id: i, name: `svc${i}`, active: i % 2 === 0 }))
+      );
+
+      const result = pipeline.run(json, 10);
+      expect(result.optimized).toBe(true);
+      expect(result.format).toBe('json');
+      expect(result.compressMetadata?.compressor).toBe('toon');
+    });
+  });
+
   describe('unknown content', () => {
     test('returns not optimized for plain text', () => {
       const text = 'Just some regular text without any code or data patterns.';

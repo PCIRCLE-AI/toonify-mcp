@@ -121,6 +121,44 @@ function detectStructuredData(content) {
   return null;
 }
 
+// --- Numeric-fidelity guard ---
+//
+// TOON encoding runs the content through JSON.parse / yamlParse, which
+// coerces every scalar to a native JS number — a LOSSY step:
+//   - integers > 2^53 lose precision, so distinct 64-bit IDs (snowflakes,
+//     Postgres bigint, ns timestamps) can collapse to the SAME value;
+//   - trailing zeros / exponents / leading zeros are rewritten (10.10→10.1,
+//     0000→0, 1.20→1.2, 1e3→1000).
+// Because compressed output REPLACES the tool result (updatedToolOutput),
+// a mangled number reaches Claude with no original to compare against and no
+// signal anything changed — Claude could report or act on a wrong / collapsed
+// value. So compression is only allowed when EVERY numeric token in the
+// source round-trips exactly; otherwise the content passes through untouched.
+// Correctness over compression rate: a number we can't reproduce byte-for-byte
+// is never worth shrinking.
+//
+// Scan the source text (strings stripped so only value tokens are checked).
+// A token is safe iff JSON.parse(tok) re-stringifies to the same characters.
+// A token JSON.parse can't handle (YAML leading-zero like 0000, a date
+// fragment) is treated as unverifiable → bail, the safe direction.
+function numbersPreserved(sourceText) {
+  const noStrings = sourceText
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
+    .replace(/'(?:[^']|'')*'/g, "''");
+  const tokens = noStrings.match(/-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g);
+  if (!tokens) return true;
+  for (const tok of tokens) {
+    let parsed;
+    try {
+      parsed = JSON.parse(tok);
+    } catch {
+      return false;
+    }
+    if (String(parsed) !== tok) return false;
+  }
+  return true;
+}
+
 // --- ReDoS guard ---
 //
 // hasMultipleFileLocationDiagnostics()'s /\b[\w./-]+\.(ts|...):\\d+:\\d+\b/g
@@ -783,7 +821,12 @@ async function main() {
     let output;
 
     if (structured) {
-      // Structured data → TOON format
+      // Structured data → TOON format — but only if the lossy JSON.parse/
+      // yamlParse step doesn't mangle any number (see numbersPreserved).
+      if (!numbersPreserved(contentText)) {
+        return passthrough();
+      }
+
       const toonContent = toonEncode(structured.data);
       const savingsPercent = ((contentText.length - toonContent.length) / contentText.length) * 100;
 
