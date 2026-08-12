@@ -29,7 +29,11 @@ function numbersPreserved(sourceText: string): boolean {
   const noStrings = sourceText
     .replace(/"(?:\\.|[^"\\])*"/g, '""')
     .replace(/'(?:[^']|'')*'/g, "''");
-  const tokens = noStrings.match(/-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g);
+  // Require a value boundary on both sides so the `-` in an unquoted identifier
+  // like `pod-0` / `node-4` (or a date `2024-01-15`, version `1.2.3`) is not
+  // read as a number: `-0` fails the round-trip (String(-0) === "0") and would
+  // otherwise block legitimate YAML from compressing. See the hook copy.
+  const tokens = noStrings.match(/(?<![\w.-])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?(?![\w.-])/g);
   if (!tokens) return true;
   for (const tok of tokens) {
     let parsed: unknown;
