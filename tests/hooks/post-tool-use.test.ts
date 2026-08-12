@@ -600,6 +600,70 @@ Found 3 errors in 2 files.`,
     });
   });
 
+  describe('YAML detection', () => {
+    const asRead = (content: string) => ({
+      tool_name: 'Read',
+      tool_response: { type: 'text', file: { filePath: '/x.yaml', content, numLines: content.split('\n').length, startLine: 1, totalLines: content.split('\n').length } },
+    });
+    const compressedContent = (result: Record<string, unknown>): string | undefined => {
+      const u = (result.hookSpecificOutput as Record<string, unknown> | undefined)?.updatedToolOutput as { file?: { content?: string } } | undefined;
+      return u?.file?.content;
+    };
+
+    // Regression: the old gate required `Object.keys(data).length > 1`, so a
+    // single top-level key holding a large uniform list — the most common and
+    // most compressible YAML shape (`kubectl get -o yaml` → `items:`) — was
+    // silently skipped. It must now compress.
+    test('single top-level key with a uniform list compresses to TOON', async () => {
+      const yaml = 'apiVersion: v1\nkind: List\nitems:\n' + Array.from({ length: 25 }, (_, i) =>
+        `  - name: pod-${i}\n    phase: Running\n    restarts: ${i % 3}\n    node: node-${i % 4}`).join('\n');
+
+      const { stdout } = await runHook(asRead(yaml));
+      const result = parseOutput(stdout);
+      expect(result.continue).toBe(true);
+      const content = compressedContent(result);
+      expect(content).toContain('[TOON-YAML]');
+      // Hyphen-digit item names (pod-0, node-0) must survive verbatim — they
+      // must NOT be read as negative numbers by the numeric-fidelity guard.
+      expect(content).toContain('pod-0');
+      expect(content).toContain('node-0');
+    });
+
+    // Regression for the numeric-guard false positive: an unquoted `-<digit>`
+    // (hyphenated identifiers, ISO dates) is not a number to the YAML parser,
+    // so it must not block compression. `-0` in particular fails String(-0)
+    // round-trip and used to force a needless passthrough.
+    test('unquoted ISO dates and hyphen-digit ids do not block compression', async () => {
+      const yaml = 'events:\n' + Array.from({ length: 20 }, (_, i) =>
+        `  - id: e-${i}\n    date: 2024-01-${String((i % 28) + 1).padStart(2, '0')}\n    level: info`).join('\n');
+
+      const { stdout } = await runHook(asRead(yaml));
+      const result = parseOutput(stdout);
+      const content = compressedContent(result);
+      expect(content).toContain('[TOON-YAML]');
+      // Dates are strings to the YAML parser — preserved byte-for-byte.
+      expect(content).toContain('2024-01-01');
+    });
+
+    // The structural gate (looksLikeYAML) must keep ordinary prose out, even
+    // though yaml.parse would happily coerce it into some object.
+    test('prose is not misdetected as YAML', async () => {
+      const prose = Array.from({ length: 12 }, (_, i) =>
+        `This is paragraph ${i} of some ordinary prose that explains an idea in plain words.`).join('\n\n');
+      const { stdout } = await runHook(asRead(prose));
+      expect(parseOutput(stdout)).toEqual({ continue: true });
+    });
+
+    // A real numeric corruption inside otherwise-valid YAML must still force a
+    // passthrough — the boundary fix must not weaken the guard.
+    test('YAML carrying a precision-losing 64-bit id still passes through', async () => {
+      const yaml = 'records:\n' + Array.from({ length: 20 }, (_, i) =>
+        `  - name: rec-${i}\n    snowflake: 13000000000000000${String(i).padStart(2, '0')}`).join('\n');
+      const { stdout } = await runHook(asRead(yaml));
+      expect(parseOutput(stdout)).toEqual({ continue: true });
+    });
+  });
+
   describe('source code is never rewritten', () => {
     // Regression for Bug B: `removeInlineCStyleComment` did not know about
     // regex literals, so `/^https?:\/\//` was truncated at the `//` and the

@@ -106,11 +106,17 @@ function detectStructuredData(content) {
     // Not JSON
   }
 
-  // Try YAML (only if it looks like YAML - has key: value patterns)
-  if (/^\s*[\w-]+\s*:/m.test(content) && content.includes('\n')) {
+  // Try YAML — gated on STRUCTURE (looksLikeYAML), then accept any non-null
+  // object. The old gate (`Object.keys(data).length > 1`) silently skipped the
+  // most valuable and most common YAML shape: a single top-level key holding a
+  // large uniform list (`services:`, a k8s `spec:`, `data:`), which is exactly
+  // what TOON compresses best. The structural density check (looksLikeYAML) is
+  // what keeps prose out, so the key-count gate isn't needed for that job.
+  // Mirrors Detector.tryYAML / looksLikeYAML in src/optimizer/pipeline/detector.ts.
+  if (looksLikeYAML(content)) {
     try {
       const data = yamlParse(content);
-      if (typeof data === 'object' && data !== null && Object.keys(data).length > 1) {
+      if (typeof data === 'object' && data !== null) {
         return { type: 'yaml', data };
       }
     } catch {
@@ -119,6 +125,38 @@ function detectStructuredData(content) {
   }
 
   return null;
+}
+
+// Structural YAML heuristic — density of `key: value` / list / indented lines.
+// This is what keeps prose (which yaml.parse would happily coerce into some
+// object) from being misdetected, so detectStructuredData can drop the old
+// top-level-key-count gate. Ported from looksLikeYAML in
+// src/optimizer/pipeline/detector.ts — keep the two in sync. Each scanned line
+// is length-capped first (capLine), matching the hook's ReDoS discipline for
+// every other line-scanning predicate here.
+function looksLikeYAML(content) {
+  const lines = content.split('\n').filter(l => l.trim());
+  if (lines.length < 3) return false;
+
+  const yamlLinePattern = /^\s*[\w][\w\s.-]*:\s*.+/;
+  const listItemPattern = /^\s*-\s+/;
+  const indentedPattern = /^\s{2,}\S/;
+
+  let yamlLines = 0;
+  let listItems = 0;
+  let indented = 0;
+
+  for (const raw of lines.slice(0, 20)) {
+    const line = capLine(raw);
+    if (yamlLinePattern.test(line)) yamlLines++;
+    if (listItemPattern.test(line)) listItems++;
+    if (indentedPattern.test(line)) indented++;
+  }
+
+  const hasStructure = (yamlLines >= 3) || (listItems >= 2 && indented >= 2);
+  const yamlDensity = (yamlLines + listItems) / Math.min(lines.length, 20);
+
+  return hasStructure && yamlDensity >= 0.3;
 }
 
 // --- Numeric-fidelity guard ---
@@ -141,11 +179,20 @@ function detectStructuredData(content) {
 // A token is safe iff JSON.parse(tok) re-stringifies to the same characters.
 // A token JSON.parse can't handle (YAML leading-zero like 0000, a date
 // fragment) is treated as unverifiable → bail, the safe direction.
+//
+// The token regex requires a value boundary on BOTH sides ((?<![\w.-]) /
+// (?![\w.-])): a digit run only counts as a number when it isn't glued to a
+// letter, underscore, hyphen, or dot. Without this, the `-` in an UNQUOTED
+// identifier like `pod-0` / `node-4` (common in YAML, where scalars aren't
+// stripped) was read as a negative sign — and `-0` fails the round-trip
+// (String(-0) === "0"), so legitimate content was wrongly blocked from
+// compressing. Dotted/hyphenated tokens (`2024-01-15`, version `1.2.3`) are
+// likewise not numbers to the parser, so skipping them is correct, not a leak.
 function numbersPreserved(sourceText) {
   const noStrings = sourceText
     .replace(/"(?:\\.|[^"\\])*"/g, '""')
     .replace(/'(?:[^']|'')*'/g, "''");
-  const tokens = noStrings.match(/-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g);
+  const tokens = noStrings.match(/(?<![\w.-])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?(?![\w.-])/g);
   if (!tokens) return true;
   for (const tok of tokens) {
     let parsed;

@@ -161,6 +161,19 @@ export function clean(url: string, s: string): string[] {
       expect(result.format).toBe('json');
       expect(result.compressMetadata?.compressor).toBe('toon');
     });
+
+    // Boundary regression: the `-` in an unquoted YAML identifier (`pod-0`) or
+    // an ISO date (`2024-01-15`) is NOT a number, so it must not trip the guard
+    // (`-0` fails String(-0) round-trip). Such YAML must still compress.
+    test('YAML with hyphen-digit ids and ISO dates still compresses', () => {
+      const yaml = 'items:\n' + Array.from({ length: 30 }, (_, i) =>
+        `  - name: pod-${i}\n    date: 2024-01-${String((i % 28) + 1).padStart(2, '0')}\n    node: node-${i % 4}`).join('\n');
+
+      const result = pipeline.run(yaml, 10);
+      expect(result.optimized).toBe(true);
+      expect(result.format).toBe('yaml');
+      expect(result.compressMetadata?.compressor).toBe('toon');
+    });
   });
 
   describe('unknown content', () => {
