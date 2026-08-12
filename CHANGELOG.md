@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-08-12
+
 ### Added
 - `toonify-mcp compress` — a stdin→stdout pipe filter that applies the same detect→compress pipeline as the plugin hook (JSON/YAML → TOON, repetitive logs collapsed, source/prose/lossy-number content passed through byte-for-byte, no MCP framing text). It always exits 0 and always emits output (original input verbatim on any passthrough or error), so inserting it into a pipe can never break the pipe or lose data. This brings automatic pre-context compression to any agent CLI — including OpenAI Codex — via an `AGENTS.md` rule like "pipe large command output through `toonify-mcp compress`" (recipe in the README)
 - `toonify-mcp setup codex` — registers toonify as an MCP server for the OpenAI Codex CLI (`[mcp_servers.toonify]` in `~/.codex/config.toml`), giving Codex on-demand access to the `optimize_content` tool. Before any write, the existing `config.toml` is backed up beside itself with a `.bak-<timestamp>` suffix and the report prints the restore command; a second run is a no-op. Documented honestly as on-demand: Codex's PostToolUse hooks cannot replace tool output (their parser explicitly rejects `updatedMCPToolOutput` as unsupported, verified in `openai/codex` source), and appending a compressed copy via `additionalContext` would grow context — the same reason this project's own hook abandoned that path. Automatic parity is tracked upstream
