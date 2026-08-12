@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Windows: the test suite no longer fails on `tests/cli/setup.test.ts` (issue #19, part 1). The test's mock recognized the `plugin marketplace add` command by a hardcoded POSIX suffix (`/.claude-plugin/marketplace.json`), while the CLI builds that path with `path.join` — so on Windows the backslashed path never matched and the scenario derailed. The mock now matches with the platform separator (`path.sep`), keeping the leading separator as a path-boundary anchor. Verified by simulating both `path.win32` and `path.posix` semantics against the fixed predicate, and by the new Windows CI leg below. (Issue #19, part 2 — source-code compression rewriting exact import paths — was already resolved in 0.8.0: source code is never compressed, so import paths pass through byte-for-byte)
+- `npm test` now works under Windows' default `cmd.exe`: the test scripts used POSIX inline-env syntax (`NODE_OPTIONS=... jest`), which cmd cannot parse. They now pass the flag directly (`node --experimental-vm-modules node_modules/jest/bin/jest.js`) — no new dependency, same behavior on POSIX
+
+### Tests
+- CI now runs a Windows leg (`windows-latest`, Node 22.x) alongside the Linux matrix, so Windows-only regressions like issue #19's are caught before release instead of by users
+
 ## [0.8.0] - 2026-08-12
 
 ### Added
