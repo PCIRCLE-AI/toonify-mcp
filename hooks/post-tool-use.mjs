@@ -176,10 +176,10 @@ function capLineLengths(content) {
 // this guard, compressDebugOutput() would run collapseDuplicateLines() /
 // collapseSourceExcerptNoise() on that source and hand back something like
 // `[toonify] repeated 4 more times` spliced into an array literal — a
-// misleading, corrupted view of a real file appended alongside the
-// original via additionalContext. Mirrors the ordering in
-// src/optimizer/pipeline/detector.ts, where code is detected before debug
-// output for exactly this reason.
+// misleading, corrupted view that REPLACES the real file via
+// updatedToolOutput, with no original left for Claude to fall back on.
+// Mirrors the ordering in src/optimizer/pipeline/detector.ts, where code is
+// detected before debug output for exactly this reason.
 function looksLikeSourceCode(content) {
   // split's limit stops after 50 lines instead of materializing an array of
   // every line in a (up to 10MB) document just to sample the first 50.
@@ -560,8 +560,17 @@ function estimateTokens(text) {
 // rebuilds a Zod-shape-compatible object with ONLY the text field replaced
 // so updatedToolOutput can genuinely shrink context instead of only
 // appending to it.
+//
+// The tools whose text output this hook is verified to compress safely. Both
+// the object path (extractText below) and the string path (see main()) gate
+// on this set — we only ever REPLACE a tool's result for a tool we've
+// validated, never for an arbitrary/unmatched/MCP tool whose result shape or
+// meaning we don't understand.
+const TEXT_TOOLS = new Set(['Read', 'WebFetch', 'Grep']);
+
 function extractText(toolName, toolResponse) {
   if (toolResponse === null || typeof toolResponse !== 'object') return null;
+  if (!TEXT_TOOLS.has(toolName)) return null;
 
   if (toolName === 'Read') {
     const file = toolResponse.file;
@@ -676,20 +685,27 @@ async function main() {
     //   (Grep files_with_matches, Glob, an unmatched tool) has no safe text
     //   field, so extractText returns null and we pass through.
     //
-    // - String tool_response: the tool's output schema IS a string (that's
-    //   what produced the string), so the compressed string is itself a
-    //   schema-valid replacement — reconstruct is the identity. This is the
-    //   inverse of the earlier verified failure (a bare string was rejected
-    //   for Read *because Read's schema is an object*; here the shapes match,
-    //   so it's valid). Note: no current Claude Code tool sends a string
-    //   tool_response for the matched tools (Read/Bash/Glob/Grep/WebFetch/
-    //   WebSearch all send objects — probed live), so this branch is a
-    //   forward/backward-compat path that can't be exercised here; it
-    //   replaces rather than appends so that IF it ever fires, it saves
-    //   tokens instead of growing context.
+    // - String tool_response (from a TEXT_TOOLS tool only): the compressed
+    //   string is itself the replacement — reconstruct is the identity. This
+    //   is the inverse of the earlier verified failure (a bare string was
+    //   rejected for Read *because Read's schema is an object*; here the tool
+    //   produced a string, so a string replacement matches). Claude Code
+    //   accepts an updatedToolOutput through TWO gates (verified against the
+    //   binary): the tool's output-schema `safeParse`, AND a result-mapper
+    //   that must not throw/return undefined; when a tool has no output
+    //   schema the mapper is the only gate, and MCP tools skip schema
+    //   validation entirely. So the string branch is gated to TEXT_TOOLS —
+    //   the exact tools whose result shape and text semantics we've verified
+    //   — never an arbitrary/MCP/unmatched tool whose only copy of its output
+    //   we'd otherwise replace with a lossy compressed view. Note: no current
+    //   Claude Code tool sends a bare string for these tools (Read/Grep/
+    //   WebFetch all send objects — probed live), so this is a
+    //   forward/backward-compat path; it replaces rather than appends so that
+    //   IF it ever fires, it saves tokens instead of growing context.
     let contentText;
     let reconstruct;
     if (typeof tool_response === 'string') {
+      if (!TEXT_TOOLS.has(tool_name)) return passthrough();
       contentText = tool_response;
       reconstruct = (compressedText) => compressedText;
     } else {

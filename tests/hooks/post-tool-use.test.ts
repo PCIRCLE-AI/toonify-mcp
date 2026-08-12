@@ -432,6 +432,25 @@ Found 3 errors in 2 files.`,
       // The replacement is genuinely smaller than the original string.
       expect((output.updatedToolOutput as string).length).toBeLessThan(input.tool_response.length);
     });
+
+    // The hook only REPLACES a tool's result for tools whose result shape and
+    // text semantics it has verified (Read/WebFetch/Grep). For any other tool
+    // — an unmatched or MCP tool — even a compressible string/object result
+    // must pass through untouched: replacing it would strip that tool's only
+    // copy of its output and hand Claude a lossy compressed view instead.
+    // (Since updatedToolOutput REPLACES, this gate matters; when the hook
+    // merely appended, an unmatched tool's promiscuity was near-harmless.)
+    const bigJson = JSON.stringify({ rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) }, null, 2);
+
+    test('a compressible STRING result from an untrusted (MCP/unmatched) tool passes through untouched', async () => {
+      const { stdout } = await runHook({ tool_name: 'mcp__server__query', tool_response: bigJson });
+      expect(parseOutput(stdout)).toEqual({ continue: true });
+    });
+
+    test('a compressible OBJECT result from an untrusted tool passes through untouched', async () => {
+      const { stdout } = await runHook({ tool_name: 'mcp__server__query', tool_response: { result: bigJson } });
+      expect(parseOutput(stdout)).toEqual({ continue: true });
+    });
   });
 
   describe('source code is never rewritten', () => {
