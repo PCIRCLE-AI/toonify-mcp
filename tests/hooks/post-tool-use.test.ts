@@ -256,6 +256,63 @@ Found 3 errors in 2 files.`,
       expect(updated.durationMs).toBe(1200);
     });
 
+    // Bash tool_response is {stdout, stderr, interrupted, isImage,
+    // noOutputExpected}. Verified live that `stdout` holds the COMBINED
+    // output (stderr lands there too), so it's the one compressible field.
+    test('Bash: compresses stdout and returns updatedToolOutput, preserving other fields', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const stdout = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout, stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+
+      const { stdout: out } = await runHook(input);
+      const result = parseOutput(out);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { stdout: string; stderr: string; interrupted: boolean; isImage: boolean; noOutputExpected: boolean };
+      expect(updated.stdout).toContain('[TOON-JSON]');
+      expect(updated.stdout.length).toBeLessThan(stdout.length);
+      // Everything except `stdout` must survive untouched.
+      expect(updated.stderr).toBe('');
+      expect(updated.interrupted).toBe(false);
+      expect(updated.isImage).toBe(false);
+      expect(updated.noOutputExpected).toBe(false);
+    });
+
+    // Never compress image output — the bytes aren't text and the heuristics
+    // would mangle them.
+    test('Bash: image output (isImage) passes through untouched', async () => {
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout: 'x'.repeat(5000), stderr: '', interrupted: false, isImage: true, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    // Small / plain command output stays below the token threshold and is
+    // left alone — only large structured/debug output crosses the bar.
+    test('Bash: short plain output passes through untouched', async () => {
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout: 'hello world', stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    // Malformed Bash shape (no stdout string) must pass through, not crash.
+    test('Bash: missing/non-string stdout passes through untouched', async () => {
+      const input = { tool_name: 'Bash', tool_response: { stderr: 'oops', interrupted: false, isImage: false } };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
     test('unrecognized tool name with an object tool_response passes through safely', async () => {
       const input = {
         tool_name: 'SomeFutureTool',
