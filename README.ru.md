@@ -45,6 +45,32 @@ claude mcp list
 
 `claude mcp list` должен показать `toonify: toonify-mcp - ✓ Connected`.
 
+## Pipe-фильтр (любой агентный CLI)
+
+`toonify-mcp compress` читает stdin, сжимает то, что можно сжать безопасно (JSON/YAML → TOON, повторяющиеся логи сворачиваются; исходный код, обычный текст и числа, чувствительные к точности, проходят без изменений), и пишет в stdout. Он никогда не ломает конвейер (pipe)—если сжатие неприменимо, вход выходит байт в байт без изменений.
+
+```bash
+curl -s https://api.example.com/users | toonify-mcp compress
+```
+
+Это работает с любым агентным CLI, потому что вывод сжимается *до* того, как попадает в контекст модели. Чтобы агент начал этим пользоваться, добавьте правило в инструкции агента вашего проекта (например, `AGENTS.md`):
+
+```markdown
+When a command is likely to print large JSON/YAML or long logs,
+pipe it through `toonify-mcp compress` (e.g. `curl ... | toonify-mcp compress`).
+It only rewrites output it can compress losslessly; everything else passes through.
+```
+
+## OpenAI Codex CLI (по запросу)
+
+```bash
+toonify-mcp setup codex
+```
+
+Регистрирует toonify как MCP-сервер в `~/.codex/config.toml` (сначала создаётся резервная копия файла с меткой времени). После этого Codex может вызывать инструмент `optimize_content` по запросу.
+
+Примечание: в Codex это работает **по запросу, а не автоматически**—хуки Codex пока не могут заменять вывод инструментов так, как это делает `updatedToolOutput` в Claude Code, а добавление сжатой копии увеличило бы контекст вместо его уменьшения. Для автоматического сжатия в Codex используйте pipe-фильтр выше.
+
 ## Документация
 
 - Сайт: https://toonify.pcircle.ai/

@@ -45,6 +45,32 @@ claude mcp list
 
 `claude mcp list` harus menampilkan `toonify: toonify-mcp - ✓ Connected`.
 
+## Filter pipe (semua CLI agen)
+
+`toonify-mcp compress` membaca stdin, mengompresi bagian yang aman dikompresi (JSON/YAML → TOON, log berulang diringkas; kode sumber, teks biasa, dan angka yang sensitif terhadap presisi dilewatkan tanpa perubahan), lalu menulis ke stdout. Ia tidak pernah merusak pipe—jika kompresi tidak berlaku, input keluar persis byte demi byte.
+
+```bash
+curl -s https://api.example.com/users | toonify-mcp compress
+```
+
+Ini berfungsi dengan CLI agen apa pun, karena output dikompresi *sebelum* masuk ke konteks model. Agar sebuah agen memakainya, tambahkan aturan ke instruksi agen proyek Anda (misalnya `AGENTS.md`):
+
+```markdown
+When a command is likely to print large JSON/YAML or long logs,
+pipe it through `toonify-mcp compress` (e.g. `curl ... | toonify-mcp compress`).
+It only rewrites output it can compress losslessly; everything else passes through.
+```
+
+## OpenAI Codex CLI (sesuai permintaan)
+
+```bash
+toonify-mcp setup codex
+```
+
+Mendaftarkan toonify sebagai server MCP di `~/.codex/config.toml` (cadangan file dengan stempel waktu dibuat terlebih dahulu). Codex kemudian dapat memanggil alat `optimize_content` sesuai kebutuhan.
+
+Catatan: di Codex ini **sesuai permintaan, bukan otomatis**—hook Codex belum bisa mengganti output alat seperti yang dilakukan `updatedToolOutput` di Claude Code, dan menambahkan salinan terkompresi justru akan memperbesar konteks, bukan memperkecilnya. Untuk kompresi otomatis di Codex, gunakan filter pipe di atas.
+
 ## Dokumentasi
 
 - Situs: https://toonify.pcircle.ai/

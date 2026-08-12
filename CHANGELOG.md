@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `toonify-mcp --version` (and any flag or unknown argument) no longer hangs. Anything that wasn't `setup`/`doctor`/`status`/`compress` fell through to starting the MCP server on stdio, which waits on stdin forever. The CLI now handles `--version`/`-v`, `--help`/`-h`/`help`, and rejects unknown arguments with the usage text and exit 1 — the server starts only when invoked with no arguments (as MCP clients do)
+
+### Changed
+- All 10 translated READMEs (zh-TW, ja, es, fr, de, ko, ru, pt, vi, id) gained the "Pipe filter (any agent CLI)" and "OpenAI Codex CLI (on-demand)" sections that were previously English-only
+
 ## [0.8.1] - 2026-08-12
 
 ### Added
