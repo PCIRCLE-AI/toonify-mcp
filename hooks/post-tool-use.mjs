@@ -3,7 +3,7 @@
 /**
  * Toonify PostToolUse Hook
  *
- * Intercepts tool results from Read, Grep, Glob, WebFetch and:
+ * Intercepts tool results from Read, Grep, Glob, WebFetch, Bash and:
  * - Converts structured data (JSON/YAML) to TOON format
  * - Collapses repetitive debug output (test failures, stack traces, diagnostics)
  *
@@ -15,8 +15,8 @@
  *
  * tool_response is a structured object for the tools this hook matches, not
  * a plain string — see extractText() below for the shapes verified (Read,
- * WebFetch, Grep — both its 'content' and 'count' modes populate a
- * compressible `content` field, per the tool's own schema).
+ * WebFetch, Grep's 'content'/'count' modes, and Bash's combined `stdout`
+ * field, each per the tool's own schema).
  *
  * Compressed content ALWAYS goes out via hookSpecificOutput.updatedToolOutput,
  * which REPLACES what Claude sees — that is what actually shrinks context.
@@ -54,7 +54,13 @@ const DEFAULT_CONFIG = {
   enabled: true,
   minTokensThreshold: 50,
   minSavingsThreshold: 30,
-  skipToolPatterns: ['Bash', 'Write', 'Edit'],
+  // Write/Edit are mutations — their result (success flag / diff) isn't
+  // compressible content and altering it could mislead Claude. Bash is NOT
+  // skipped: its stdout is a large token sink (curl/jq JSON, test-runner and
+  // build logs) that the same selective detect→compress path handles safely
+  // (see the Bash branch in extractText). Small command output stays below
+  // the token threshold and passes through untouched.
+  skipToolPatterns: ['Write', 'Edit'],
 };
 
 function loadConfig() {
@@ -113,6 +119,44 @@ function detectStructuredData(content) {
   }
 
   return null;
+}
+
+// --- Numeric-fidelity guard ---
+//
+// TOON encoding runs the content through JSON.parse / yamlParse, which
+// coerces every scalar to a native JS number — a LOSSY step:
+//   - integers > 2^53 lose precision, so distinct 64-bit IDs (snowflakes,
+//     Postgres bigint, ns timestamps) can collapse to the SAME value;
+//   - trailing zeros / exponents / leading zeros are rewritten (10.10→10.1,
+//     0000→0, 1.20→1.2, 1e3→1000).
+// Because compressed output REPLACES the tool result (updatedToolOutput),
+// a mangled number reaches Claude with no original to compare against and no
+// signal anything changed — Claude could report or act on a wrong / collapsed
+// value. So compression is only allowed when EVERY numeric token in the
+// source round-trips exactly; otherwise the content passes through untouched.
+// Correctness over compression rate: a number we can't reproduce byte-for-byte
+// is never worth shrinking.
+//
+// Scan the source text (strings stripped so only value tokens are checked).
+// A token is safe iff JSON.parse(tok) re-stringifies to the same characters.
+// A token JSON.parse can't handle (YAML leading-zero like 0000, a date
+// fragment) is treated as unverifiable → bail, the safe direction.
+function numbersPreserved(sourceText) {
+  const noStrings = sourceText
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
+    .replace(/'(?:[^']|'')*'/g, "''");
+  const tokens = noStrings.match(/-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g);
+  if (!tokens) return true;
+  for (const tok of tokens) {
+    let parsed;
+    try {
+      parsed = JSON.parse(tok);
+    } catch {
+      return false;
+    }
+    if (String(parsed) !== tok) return false;
+  }
+  return true;
 }
 
 // --- ReDoS guard ---
@@ -566,7 +610,7 @@ function estimateTokens(text) {
 // on this set — we only ever REPLACE a tool's result for a tool we've
 // validated, never for an arbitrary/unmatched/MCP tool whose result shape or
 // meaning we don't understand.
-const TEXT_TOOLS = new Set(['Read', 'WebFetch', 'Grep']);
+const TEXT_TOOLS = new Set(['Read', 'WebFetch', 'Grep', 'Bash']);
 
 function extractText(toolName, toolResponse) {
   if (toolResponse === null || typeof toolResponse !== 'object') return null;
@@ -648,6 +692,29 @@ function extractText(toolName, toolResponse) {
           patch.numLines = compressedText.length === 0 ? 0 : compressedText.split('\n').length;
         }
         return { ...toolResponse, ...patch };
+      },
+    };
+  }
+
+  if (toolName === 'Bash') {
+    // Bash tool_response is { stdout, stderr, interrupted, isImage,
+    // noOutputExpected }. Verified live against a real Claude Code session:
+    // `stdout` is the COMBINED output — a stderr-only command's bytes land in
+    // `stdout`, and the `stderr` field was empty in every probe (stdout-only,
+    // stderr-only, and failing commands alike). So compressing `stdout`
+    // covers everything: curl/jq/node JSON (→ TOON), test-runner and error
+    // logs (→ debug-output collapse), and anything else passes through the
+    // same detect gate untouched.
+    //
+    // Never touch image output — the bytes aren't text and TOON/debug
+    // heuristics would mangle them. exit code, interrupted, and the other
+    // fields are preserved by the spread, so command semantics are unchanged;
+    // only the textual stdout is (selectively) compressed.
+    if (toolResponse.isImage || typeof toolResponse.stdout !== 'string') return null;
+    return {
+      text: toolResponse.stdout,
+      reconstruct(compressedText) {
+        return { ...toolResponse, stdout: compressedText };
       },
     };
   }
@@ -754,7 +821,12 @@ async function main() {
     let output;
 
     if (structured) {
-      // Structured data → TOON format
+      // Structured data → TOON format — but only if the lossy JSON.parse/
+      // yamlParse step doesn't mangle any number (see numbersPreserved).
+      if (!numbersPreserved(contentText)) {
+        return passthrough();
+      }
+
       const toonContent = toonEncode(structured.data);
       const savingsPercent = ((contentText.length - toonContent.length) / contentText.length) * 100;
 

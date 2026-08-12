@@ -5,14 +5,12 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { execFile } from 'child_process';
-import { promisify } from 'util';
 import path from 'path';
 
-const exec = promisify(execFile);
 const hookPath = path.resolve('hooks/post-tool-use.mjs');
 
 async function runHook(input: Record<string, unknown>, env?: Record<string, string>): Promise<{ stdout: string; stderr: string }> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // maxBuffer above Node's 1MB default: compressed output for a
     // near-10MB-ceiling source can itself be several MB (TOON compression
     // is real, not free) — the default would silently truncate stdout
@@ -22,7 +20,7 @@ async function runHook(input: Record<string, unknown>, env?: Record<string, stri
       'node',
       [hookPath],
       { timeout: 10000, maxBuffer: 64 * 1024 * 1024, env: env ? { ...process.env, ...env } : process.env },
-      (error, stdout, stderr) => {
+      (_error, stdout, stderr) => {
         // Hook returns exit 0 even on internal errors (by design)
         resolve({ stdout, stderr });
       }
@@ -254,6 +252,155 @@ Found 3 errors in 2 files.`,
       expect(updated.code).toBe(200);
       expect(updated.codeText).toBe('OK');
       expect(updated.durationMs).toBe(1200);
+    });
+
+    // Bash tool_response is {stdout, stderr, interrupted, isImage,
+    // noOutputExpected}. Verified live that `stdout` holds the COMBINED
+    // output (stderr lands there too), so it's the one compressible field.
+    test('Bash: compresses stdout and returns updatedToolOutput, preserving other fields', async () => {
+      const data = { rows: Array.from({ length: 300 }, (_, i) => ({ id: i, name: `E${i}` })) };
+      const stdout = JSON.stringify(data, null, 2);
+
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout, stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+
+      const { stdout: out } = await runHook(input);
+      const result = parseOutput(out);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      expect(output.additionalContext).toBeUndefined();
+      const updated = output.updatedToolOutput as { stdout: string; stderr: string; interrupted: boolean; isImage: boolean; noOutputExpected: boolean };
+      expect(updated.stdout).toContain('[TOON-JSON]');
+      expect(updated.stdout.length).toBeLessThan(stdout.length);
+      // Everything except `stdout` must survive untouched.
+      expect(updated.stderr).toBe('');
+      expect(updated.interrupted).toBe(false);
+      expect(updated.isImage).toBe(false);
+      expect(updated.noOutputExpected).toBe(false);
+    });
+
+    // Never compress image output — the bytes aren't text and the heuristics
+    // would mangle them.
+    test('Bash: image output (isImage) passes through untouched', async () => {
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout: 'x'.repeat(5000), stderr: '', interrupted: false, isImage: true, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    // Small / plain command output stays below the token threshold and is
+    // left alone — only large structured/debug output crosses the bar.
+    test('Bash: short plain output passes through untouched', async () => {
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout: 'hello world', stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    // Malformed Bash shape (no stdout string) must pass through, not crash.
+    test('Bash: missing/non-string stdout passes through untouched', async () => {
+      const input = { tool_name: 'Bash', tool_response: { stderr: 'oops', interrupted: false, isImage: false } };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    // Non-JSON Bash output (a test-runner failure log) routes through the
+    // debug-output collapser, not TOON. Repeated failing blocks + long
+    // stack traces collapse hard while every distinct line/location is kept.
+    test('Bash: repetitive test-failure log collapses via debug-output path', async () => {
+      const frames: string[] = [];
+      for (let i = 0; i < 60; i++) {
+        frames.push(`    at Object.<anonymous> (/app/src/module.js:${100 + i}:${5 + (i % 20)})`);
+        frames.push('    at processTicksAndRejections (node:internal/process/task_queues:95:5)');
+      }
+      const block = [
+        'FAIL src/api/handler.test.js',
+        '  ● handler › returns 200',
+        '',
+        '    AssertionError: expected 500 to equal 200',
+        ...frames,
+        '',
+      ].join('\n');
+      const stdout = Array.from({ length: 8 }, () => block).join('\n');
+
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout, stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      const result = parseOutput(out);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { stdout: string };
+      // Debug collapse, not TOON — no structured-data header.
+      expect(updated.stdout).not.toContain('[TOON-');
+      expect(updated.stdout.length).toBeLessThan(stdout.length / 2);
+      // The failure header and assertion survive; only the noise collapses.
+      expect(updated.stdout).toContain('FAIL src/api/handler.test.js');
+      expect(updated.stdout).toContain('AssertionError: expected 500 to equal 200');
+    });
+
+    // Numeric-fidelity guard: TOON runs content through JSON.parse, which
+    // silently mangles numbers JS can't represent exactly. When ANY numeric
+    // token would not round-trip, the whole payload must pass through
+    // untouched rather than reach Claude with a corrupted value it can't
+    // detect (the compressed output REPLACES the original).
+    test('Bash: 64-bit integer IDs that lose precision force a passthrough', async () => {
+      // Most of these distinct 19-digit IDs collapse to the same Number(...)
+      // value (> 2^53), merging rows that must stay distinct. The guard needs
+      // only one non-round-tripping token to force the whole payload through.
+      const ids = Array.from({ length: 200 }, (_, i) => `1300000000000000${String(i).padStart(3, '0')}`);
+      const stdout = `[${ids.map((id) => `{"id": ${id}}`).join(',')}]`;
+
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout, stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      // Passthrough — the original tool_response (with exact IDs) is kept.
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    test('Bash: trailing-zero decimals that would be rewritten force a passthrough', async () => {
+      // 10.10 -> 10.1, 1.20 -> 1.2: JSON.parse drops the trailing zero.
+      const rows = Array.from({ length: 200 }, (_, i) => `{"i": ${i}, "price": 10.10, "ratio": 1.20}`);
+      const stdout = `[${rows.join(',')}]`;
+
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout, stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      expect(parseOutput(out)).toEqual({ continue: true });
+    });
+
+    // Discrimination control: the SAME structure with only safe integers must
+    // still compress — proving the guard rejects lossy numbers specifically,
+    // not all structured data.
+    test('Bash: safe-integer structured output still compresses to TOON', async () => {
+      const rows = Array.from({ length: 200 }, (_, i) => ({ id: i, name: `svc${i}`, active: i % 2 === 0 }));
+      const stdout = JSON.stringify(rows);
+
+      const input = {
+        tool_name: 'Bash',
+        tool_response: { stdout, stderr: '', interrupted: false, isImage: false, noOutputExpected: false },
+      };
+      const { stdout: out } = await runHook(input);
+      const result = parseOutput(out);
+
+      expect(result.continue).toBe(true);
+      const output = result.hookSpecificOutput as Record<string, unknown>;
+      const updated = output.updatedToolOutput as { stdout: string };
+      expect(updated.stdout).toContain('[TOON-JSON]');
+      expect(updated.stdout.length).toBeLessThan(stdout.length);
     });
 
     test('unrecognized tool name with an object tool_response passes through safely', async () => {
@@ -640,15 +787,20 @@ public class RetryHandler {
       expect(result.suppressOutput).toBeUndefined();
     });
 
-    test('passes through skipped tools', async () => {
+    test('passes through tools not in the text-tool set', async () => {
+      // Glob reaches the hook (it is in the PostToolUse matcher) but is NOT a
+      // TEXT_TOOL, so its output is never parsed or compressed — even a large,
+      // highly compressible structured payload must pass through untouched.
+      // (Bash used to be the skipped tool asserted here; it is now processed,
+      // so this test moved to a tool that is genuinely gated out.)
+      const rows = Array.from({ length: 300 }, (_, i) => ({ id: i, path: `src/file${i}.ts` }));
       const { stdout } = await runHook({
-        tool_name: 'Bash',
-        tool_response: '{"data": [1, 2, 3]}',
+        tool_name: 'Glob',
+        tool_response: JSON.stringify(rows),
       });
 
       const result = parseOutput(stdout);
-      expect(result.continue).toBe(true);
-      expect(result.suppressOutput).toBeUndefined();
+      expect(result).toEqual({ continue: true });
     });
 
     test('passes through small content', async () => {
@@ -748,10 +900,11 @@ public class RetryHandler {
       expect(parsed.continue).toBe(true);
     });
 
-    test('logs errors to stderr on invalid input', async () => {
-      const { stderr } = await runHook({ invalid: true } as Record<string, unknown>);
-      // Should not crash, just passthrough
-      // stderr may or may not have error message depending on the failure path
+    test('malformed input (no tool_name/tool_response) passes through without crashing', async () => {
+      const { stdout } = await runHook({ invalid: true } as Record<string, unknown>);
+      // Missing fields must never crash the hook — it degrades to passthrough.
+      // (stderr may or may not carry a message depending on the failure path.)
+      expect(parseOutput(stdout)).toEqual({ continue: true });
     });
   });
 });
