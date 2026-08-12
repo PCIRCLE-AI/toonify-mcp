@@ -1,6 +1,6 @@
 {
   "name": "toonify-mcp",
-  "version": "0.7.2",
+  "version": "0.8.0",
   "description": "Local context compression for Claude Code and MCP workflows, including structured data and debug output.",
   "type": "module",
   "main": "dist/index.js",
@@ -53,8 +53,8 @@
     "yaml": "^2.8.2"
   },
   "overrides": {
-    "hono": "4.12.14",
-    "@hono/node-server": "1.19.13"
+    "hono": "^4.13.1",
+    "@hono/node-server": "^2.1.0"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",

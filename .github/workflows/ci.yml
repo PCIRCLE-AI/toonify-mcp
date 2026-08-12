@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+# Least-privilege default GITHUB_TOKEN: this workflow only checks out code and
+# runs tests, so read-only access to repo contents is all it needs.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
