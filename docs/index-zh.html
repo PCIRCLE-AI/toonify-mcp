@@ -642,6 +642,32 @@ toonify-mcp setup mcp
 claude mcp list
 # 應顯示：toonify: toonify-mcp - ✓ Connected</code></pre>
                 </div>
+
+                <div class="feature-card">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🧵</div>
+                        <h3 class="text-2xl font-bold heading-mono">任何 agent CLI：Pipe Filter</h3>
+                    </div>
+                    <p class="mb-4" style="color: var(--text-secondary);">不限 Claude Code。輸出在進入模型 context 之前就先壓縮好，絕不會弄壞 pipe。</p>
+                    <pre class="text-sm"><code># 把任何指令的輸出接到這個過濾器
+curl -s https://api.example.com/users | toonify-mcp compress</code></pre>
+                    <p class="mt-3 text-sm" style="color: var(--text-tertiary);">
+                        在專案的 agent 指令檔（例如 <code>AGENTS.md</code>）加一條規則，讓 agent 自己採用。
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-3">🤖</div>
+                        <h3 class="text-2xl font-bold heading-mono">手動呼叫：OpenAI Codex CLI</h3>
+                    </div>
+                    <p class="mb-4" style="color: var(--text-secondary);">把 Toonify 註冊為 Codex 的 MCP 伺服器，讓 Codex 視需要呼叫 optimize_content 工具。</p>
+                    <pre class="text-sm"><code># 註冊 Toonify 給 Codex
+toonify-mcp setup codex</code></pre>
+                    <p class="mt-3 text-sm" style="color: var(--text-tertiary);">
+                        在 Codex 上這是手動呼叫，不是自動——Codex 的 hook 還做不到直接取代工具輸出。想要自動壓縮，請用上面的 pipe filter。
+                    </p>
+                </div>
             </div>
         </div>
     </section>
@@ -700,6 +726,18 @@ claude mcp list
                     <div class="text-3xl mb-4">📊</div>
                     <h3 class="text-xl font-bold mb-3 heading-mono">本機統計與安全回退</h3>
                     <p style="color: var(--text-secondary);">可查看本機活動；若優化不值得，Toonify 會直接保留原始內容。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🧵</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">支援任何 agent CLI</h3>
+                    <p style="color: var(--text-secondary);"><code class="text-sm">toonify-mcp compress</code> 是一個 stdin→stdout 的 pipe filter，不限 Claude Code 或 MCP 客戶端。</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🤖</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono">支援 OpenAI Codex CLI</h3>
+                    <p style="color: var(--text-secondary);">一個指令就能把 Toonify 註冊為 Codex 的 MCP 伺服器，視需要呼叫。</p>
                 </div>
             </div>
         </div>

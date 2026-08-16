@@ -637,6 +637,38 @@ claude mcp list
                         Best for advanced setups or non-Claude Code MCP clients.
                     </p>
                 </div>
+
+                <div class="feature-card p-8">
+                    <h3 class="text-2xl font-bold heading-mono mb-4" style="color: var(--text-primary);">
+                        <span class="gradient-text">Any Agent CLI:</span> Pipe Filter
+                    </h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Not limited to Claude Code. Output is compressed before it enters the model's context, so it works with any agent CLI and never breaks a pipe.
+                    </p>
+                    <div class="code-block">
+                        <code><span class="comment"># Pipe any command's output through the filter</span>
+curl -s https://api.example.com/users | toonify-mcp compress</code>
+                    </div>
+                    <p class="mt-4" style="color: var(--text-secondary);">
+                        Add a rule to your project's agent instructions (e.g. <code>AGENTS.md</code>) so the agent adopts it on its own.
+                    </p>
+                </div>
+
+                <div class="feature-card p-8">
+                    <h3 class="text-2xl font-bold heading-mono mb-4" style="color: var(--text-primary);">
+                        <span class="gradient-text">On-Demand:</span> OpenAI Codex CLI
+                    </h3>
+                    <p class="mb-4" style="color: var(--text-secondary);">
+                        Registers Toonify as an MCP server for Codex, so it can call the <code>optimize_content</code> tool when needed.
+                    </p>
+                    <div class="code-block">
+                        <code><span class="comment"># Register Toonify with Codex</span>
+toonify-mcp setup codex</code>
+                    </div>
+                    <p class="mt-4" style="color: var(--text-secondary);">
+                        On Codex this is on-demand, not automatic — Codex's hooks can't yet replace tool output the way Claude Code's plugin mode does. For automatic compression on Codex, use the pipe filter above.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
@@ -708,6 +740,22 @@ claude mcp list
                     <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Local Metrics and Safe Fallback</h3>
                     <p style="color: var(--text-secondary);">
                         You can check local activity, and Toonify falls back to the original content when reduction is not worth it.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🧵</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">Works With Any Agent CLI</h3>
+                    <p style="color: var(--text-secondary);">
+                        <code class="text-sm">toonify-mcp compress</code> is a stdin→stdout pipe filter — not limited to Claude Code or MCP clients.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="text-3xl mb-4">🤖</div>
+                    <h3 class="text-xl font-bold mb-3 heading-mono" style="color: var(--text-primary);">OpenAI Codex CLI Support</h3>
+                    <p style="color: var(--text-secondary);">
+                        Register Toonify as an MCP server for Codex with one command, available on demand.
                     </p>
                 </div>
             </div>
