@@ -35,6 +35,10 @@ api_key*
 apikey*
 *-api-key*
 
+# Local backup dumps (e.g. DNS zone exports made before risky changes) —
+# never belongs in a public repo, regardless of what's inside
+/data/
+
 # 📄 INTERNAL DOCUMENTS - Never commit to public repos (CRITICAL)
 
 # Planning & Architecture
