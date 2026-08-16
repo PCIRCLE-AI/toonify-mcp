@@ -24,12 +24,18 @@
     <meta property="og:locale" content="zh_TW">
     <meta property="og:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
     <meta property="og:description" content="在大型 JSON、log、stack trace 進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
+    <meta property="og:image" content="https://toonify.pcircle.ai/social-preview/v3-before-after.png">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="640">
+    <meta property="og:image:alt" content="Toonify MCP 把 1,840 tokens 的 JSON 壓縮到 720 tokens，減少 61%">
+    <meta property="article:modified_time" content="2026-08-16T00:00:00Z">
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary">
+    <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://toonify.pcircle.ai/index-zh.html">
     <meta property="twitter:title" content="Toonify MCP - Claude Code 大型輸出壓縮工具">
     <meta property="twitter:description" content="在大型 JSON、log、stack trace 進入 context window 前先自動壓縮。平均節省 48% token，工作流程完全不變。">
+    <meta property="twitter:image" content="https://toonify.pcircle.ai/social-preview/v3-before-after.png">
 
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="assets/tailwind.css">
@@ -394,7 +400,9 @@
                         "MCP 伺服器模式提供顯式控制",
                         "支援 JSON、YAML 與 API 回應的結構化資料壓縮",
                         "支援測試失敗、stack trace 與編譯錯誤的保守壓縮",
-                        "內建 doctor 與 status 指令可驗證安裝與近期活動"
+                        "內建 doctor 與 status 指令可驗證安裝與近期活動",
+                        "Pipe filter（toonify-mcp compress）讓任何 agent CLI 都能自動壓縮",
+                        "支援 OpenAI Codex CLI 的手動呼叫 MCP 註冊"
                     ],
                     "author": {
                         "@type": "Organization",
@@ -844,9 +852,9 @@ toonify-mcp setup codex</code></pre>
                 <div>
                     <h4 class="text-lg font-bold mb-4 heading-mono">PCIRCLE AI</h4>
                     <ul class="space-y-2">
-                        <li><a href="https://pcircle.ai" class="hover:text-blue-600">主網站</a></li>
+                        <li><a href="https://pcircle.com" class="hover:text-blue-600">主網站</a></li>
                         <li><a href="https://github.com/PCIRCLE-AI" class="hover:text-blue-600">GitHub 組織</a></li>
-                        <li><a href="mailto:hello@pcircle.ai" class="hover:text-blue-600">聯絡我們</a></li>
+                        <li><a href="mailto:contact@pcircle.com" class="hover:text-blue-600">聯絡我們</a></li>
                     </ul>
                 </div>
             </div>

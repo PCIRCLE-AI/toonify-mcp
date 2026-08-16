@@ -6,7 +6,7 @@ Please do **not** open a public GitHub issue for security-sensitive findings.
 
 Instead, report security issues privately to:
 
-- Email: hello@pcircle.ai
+- Email: contact@pcircle.com
 
 Include as much detail as possible:
 

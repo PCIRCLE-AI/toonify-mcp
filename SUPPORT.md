@@ -36,5 +36,5 @@ Do not file public issues for vulnerabilities. See [SECURITY.md](SECURITY.md).
 
 For collaboration, partnership, or integration inquiries:
 
-- Email: hello@pcircle.ai
+- Email: contact@pcircle.com
 - Docs: https://toonify.pcircle.ai/

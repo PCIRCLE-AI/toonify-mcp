@@ -2,32 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://toonify.pcircle.ai/</loc>
+    <lastmod>2026-08-16</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/index-zh.html</loc>
+    <lastmod>2026-08-16</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/benchmarks.html</loc>
+    <lastmod>2026-08-11</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/benchmarks-zh.html</loc>
+    <lastmod>2026-08-11</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/privacy.html</loc>
+    <lastmod>2026-05-01</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/privacy-zh.html</loc>
+    <lastmod>2026-05-01</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/terms.html</loc>
+    <lastmod>2026-08-11</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/terms-zh.html</loc>
+    <lastmod>2026-08-11</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/llms.txt</loc>
+    <lastmod>2026-08-11</lastmod>
   </url>
   <url>
     <loc>https://toonify.pcircle.ai/llms-full.txt</loc>
+    <lastmod>2026-08-11</lastmod>
   </url>
 </urlset>
