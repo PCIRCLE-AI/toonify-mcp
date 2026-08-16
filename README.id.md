@@ -2,6 +2,8 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
+![Toonify MCP — kompresi konteks untuk Claude Code](docs/social-preview/v3-before-after.svg)
+
 Plugin kompresi konteks untuk Claude Code. Secara otomatis mengecilkan output alat yang besar—JSON, YAML, stack trace, dan log—sebelum masuk ke jendela konteks.
 
 Berfungsi sebagai plugin Claude Code (otomatis, tanpa konfigurasi) atau server MCP (sesuai permintaan).
@@ -78,3 +80,4 @@ Catatan: di Codex ini **sesuai permintaan, bukan otomatis**—hook Codex belum b
 - Privasi: https://toonify.pcircle.ai/privacy.html
 - Ketentuan: https://toonify.pcircle.ai/terms.html
 - [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)

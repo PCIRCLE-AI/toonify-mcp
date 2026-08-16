@@ -2,6 +2,8 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
+![Toonify MCP — compressão de contexto para Claude Code](docs/social-preview/v3-before-after.svg)
+
 Plugin de compressão de contexto para Claude Code. Reduz automaticamente saídas grandes de ferramentas—JSON, YAML, stack traces e logs—antes de entrarem na janela de contexto.
 
 Funciona como plugin do Claude Code (automático, sem configuração) ou como servidor MCP (sob demanda).
@@ -78,3 +80,4 @@ Nota: no Codex isso é **sob demanda, não automático**—os hooks do Codex ain
 - Privacidade: https://toonify.pcircle.ai/privacy.html
 - Termos: https://toonify.pcircle.ai/terms.html
 - [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)

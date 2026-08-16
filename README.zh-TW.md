@@ -2,6 +2,8 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
+![Toonify MCP — Claude Code 的 context 壓縮工具](docs/social-preview/v3-before-after.svg)
+
 Claude Code 的 context 壓縮外掛。在大型工具輸出進入 context window 之前自動縮小——支援 JSON、YAML、stack trace 與 log。
 
 可作為 Claude Code 外掛（自動、免設定）或 MCP 伺服器（手動呼叫）使用。
@@ -79,3 +81,4 @@ toonify-mcp setup codex
 - 服務條款：https://toonify.pcircle.ai/terms-zh.html
 - [docs/benchmarks-zh.html](docs/benchmarks-zh.html)
 - [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)

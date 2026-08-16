@@ -2,6 +2,8 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
+![Toonify MCP — nén ngữ cảnh cho Claude Code](docs/social-preview/v3-before-after.svg)
+
 Plugin nén ngữ cảnh cho Claude Code. Tự động thu gọn đầu ra lớn từ công cụ—JSON, YAML, stack trace và log—trước khi chúng vào cửa sổ ngữ cảnh.
 
 Hoạt động như plugin Claude Code (tự động, không cần cấu hình) hoặc máy chủ MCP (theo yêu cầu).
@@ -78,3 +80,4 @@ Lưu ý: trên Codex, tính năng này là **theo yêu cầu, không tự độn
 - Quyền riêng tư: https://toonify.pcircle.ai/privacy.html
 - Điều khoản: https://toonify.pcircle.ai/terms.html
 - [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)

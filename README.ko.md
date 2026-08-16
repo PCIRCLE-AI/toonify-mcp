@@ -2,6 +2,8 @@
 
 **[English](README.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [한국어](README.ko.md) | [Русский](README.ru.md) | [Português](README.pt.md) | [Tiếng Việt](README.vi.md) | [Bahasa Indonesia](README.id.md)**
 
+![Toonify MCP — Claude Code 컨텍스트 압축](docs/social-preview/v3-before-after.svg)
+
 Claude Code용 컨텍스트 압축 플러그인입니다. 대용량 툴 출력(JSON, YAML, 스택 트레이스, 로그)이 컨텍스트 윈도우에 들어가기 전에 자동으로 축소합니다.
 
 Claude Code 플러그인(자동, 별도 설정 불필요)과 MCP 서버(온디맨드) 두 가지 모드로 사용할 수 있습니다.
@@ -78,3 +80,4 @@ toonify-mcp setup codex
 - 개인정보: https://toonify.pcircle.ai/privacy.html
 - 이용약관: https://toonify.pcircle.ai/terms.html
 - [CHANGELOG.md](CHANGELOG.md)
+- [CONTRIBUTORS.md](CONTRIBUTORS.md)
